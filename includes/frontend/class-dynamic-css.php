@@ -1,0 +1,35 @@
+<?php
+declare(strict_types=1);
+
+namespace Base\BeThemeGsap\Frontend;
+
+defined('ABSPATH') || exit;
+
+final class DynamicCss
+{
+    public function register(): void
+    {
+        add_action('wp_head', [$this, 'renderScrollbarCss'], 99);
+    }
+
+    public function renderScrollbarCss(): void
+    {
+        $visual = isset($_GET['visual']) ? sanitize_text_field(wp_unslash((string) $_GET['visual'])) : '';
+        if ($visual === 'iframe') {
+            return;
+        }
+
+        $trackColor = (string) mfn_opts_get('scrollbar-track-color', '#f1f1f1');
+        $thumbColor = (string) mfn_opts_get('scrollbar-thumb-color', '#888888');
+        $thumbHoverColor = (string) mfn_opts_get('scrollbar-thumb-hover-color', '#555555');
+        $borderRadius = (int) mfn_opts_get('scrollbar-border-radius', 4);
+
+        $css = '/* Base BeTheme GSAP Scrollbar Styles */';
+        $css .= '::-webkit-scrollbar-track{background:' . esc_attr($trackColor) . ';}';
+        $css .= '::-webkit-scrollbar-thumb{background:' . esc_attr($thumbColor) . ';border-radius:' . $borderRadius . 'px;}';
+        $css .= '::-webkit-scrollbar-thumb:hover{background:' . esc_attr($thumbHoverColor) . ';}';
+        $css .= 'html{scrollbar-width:thin;scrollbar-color:' . esc_attr($thumbColor) . ' ' . esc_attr($trackColor) . ';}';
+
+        echo '<style id="base-bgsap-scrollbar-css">' . wp_strip_all_tags($css) . '</style>';
+    }
+}
