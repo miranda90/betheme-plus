@@ -4,3 +4,12 @@
 .gsap-animate[data-animation-type="animateLines"]:not([data-gsap-processed]) {
     visibility: hidden;
 }
+
+/* Disable legacy BeTheme animation hiding when GSAP handles the element. */
+.animate.gsap-animate[data-anim-type],
+.gsap-animate[data-animation-type],
+.gsap-animate[data-anim-type] {
+    opacity: 1 !important;
+    visibility: visible;
+    animation: none !important;
+}

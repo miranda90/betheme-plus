@@ -6,6 +6,7 @@ namespace Base\BethemePlus;
 defined('ABSPATH') || exit;
 
 require_once BETHEME_PLUS_PATH . 'includes/integrations/class-betheme-options.php';
+require_once BETHEME_PLUS_PATH . 'includes/integrations/class-builder-overrides.php';
 require_once BETHEME_PLUS_PATH . 'includes/frontend/class-assets.php';
 require_once BETHEME_PLUS_PATH . 'includes/frontend/class-dynamic-css.php';
 
@@ -14,8 +15,14 @@ final class Plugin
     public static function boot(): void
     {
         add_action('plugins_loaded', [self::class, 'loadTextdomain']);
+        // Must be registered as early as possible so BeTheme loads the overridden builder fields file.
+        (new Integrations\BuilderOverrides())->register();
+        add_action('after_setup_theme', [self::class, 'registerModules'], 20);
         add_action('admin_notices', [self::class, 'renderDependencyNotice']);
+    }
 
+    public static function registerModules(): void
+    {
         if (!self::isBeThemeAvailable()) {
             return;
         }
