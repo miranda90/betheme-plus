@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Base\BeThemeGsap\Frontend;
+namespace Base\BethemePlus\Frontend;
 
 defined('ABSPATH') || exit;
 
@@ -24,12 +24,12 @@ final class DynamicCss
         $thumbHoverColor = (string) mfn_opts_get('scrollbar-thumb-hover-color', '#555555');
         $borderRadius = (int) mfn_opts_get('scrollbar-border-radius', 4);
 
-        $css = '/* Base BeTheme GSAP Scrollbar Styles */';
+        $css = '/* Betheme Plus Scrollbar Styles */';
         $css .= '::-webkit-scrollbar-track{background:' . esc_attr($trackColor) . ';}';
         $css .= '::-webkit-scrollbar-thumb{background:' . esc_attr($thumbColor) . ';border-radius:' . $borderRadius . 'px;}';
         $css .= '::-webkit-scrollbar-thumb:hover{background:' . esc_attr($thumbHoverColor) . ';}';
         $css .= 'html{scrollbar-width:thin;scrollbar-color:' . esc_attr($thumbColor) . ' ' . esc_attr($trackColor) . ';}';
 
-        echo '<style id="base-bgsap-scrollbar-css">' . wp_strip_all_tags($css) . '</style>';
+        echo '<style id="betheme-plus-scrollbar-css">' . wp_strip_all_tags($css) . '</style>';
     }
 }

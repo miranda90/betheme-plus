@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace Base\BeThemeGsap;
+namespace Base\BethemePlus;
 
 defined('ABSPATH') || exit;
 
-require_once BASE_BGSAP_PATH . 'includes/integrations/class-betheme-options.php';
-require_once BASE_BGSAP_PATH . 'includes/frontend/class-assets.php';
-require_once BASE_BGSAP_PATH . 'includes/frontend/class-dynamic-css.php';
+require_once BETHEME_PLUS_PATH . 'includes/integrations/class-betheme-options.php';
+require_once BETHEME_PLUS_PATH . 'includes/frontend/class-assets.php';
+require_once BETHEME_PLUS_PATH . 'includes/frontend/class-dynamic-css.php';
 
 final class Plugin
 {
@@ -27,7 +27,7 @@ final class Plugin
 
     public static function loadTextdomain(): void
     {
-        load_plugin_textdomain('base', false, dirname(plugin_basename(BASE_BGSAP_FILE)) . '/languages');
+        load_plugin_textdomain('base', false, dirname(plugin_basename(BETHEME_PLUS_FILE)) . '/languages');
     }
 
     public static function isBeThemeAvailable(): bool
@@ -42,7 +42,7 @@ final class Plugin
         }
 
         echo '<div class="notice notice-warning"><p>';
-        echo esc_html__('Base BeTheme GSAP requires BeTheme to be active. Plugin features are currently disabled.', 'base');
+        echo esc_html__('Betheme Plus requires BeTheme to be active. Plugin features are currently disabled.', 'base');
         echo '</p></div>';
     }
 }

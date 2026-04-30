@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Base\BeThemeGsap\Integrations;
+namespace Base\BethemePlus\Integrations;
 
 defined('ABSPATH') || exit;
 

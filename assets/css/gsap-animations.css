@@ -1,0 +1,6 @@
+.gsap-animate[data-animation-type="splitText"]:not([data-gsap-processed]),
+.gsap-animate[data-animation-type="animateLetters"]:not([data-gsap-processed]),
+.gsap-animate[data-animation-type="animateWords"]:not([data-gsap-processed]),
+.gsap-animate[data-animation-type="animateLines"]:not([data-gsap-processed]) {
+    visibility: hidden;
+}
