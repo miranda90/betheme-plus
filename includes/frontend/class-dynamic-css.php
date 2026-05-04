@@ -21,13 +21,11 @@ final class DynamicCss
 
         $trackColor = (string) mfn_opts_get('scrollbar-track-color', '#f1f1f1');
         $thumbColor = (string) mfn_opts_get('scrollbar-thumb-color', '#888888');
-        $thumbHoverColor = (string) mfn_opts_get('scrollbar-thumb-hover-color', '#555555');
-        $borderRadius = (int) mfn_opts_get('scrollbar-border-radius', 4);
 
+        // Prefijo html para igualar la especificidad del child theme (Betheme/Base).
         $css = '/* Betheme Plus Scrollbar Styles */';
-        $css .= '::-webkit-scrollbar-track{background:' . esc_attr($trackColor) . ';}';
-        $css .= '::-webkit-scrollbar-thumb{background:' . esc_attr($thumbColor) . ';border-radius:' . $borderRadius . 'px;}';
-        $css .= '::-webkit-scrollbar-thumb:hover{background:' . esc_attr($thumbHoverColor) . ';}';
+        $css .= 'html::-webkit-scrollbar-track{background:' . esc_attr($trackColor) . ';}';
+        $css .= 'html::-webkit-scrollbar-thumb{background:' . esc_attr($thumbColor) . ';}';
         $css .= 'html{scrollbar-width:thin;scrollbar-color:' . esc_attr($thumbColor) . ' ' . esc_attr($trackColor) . ';}';
 
         echo '<style id="betheme-plus-scrollbar-css">' . wp_strip_all_tags($css) . '</style>';

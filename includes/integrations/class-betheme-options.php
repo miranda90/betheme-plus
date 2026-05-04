@@ -81,27 +81,6 @@ final class BeThemeOptions
                 'alpha' => true,
                 'std' => '#888888',
             ];
-
-            $sections['general']['fields'][] = [
-                'id' => 'scrollbar-thumb-hover-color',
-                'type' => 'color',
-                'title' => __('Thumb hover color', 'mfn-opts'),
-                'desc' => __('Color of the scrollbar thumb on hover', 'mfn-opts'),
-                'alpha' => true,
-                'std' => '#555555',
-            ];
-
-            $sections['general']['fields'][] = [
-                'id' => 'scrollbar-border-radius',
-                'type' => 'sliderbar',
-                'title' => __('Border radius', 'mfn-opts'),
-                'param' => [
-                    'min' => 0,
-                    'max' => 20,
-                ],
-                'after' => 'px',
-                'std' => 4,
-            ];
         }
 
         return $sections;
