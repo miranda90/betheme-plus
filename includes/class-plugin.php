@@ -7,6 +7,8 @@ defined('ABSPATH') || exit;
 
 require_once BETHEME_PLUS_PATH . 'includes/integrations/class-betheme-options.php';
 require_once BETHEME_PLUS_PATH . 'includes/integrations/class-builder-overrides.php';
+require_once BETHEME_PLUS_PATH . 'includes/integrations/class-bebuilder-conditions-fix.php';
+require_once BETHEME_PLUS_PATH . 'includes/integrations/class-bebuilder-field-bundle.php';
 require_once BETHEME_PLUS_PATH . 'includes/frontend/class-assets.php';
 require_once BETHEME_PLUS_PATH . 'includes/frontend/class-dynamic-css.php';
 
@@ -28,6 +30,8 @@ final class Plugin
         }
 
         (new Integrations\BeThemeOptions())->register();
+        (new Integrations\BebuilderConditionsFix())->register();
+        (new Integrations\BebuilderFieldBundle())->register();
         (new Frontend\Assets())->register();
         (new Frontend\DynamicCss())->register();
     }

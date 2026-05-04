@@ -11,6 +11,67 @@ if( ! defined( 'ABSPATH' ) ){
 	exit; // Exit if accessed directly
 }
 
+if ( ! function_exists( 'betheme_plus_resolve_split_text_animation' ) ) {
+	/**
+	 * Valor para data-split-animation: clave única en `split_text_animation_style`
+	 * o compatibilidad con esquema antiguo (categoría + selects de variación).
+	 *
+	 * @param array $attr Atributos del wrap o del item.
+	 * @return string Clave para data-split-animation.
+	 */
+	function betheme_plus_resolve_split_text_animation( $attr ) {
+		if ( empty( $attr ) || ! is_array( $attr ) ) {
+			return '';
+		}
+
+		// Prioridad: select unificado `split_text_animation_style` (BeTheme Plus).
+		// El meta antiguo `split_text_animation` solo se usa si no hay estilo unificado guardado;
+		// si no, un valor legacy residual ignoraba los cambios del nuevo select y data-split-animation quedaba fijo.
+		$style = isset( $attr['split_text_animation_style'] ) ? (string) $attr['split_text_animation_style'] : '';
+
+		if ( $style !== '' ) {
+
+			$direct_keys = array(
+				'fadeIn',
+				'fadeInUp',
+				'fadeInLeft',
+				'fadeInRight',
+				'perspectiveDown',
+				'hiddenFromBottom',
+				'blurText',
+				'blurScaleFromBig',
+				'blurScaleFromSmall',
+				'blurFromBottom',
+				'blurFromTop',
+			);
+			if ( in_array( $style, $direct_keys, true ) ) {
+				return $style;
+			}
+
+			// Contenidos guardados con categorías antiguas + variante en otro campo.
+			switch ( $style ) {
+				case 'fade':
+					return ! empty( $attr['split_text_animation_fade'] ) ? (string) $attr['split_text_animation_fade'] : 'fadeInUp';
+				case 'perspective':
+					return ! empty( $attr['split_text_animation_perspective'] ) ? (string) $attr['split_text_animation_perspective'] : 'perspectiveDown';
+				case 'hidden':
+					return ! empty( $attr['split_text_animation_hidden'] ) ? (string) $attr['split_text_animation_hidden'] : 'hiddenFromBottom';
+				case 'blur':
+					return ! empty( $attr['split_text_animation_blur'] ) ? (string) $attr['split_text_animation_blur'] : 'blurText';
+				default:
+					// Clave futura / desconocida: propagar para no bloquear data-split-animation.
+					return $style;
+			}
+		}
+
+		if ( ! empty( $attr['split_text_animation'] ) && is_string( $attr['split_text_animation'] ) ) {
+			return $attr['split_text_animation'];
+		}
+
+		return '';
+	}
+}
+
 /*error_reporting(E_ALL);
 ini_set("display_errors", 1);*/
 
@@ -855,6 +916,17 @@ if( ! class_exists('Mfn_Builder_Front') )
   					$section_class .= ' bg-cover-ultrawide';
   				}
 
+					$sect_animate = '';
+
+					if ( ! empty( $section['attr']['animate'] ) ) {
+						$section_class .= ' animate gsap-animate';
+						$sect_animate .= ' data-anim-type="'. esc_attr( $section['attr']['animate'] ) .'"';
+						$sect_animate .= ' data-animation-type="'. esc_attr( $section['attr']['animate'] ) .'"';
+						if ( ! empty( $section['attr']['animation_speed'] ) ) {
+							$sect_animate .= ' data-duration="'. esc_attr( $section['attr']['animation_speed'] ) .'"';
+						}
+					}
+
   				// output SECTION -----
 
 					if( mfn_is_blocks() ) {
@@ -867,7 +939,7 @@ if( ! class_exists('Mfn_Builder_Front') )
   					if ( $this->template_type && $this->template_type == 'header' && isset( $section['wraps'] ) && is_array($section['wraps']) && count($section['wraps']) >= 3 ) $section_class .= ' mfn-new-wraps-disabled';
 
 
-  					echo '<section class="section vb-item mcb-section '. $section_class .'" '. $section_id .' data-order="'. $s .'" data-uid="'. $section['uid'] .'"  '. $global_section_id .' style="'. $section_style .'" '. $parallax .'>'; // 100%
+  					echo '<section class="section vb-item mcb-section '. $section_class .'" '. $section_id .' data-order="'. $s .'" data-uid="'. $section['uid'] .'"  '. $global_section_id .' style="'. $section_style .'" '. $parallax . $sect_animate . '>'; // 100%
   					echo Mfn_Builder_Helper::sectionTools($section);
 
 
@@ -883,7 +955,7 @@ if( ! class_exists('Mfn_Builder_Front') )
 							$section_class .= ' mfn-temporary-hidden';
 						}
 
-  					echo '<section class="section mcb-section '. $section_class .'" '. $section_id .' '. $closeable .' style="'. $section_style .'" '. $parallax .'>'; // 100%
+  					echo '<section class="section mcb-section '. $section_class .'" '. $section_id .' '. $closeable .' style="'. $section_style .'" '. $parallax . $sect_animate . '>'; // 100%
 
   				}
 
@@ -2071,7 +2143,7 @@ if( ! class_exists('Mfn_Builder_Front') )
 					$animate .= ' data-split-type="'. esc_attr($split_text_type) .'"';
 				}
 
-				$split_text_animation = !empty($wrap['attr']['split_text_animation']) ? $wrap['attr']['split_text_animation'] : '';
+				$split_text_animation = betheme_plus_resolve_split_text_animation( ! empty( $wrap['attr'] ) ? $wrap['attr'] : array() );
 				if ( $split_text_animation !== '' ) {
 					$animate .= ' data-split-animation="'. esc_attr($split_text_animation) .'"';
 				}
@@ -2763,7 +2835,7 @@ if( ! class_exists('Mfn_Builder_Front') )
 						$animate .= ' data-split-type="'. esc_attr($split_text_type) .'"';
 					}
 
-					$split_text_animation = !empty($item['attr']['split_text_animation']) ? $item['attr']['split_text_animation'] : '';
+					$split_text_animation = betheme_plus_resolve_split_text_animation( ! empty( $item['attr'] ) ? $item['attr'] : array() );
 					if ( $split_text_animation !== '' ) {
 						$animate .= ' data-split-animation="'. esc_attr($split_text_animation) .'"';
 					}

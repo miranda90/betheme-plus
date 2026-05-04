@@ -497,6 +497,104 @@
         });
       },
 
+      /**
+       * clip-path inset(...) como strings casi no se interpola entre navegadores: la animación salta al final.
+       * Aquí tween de números (%) + onUpdate aplicando inset explícito.
+       */
+      _setInsetPercentClip: function (el, top, right, bottom, left) {
+        var v =
+          'inset(' +
+          top +
+          '% ' +
+          right +
+          '% ' +
+          bottom +
+          '% ' +
+          left +
+          '%)';
+        el.style.clipPath = v;
+        el.style.webkitClipPath = v;
+      },
+
+      _tweenInsetMask: function (timeline, element, options, from, to) {
+        gsap.set(element, { overflow: 'hidden', opacity: 1, x: 0, y: 0, clearProps: 'clipPath' });
+        AnimationTypes._setInsetPercentClip(element, from.top, from.right, from.bottom, from.left);
+        var state = {
+          top: from.top,
+          right: from.right,
+          bottom: from.bottom,
+          left: from.left
+        };
+        timeline.to(state, {
+          top: to.top,
+          right: to.right,
+          bottom: to.bottom,
+          left: to.left,
+          duration: options.duration,
+          delay: options.delay,
+          ease: options.ease,
+          onUpdate: function () {
+            AnimationTypes._setInsetPercentClip(
+              element,
+              state.top,
+              state.right,
+              state.bottom,
+              state.left
+            );
+          }
+        });
+      },
+
+      maskRevealLeft: function (timeline, element, options) {
+        AnimationTypes._tweenInsetMask(
+          timeline,
+          element,
+          options,
+          { top: 0, right: 100, bottom: 0, left: 0 },
+          { top: 0, right: 0, bottom: 0, left: 0 }
+        );
+      },
+
+      maskRevealRight: function (timeline, element, options) {
+        AnimationTypes._tweenInsetMask(
+          timeline,
+          element,
+          options,
+          { top: 0, right: 0, bottom: 0, left: 100 },
+          { top: 0, right: 0, bottom: 0, left: 0 }
+        );
+      },
+
+      maskRevealTop: function (timeline, element, options) {
+        AnimationTypes._tweenInsetMask(
+          timeline,
+          element,
+          options,
+          { top: 100, right: 0, bottom: 0, left: 0 },
+          { top: 0, right: 0, bottom: 0, left: 0 }
+        );
+      },
+
+      maskRevealBottom: function (timeline, element, options) {
+        AnimationTypes._tweenInsetMask(
+          timeline,
+          element,
+          options,
+          { top: 0, right: 0, bottom: 100, left: 0 },
+          { top: 0, right: 0, bottom: 0, left: 0 }
+        );
+      },
+
+      maskRevealCenter: function (timeline, element, options) {
+        AnimationTypes._tweenInsetMask(
+          timeline,
+          element,
+          options,
+          { top: 40, right: 40, bottom: 40, left: 40 },
+          { top: 0, right: 0, bottom: 0, left: 0 }
+        );
+      },
+
       splitText: function (timeline, element, options) {
         element.dataset.gsapProcessed = 'true';
         const splitTarget = getSplitTargetElement(element);

@@ -169,9 +169,37 @@ if( ! class_exists('Mfn_Builder_Fields') )
 				'slideInLeft' => esc_html__('Slide in left', 'mfn-opts'),
 				'slideInRight' => esc_html__('Slide in right', 'mfn-opts'),
 				'splitText' => esc_html__('Split text', 'mfn-opts'),
+				// Máscara / clip-path (GSAP)
+				'maskRevealLeft' => esc_html__( 'Máscara · desde la izquierda', 'mfn-opts' ),
+				'maskRevealRight' => esc_html__( 'Máscara · desde la derecha', 'mfn-opts' ),
+				'maskRevealTop' => esc_html__( 'Máscara · desde arriba', 'mfn-opts' ),
+				'maskRevealBottom' => esc_html__( 'Máscara · desde abajo', 'mfn-opts' ),
+				'maskRevealCenter' => esc_html__( 'Máscara · desde el centro (20% → 100%)', 'mfn-opts' ),
 			);
 
 			return $animations;
+
+		}
+
+		/**
+		 * Opciones del select único "Estilo de animación" (split text).
+		 * Claves = identificadores del runtime; etiquetas con nomenclatura unificada.
+		 */
+		public static function get_split_text_animation_style_options_static(){
+
+			return array(
+				'fadeIn'             => esc_html__( 'Fundido · entrada directa', 'mfn-opts' ),
+				'fadeInUp'           => esc_html__( 'Fundido · desde abajo', 'mfn-opts' ),
+				'fadeInLeft'         => esc_html__( 'Fundido · desde la izquierda', 'mfn-opts' ),
+				'fadeInRight'        => esc_html__( 'Fundido · desde la derecha', 'mfn-opts' ),
+				'perspectiveDown'    => esc_html__( 'Perspectiva · desde abajo', 'mfn-opts' ),
+				'hiddenFromBottom'   => esc_html__( 'Revelado · desde abajo', 'mfn-opts' ),
+				'blurText'           => esc_html__( 'Desenfoque · solo texto', 'mfn-opts' ),
+				'blurScaleFromBig'   => esc_html__( 'Desenfoque · escala desde grande (centro)', 'mfn-opts' ),
+				'blurScaleFromSmall' => esc_html__( 'Desenfoque · escala desde pequeña (centro)', 'mfn-opts' ),
+				'blurFromBottom'     => esc_html__( 'Desenfoque · desde abajo', 'mfn-opts' ),
+				'blurFromTop'        => esc_html__( 'Desenfoque · desde arriba', 'mfn-opts' ),
+			);
 
 		}
 
@@ -3461,6 +3489,44 @@ if( ! class_exists('Mfn_Builder_Fields') )
   				'title' => __('Conditional logic', 'mfn-opts'),
   			),
 
+				// Entrance animation (GSAP · sección completa)
+
+				array(
+					'form' => 'advanced',
+					'type' => 'header',
+					'class' => 'toggled_header',
+					'title' => __( 'Animación de entrada', 'mfn-opts' ),
+				),
+
+				array(
+					'form' => 'advanced',
+					'id' => 'animate',
+					'attr_id' => 'section-animate',
+					'type' => 'select',
+					'title' => __( 'Tipo de animación', 'mfn-opts' ),
+					'desc' => __( 'ScrollTrigger GSAP sobre la sección.', 'mfn-opts' ),
+					'class' => 'mfn-toggled',
+					'options' => $this->get_animations(),
+				),
+
+				array(
+					'form' => 'advanced',
+					'id' => 'animation_speed',
+					'attr_id' => 'section-animation-speed',
+					'type' => 'sliderbar',
+					'class' => 'mfn-toggled',
+					'condition' => array( 'id' => 'section-animate', 'opt' => 'isnt', 'val' => '' ),
+					'title' => __( 'Tiempo de animación', 'mfn-opts' ),
+					'after' => 'ms',
+					'param' => array(
+						'min' => '50',
+						'max' => '2000',
+						'step' => '50',
+						'unit' => 'ms',
+					),
+					'std' => '1000',
+				),
+
   			// Extras
 
 				array(
@@ -6511,14 +6577,14 @@ if( ! class_exists('Mfn_Builder_Fields') )
 				array(
 					'class' => 'toggled_header',
 					'type' => 'header',
-					'title' => __('Animation', 'mfn-opts'),
+					'title' => __('Animación', 'mfn-opts'),
 				),
 
 			array(
 				'id' => 'animate',
 				'attr_id' => 'wrap-animate',
 				'type' => 'select',
-				'title' => __('Animation', 'mfn-opts'),
+				'title' => __('Tipo de animación', 'mfn-opts'),
 				'desc' => __('Entrance animation', 'mfn-opts'),
 				'class' => 'mfn-toggled',
 				'options' => $this->get_animations(),
@@ -6528,9 +6594,10 @@ if( ! class_exists('Mfn_Builder_Fields') )
 				'id' => 'split_text_type',
 				'attr_id' => 'wrap-split-text-type',
 				'type' => 'select',
-				'title' => __('Split text type', 'mfn-opts'),
+				'title' => __('Separar por', 'mfn-opts'),
 				'desc' => __('How to split the text', 'mfn-opts'),
 				'class' => 'mfn-toggled',
+				're_render' => true,
 				'condition' => array( 'id' => 'wrap-animate', 'opt' => 'is', 'val' => 'splitText' ),
 				'options' => array(
 					'chars' => esc_html__('Letras', 'mfn-opts'),
@@ -6541,26 +6608,15 @@ if( ! class_exists('Mfn_Builder_Fields') )
 			),
 
 			array(
-				'id' => 'split_text_animation',
-				'attr_id' => 'wrap-split-text-animation',
+				'id' => 'split_text_animation_style',
+				'attr_id' => 'wrap-split-text-animation-style',
 				'type' => 'select',
-				'title' => __('Split text animation', 'mfn-opts'),
-				'desc' => __('Animation style for split elements', 'mfn-opts'),
+				'title' => __('Estilo de animación', 'mfn-opts'),
+				'desc' => __('Variante concreta de la animación para el texto fragmentado.', 'mfn-opts'),
 				'class' => 'mfn-toggled',
+				're_render' => true,
 				'condition' => array( 'id' => 'wrap-animate', 'opt' => 'is', 'val' => 'splitText' ),
-				'options' => array(
-					'fadeIn' => esc_html__('Fade in', 'mfn-opts'),
-					'fadeInUp' => esc_html__('Fade in up', 'mfn-opts'),
-					'fadeInLeft' => esc_html__('Fade in left', 'mfn-opts'),
-					'fadeInRight' => esc_html__('Fade in right', 'mfn-opts'),
-					'perspectiveDown' => esc_html__('Perspectiva desde abajo', 'mfn-opts'),
-					'blurText' => esc_html__('Texto desenfocado', 'mfn-opts'),
-					'blurScaleFromBig' => esc_html__('Con desenfoque: scale mayor desde centro', 'mfn-opts'),
-					'blurScaleFromSmall' => esc_html__('Con desenfoque: scale menor desde centro', 'mfn-opts'),
-					'blurFromBottom' => esc_html__('Con desenfoque desde abajo', 'mfn-opts'),
-					'blurFromTop' => esc_html__('Con desenfoque desde arriba', 'mfn-opts'),
-					'hiddenFromBottom' => esc_html__('Oculto desde abajo', 'mfn-opts'),
-				),
+				'options' => self::get_split_text_animation_style_options_static(),
 				'std' => 'fadeInUp',
 			),
 
@@ -6569,8 +6625,9 @@ if( ! class_exists('Mfn_Builder_Fields') )
 				'attr_id' => 'wrap-split-text-stagger',
 				'type' => 'sliderbar',
 				'class' => 'mfn-toggled',
+				're_render' => true,
 				'condition' => array( 'id' => 'wrap-animate', 'opt' => 'is', 'val' => 'splitText' ),
-				'title' => __('Stagger delay', 'mfn-opts'),
+				'title' => __('Tiempo entre segmentos', 'mfn-opts'),
 				'desc' => __('Delay between each split element (in seconds)', 'mfn-opts'),
 				'param' => array(
 					'min' => '0',
@@ -6587,7 +6644,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 				'type' => 'sliderbar',
 				'class' => 'mfn-toggled',
 				'condition' => array( 'id' => 'wrap-animate', 'opt' => 'isnt', 'val' => '' ),
-				'title' => __('Animation speed', 'mfn-opts'),
+				'title' => __('Tiempo de animación', 'mfn-opts'),
 				'desc' => __('Duration of the animation', 'mfn-opts'),
 				'after' => 'ms',
 				'param' => array(
@@ -6607,7 +6664,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 				'condition' => array( 'id' => 'wrap-animate', 'opt' => 'isnt', 'val' => '' ),
 				'type' => 'sliderbar',
 				'class' => 'mfn-toggled',
-				'title' => __('Animation delay', 'mfn-opts'),
+				'title' => __('Retraso en la animación', 'mfn-opts'),
 				'after' => 'ms',
 				'param' => array(
 					'min' => '0',
@@ -66895,7 +66952,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 						array(
 							'id' => 'animate',
 							'type' => 'select',
-							'title' => __('Animation', 'mfn-opts'),
+							'title' => __('Tipo de animación', 'mfn-opts'),
 							'desc' => __('Entrance animation', 'mfn-opts'),
 							'options' => self::get_animations_static(),
 						),
@@ -67127,6 +67184,12 @@ if( ! class_exists('Mfn_Builder_Fields') )
 				'slideInLeft' => esc_html__('Slide in left', 'mfn-opts'),
 				'slideInRight' => esc_html__('Slide in right', 'mfn-opts'),
 				'splitText' => esc_html__('Split text', 'mfn-opts'),
+				// Máscara / clip-path (GSAP)
+				'maskRevealLeft' => esc_html__( 'Máscara · desde la izquierda', 'mfn-opts' ),
+				'maskRevealRight' => esc_html__( 'Máscara · desde la derecha', 'mfn-opts' ),
+				'maskRevealTop' => esc_html__( 'Máscara · desde arriba', 'mfn-opts' ),
+				'maskRevealBottom' => esc_html__( 'Máscara · desde abajo', 'mfn-opts' ),
+				'maskRevealCenter' => esc_html__( 'Máscara · desde el centro (20% → 100%)', 'mfn-opts' ),
 			);
 
 		}
@@ -67851,7 +67914,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  				'form' => 'advanced',
 							'type' => 'header',
 							'class' => 'toggled_header',
-							'title' => __('Animation', 'mfn-opts'),
+							'title' => __('Animación', 'mfn-opts'),
 						),
 
 		  			array(
@@ -67859,7 +67922,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
    						'id' => 'animate',
    						'attr_id' => 'animate',
    						'type' => 'select',
-   						'title' => __('Animation', 'mfn-opts'),
+   						'title' => __('Tipo de animación', 'mfn-opts'),
    						'desc' => __('Entrance animation', 'mfn-opts'),
    						'class' => 'mfn-toggled',
    						'options' => $this->get_animations(),
@@ -67870,9 +67933,10 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  				'id' => 'split_text_type',
 		  				'attr_id' => 'split_text_type',
 		  				'type' => 'select',
-		  				'title' => __('Split text type', 'mfn-opts'),
+		  				'title' => __('Separar por', 'mfn-opts'),
 		  				'desc' => __('How to split the text', 'mfn-opts'),
 		  				'class' => 'mfn-toggled',
+		  				're_render' => true,
 		  				'condition' => array( 'id' => 'animate', 'opt' => 'is', 'val' => 'splitText' ),
 		  				'options' => array(
 		  					'chars' => esc_html__('Letras', 'mfn-opts'),
@@ -67884,26 +67948,15 @@ if( ! class_exists('Mfn_Builder_Fields') )
 
    					array(
 		  				'form' => 'advanced',
-		  				'id' => 'split_text_animation',
-		  				'attr_id' => 'split_text_animation',
+		  				'id' => 'split_text_animation_style',
+		  				'attr_id' => 'split_text_animation_style',
 		  				'type' => 'select',
-		  				'title' => __('Split text animation', 'mfn-opts'),
-		  				'desc' => __('Animation style for split elements', 'mfn-opts'),
+		  				'title' => __('Estilo de animación', 'mfn-opts'),
+		  				'desc' => __('Variante concreta de la animación para el texto fragmentado.', 'mfn-opts'),
 		  				'class' => 'mfn-toggled',
+		  				're_render' => true,
 		  				'condition' => array( 'id' => 'animate', 'opt' => 'is', 'val' => 'splitText' ),
-		  				'options' => array(
-		  					'fadeIn' => esc_html__('Fade in', 'mfn-opts'),
-		  					'fadeInUp' => esc_html__('Fade in up', 'mfn-opts'),
-		  					'fadeInLeft' => esc_html__('Fade in left', 'mfn-opts'),
-		  					'fadeInRight' => esc_html__('Fade in right', 'mfn-opts'),
-		  					'perspectiveDown' => esc_html__('Perspectiva desde abajo', 'mfn-opts'),
-							'blurText' => esc_html__('Texto desenfocado', 'mfn-opts'),
-							'blurScaleFromBig' => esc_html__('Con desenfoque: scale mayor desde centro', 'mfn-opts'),
-							'blurScaleFromSmall' => esc_html__('Con desenfoque: scale menor desde centro', 'mfn-opts'),
-							'blurFromBottom' => esc_html__('Con desenfoque desde abajo', 'mfn-opts'),
-							'blurFromTop' => esc_html__('Con desenfoque desde arriba', 'mfn-opts'),
-								'hiddenFromBottom' => esc_html__('Oculto desde abajo', 'mfn-opts'),
-		  				),
+		  				'options' => self::get_split_text_animation_style_options_static(),
 		  				'std' => 'fadeInUp',
 		  			),
 
@@ -67913,8 +67966,9 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  				'attr_id' => 'split_text_stagger',
 		  				'type' => 'sliderbar',
 		  				'class' => 'mfn-toggled',
+		  				're_render' => true,
 		  				'condition' => array( 'id' => 'animate', 'opt' => 'is', 'val' => 'splitText' ),
-		  				'title' => __('Stagger delay', 'mfn-opts'),
+		  				'title' => __('Tiempo entre segmentos', 'mfn-opts'),
 		  				'desc' => __('Delay between each split element (in seconds)', 'mfn-opts'),
 		  				'param' => array(
 		  					'min' => '0',
@@ -67932,7 +67986,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  				'type' => 'sliderbar',
 		  				'class' => 'mfn-toggled',
 		  				'condition' => array( 'id' => 'animate', 'opt' => 'isnt', 'val' => '' ),
-		  				'title' => __('Animation speed', 'mfn-opts'),
+		  				'title' => __('Tiempo de animación', 'mfn-opts'),
 		  				'desc' => __('Duration of the animation', 'mfn-opts'),
 		  				'after' => 'ms',
 		  				'param' => array(
@@ -67953,7 +68007,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  				'condition' => array( 'id' => 'animate', 'opt' => 'isnt', 'val' => '' ),
 		  				'type' => 'sliderbar',
 		  				'class' => 'mfn-toggled',
-							'title' => __('Animation delay', 'mfn-opts'),
+							'title' => __('Retraso en la animación', 'mfn-opts'),
 							'after' => 'ms',
 							'param' => array(
 								'min' => '0',

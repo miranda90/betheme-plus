@@ -1,3 +1,4 @@
+/* Texto fragmentado: oculto hasta que GSAP marca [data-gsap-processed] */
 .gsap-animate[data-animation-type="splitText"]:not([data-gsap-processed]),
 .gsap-animate[data-animation-type="animateLetters"]:not([data-gsap-processed]),
 .gsap-animate[data-animation-type="animateWords"]:not([data-gsap-processed]),
@@ -5,11 +6,105 @@
     visibility: hidden;
 }
 
-/* Disable legacy BeTheme animation hiding when GSAP handles the element. */
-.animate.gsap-animate[data-anim-type],
-.gsap-animate[data-animation-type],
-.gsap-animate[data-anim-type] {
+/* Mismo criterio si el tema solo expone data-anim-type */
+.gsap-animate[data-anim-type="splitText"]:not([data-gsap-processed]),
+.gsap-animate[data-anim-type="animateLetters"]:not([data-gsap-processed]),
+.gsap-animate[data-anim-type="animateWords"]:not([data-gsap-processed]),
+.gsap-animate[data-anim-type="animateLines"]:not([data-gsap-processed]) {
+    visibility: hidden;
+}
+
+/*
+ * Contenedores de animación de texto: opacidad 1 en el wrapper; el movimiento va en trozos.
+ */
+.animate.gsap-animate[data-anim-type="splitText"],
+.gsap-animate[data-animation-type="splitText"],
+.animate.gsap-animate[data-anim-type="animateLetters"],
+.gsap-animate[data-animation-type="animateLetters"],
+.animate.gsap-animate[data-anim-type="animateWords"],
+.gsap-animate[data-animation-type="animateWords"],
+.animate.gsap-animate[data-anim-type="animateLines"],
+.gsap-animate[data-animation-type="animateLines"] {
     opacity: 1 !important;
+}
+
+/*
+ * Entradas estándar que en GSAP empiezan con opacity: 0 — ocultar desde el primer pintado
+ * para evitar parpadeo (se ve → GSAP pone 0 → al hacer scroll anima).
+ */
+.gsap-animate[data-animation-type="fadeIn"],
+.gsap-animate[data-animation-type="fadeInUp"],
+.gsap-animate[data-animation-type="fadeInDown"],
+.gsap-animate[data-animation-type="fadeInLeft"],
+.gsap-animate[data-animation-type="fadeInRight"],
+.gsap-animate[data-animation-type="scaleIn"],
+.gsap-animate[data-animation-type="rotateIn"],
+.gsap-animate[data-animation-type="slideInLeft"],
+.gsap-animate[data-animation-type="slideInRight"],
+.gsap-animate[data-anim-type="fadeIn"],
+.gsap-animate[data-anim-type="fadeInUp"],
+.gsap-animate[data-anim-type="fadeInDown"],
+.gsap-animate[data-anim-type="fadeInLeft"],
+.gsap-animate[data-anim-type="fadeInRight"],
+.gsap-animate[data-anim-type="scaleIn"],
+.gsap-animate[data-anim-type="rotateIn"],
+.gsap-animate[data-anim-type="slideInLeft"],
+.gsap-animate[data-anim-type="slideInRight"] {
+    opacity: 0;
+}
+
+/*
+ * Revelado tipo máscara (clip-path): sin flash; opacidad 1 desde el primer frame.
+ */
+.gsap-animate[data-animation-type="maskRevealLeft"],
+.gsap-animate[data-anim-type="maskRevealLeft"] {
+    opacity: 1;
+    overflow: hidden;
+    clip-path: inset(0 100% 0 0);
+    -webkit-clip-path: inset(0 100% 0 0);
+}
+
+.gsap-animate[data-animation-type="maskRevealRight"],
+.gsap-animate[data-anim-type="maskRevealRight"] {
+    opacity: 1;
+    overflow: hidden;
+    clip-path: inset(0 0 0 100%);
+    -webkit-clip-path: inset(0 0 0 100%);
+}
+
+.gsap-animate[data-animation-type="maskRevealTop"],
+.gsap-animate[data-anim-type="maskRevealTop"] {
+    opacity: 1;
+    overflow: hidden;
+    clip-path: inset(100% 0 0 0);
+    -webkit-clip-path: inset(100% 0 0 0);
+}
+
+.gsap-animate[data-animation-type="maskRevealBottom"],
+.gsap-animate[data-anim-type="maskRevealBottom"] {
+    opacity: 1;
+    overflow: hidden;
+    clip-path: inset(0 0 100% 0);
+    -webkit-clip-path: inset(0 0 100% 0);
+}
+
+.gsap-animate[data-animation-type="maskRevealCenter"],
+.gsap-animate[data-anim-type="maskRevealCenter"] {
+    opacity: 1;
+    overflow: hidden;
+    clip-path: inset(40% 40% 40% 40%);
+    -webkit-clip-path: inset(40% 40% 40% 40%);
+}
+
+/*
+ * Desactiva keyframes legacy del tema donde GSAP controla el elemento.
+ * No poner visibility:visible aquí para splitText / animate* sin procesar: igualaba la
+ * especificidad a la regla de visibility:hidden y, al ir después en la hoja, reventaba
+ * el estado oculto inicial (FOUC: se ve todo y luego desaparece al ejecutar JS).
+ */
+.animate.gsap-animate[data-anim-type]:not([data-anim-type="splitText"]):not([data-anim-type="animateLetters"]):not([data-anim-type="animateWords"]):not([data-anim-type="animateLines"]),
+.gsap-animate[data-animation-type]:not([data-animation-type="splitText"]):not([data-animation-type="animateLetters"]):not([data-animation-type="animateWords"]):not([data-animation-type="animateLines"]),
+.gsap-animate[data-anim-type]:not([data-anim-type="splitText"]):not([data-anim-type="animateLetters"]):not([data-anim-type="animateWords"]):not([data-anim-type="animateLines"]) {
     visibility: visible;
     animation: none !important;
 }
