@@ -199,6 +199,61 @@
         this.refreshOnResize();
       },
 
+      /**
+       * BeTheme imprime `#Content`, luego (si aplica) hooks y después `<footer>`
+       * como hermanos dentro de `#Wrapper`. ScrollSmoother solo animaba `#Content`,
+       * así que la altura de scroll ignoraba el pie y parecía "no llegar al footer".
+       * Este bundle incluye contenido + pie (y elementos entre medios).
+       */
+      getScrollSmootherContentRoot: function (wrapperEl, contentEl) {
+        if (!wrapperEl || !contentEl || !contentEl.parentElement || contentEl.parentElement !== wrapperEl) {
+          return contentEl;
+        }
+
+        var next = contentEl.nextElementSibling;
+        if (!next) {
+          return contentEl;
+        }
+
+        var hasFooterAfter = false;
+        var scan = next;
+        while (scan) {
+          var isFoot =
+            scan.tagName === 'FOOTER' ||
+            scan.id === 'Footer' ||
+            scan.id === 'mfn-footer-template';
+          if (isFoot) {
+            hasFooterAfter = true;
+            break;
+          }
+          scan = scan.nextElementSibling;
+        }
+        if (!hasFooterAfter) {
+          return contentEl;
+        }
+
+        var bundle = document.createElement('div');
+        bundle.id = 'mfn-ss-scroll-bundle';
+        wrapperEl.insertBefore(bundle, contentEl);
+        bundle.appendChild(contentEl);
+
+        next = bundle.nextElementSibling;
+        while (next) {
+          var cur = next;
+          next = next.nextElementSibling;
+          bundle.appendChild(cur);
+          var isFooterNode =
+            cur.tagName === 'FOOTER' ||
+            cur.id === 'Footer' ||
+            cur.id === 'mfn-footer-template';
+          if (isFooterNode) {
+            break;
+          }
+        }
+
+        return bundle;
+      },
+
       initScrollSmoother: function () {
         const scrollSmootherEnabled = (typeof gsapAnimationsConfig !== 'undefined' &&
           (gsapAnimationsConfig.scrollSmoother === '1' || gsapAnimationsConfig.scrollSmoother === 1));
@@ -208,12 +263,20 @@
         }
 
         try {
+          const wrapperEl = document.querySelector('#Wrapper');
+          const contentEl = document.querySelector('#Content');
+          var smootherContent = this.getScrollSmootherContentRoot(wrapperEl, contentEl);
+
+          if (!smootherContent) {
+            return;
+          }
+
           this.smoother = ScrollSmoother.create({
-            wrapper: '#Wrapper',
-            content: '#Content',
+            wrapper: wrapperEl || '#Wrapper',
+            content: smootherContent,
             smooth: 1,
             effects: true,
-            smoothTouch: 0.1
+            smoothTouch: 0.2
           });
 
           this.initScrollSmootherEffects();

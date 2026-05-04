@@ -19,6 +19,11 @@ final class Plugin
         add_action('plugins_loaded', [self::class, 'loadTextdomain']);
         // Must be registered as early as possible so BeTheme loads the overridden builder fields file.
         (new Integrations\BuilderOverrides())->register();
+        /*
+         * Theme options: Betheme builds $sections inside mfn_opts_setup() during functions.php load,
+         * BEFORE after_setup_theme. The filter must therefore be registered on plugins_loaded.
+         */
+        add_action('plugins_loaded', [self::class, 'registerThemeOptionsSections'], 1);
         add_action('after_setup_theme', [self::class, 'registerModules'], 20);
         add_action('admin_notices', [self::class, 'renderDependencyNotice']);
     }
@@ -29,7 +34,6 @@ final class Plugin
             return;
         }
 
-        (new Integrations\BeThemeOptions())->register();
         (new Integrations\BebuilderConditionsFix())->register();
         (new Integrations\BebuilderFieldBundle())->register();
         (new Frontend\Assets())->register();
@@ -39,6 +43,21 @@ final class Plugin
     public static function loadTextdomain(): void
     {
         load_plugin_textdomain('base', false, dirname(plugin_basename(BETHEME_PLUS_FILE)) . '/languages');
+    }
+
+    public static function registerThemeOptionsSections(): void
+    {
+        if (!self::isBethemeActiveTemplate()) {
+            return;
+        }
+
+        (new Integrations\BeThemeOptions())->register();
+    }
+
+    /** Parent template slug (handles child themes of Betheme). */
+    private static function isBethemeActiveTemplate(): bool
+    {
+        return function_exists('wp_get_theme') && wp_get_theme()->get_template() === 'betheme';
     }
 
     public static function isBeThemeAvailable(): bool

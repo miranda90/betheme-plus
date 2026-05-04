@@ -1,3 +1,11 @@
+/*
+ * Envoltorio creado en JS para ScrollSmoother cuando el pie está fuera de #Content
+ * (estructura Betheme). Ancho total para igualar layout del tema.
+ */
+#mfn-ss-scroll-bundle {
+    width: 100%;
+}
+
 /* Texto fragmentado: oculto hasta que GSAP marca [data-gsap-processed] */
 .gsap-animate[data-animation-type="splitText"]:not([data-gsap-processed]),
 .gsap-animate[data-animation-type="animateLetters"]:not([data-gsap-processed]),
