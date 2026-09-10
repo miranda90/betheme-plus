@@ -5,6 +5,8 @@
  * @package Betheme
  * @author Muffin group
  * @link https://muffingroup.com
+ *
+ * Based on Betheme 28.4.3 + GSAP Plus patch.
  */
 
 if( ! defined( 'ABSPATH' ) ){
@@ -88,6 +90,7 @@ if( ! class_exists('Mfn_Builder_Front') )
 
     public static $post_id2 = false;
 
+    public static $is_tabber = false;
     public static $is_ql_section = false;
     public static $is_ql_wrap = false;
 
@@ -97,6 +100,8 @@ if( ! class_exists('Mfn_Builder_Front') )
 
     public static $item_type = false;
     public static $item_id = false;
+
+    public static $item_obj = false;
 
 		public $classes = array(
 			'divider' => 'divider',
@@ -170,7 +175,7 @@ if( ! class_exists('Mfn_Builder_Front') )
 
     public function __construct($post_id, $content_field = false) {
 
-			if( mfn_is_blocks() ){
+			if( mfn_is_blocks() ) {
 				$this->blocks_fields = new Mfn_Builder_Fields( null, 'items' );
 			}
 
@@ -203,17 +208,17 @@ if( ! class_exists('Mfn_Builder_Front') )
   	 * Show WordPress Editor Content
   	 */
 
-  	public function the_content(){
+  	public function the_content() {
 
 			// FIX: Elementor - prevent showing first post content on blog page
 
-			if( ( 'post' == get_post_type() ) && ( ! is_singular() ) ){
+			if( ( 'post' == get_post_type() ) && ( ! is_singular() ) ) {
 				return false;
 			}
 
 			// single product - hide wp editor content
 
-			if( function_exists('is_product') && is_product() && mfn_opts_get('shop-hide-content') ){
+			if( function_exists('is_product') && is_product() && mfn_opts_get('shop-hide-content') ) {
 				return false;
 			}
 
@@ -309,7 +314,7 @@ if( ! class_exists('Mfn_Builder_Front') )
 				if( $enqueue ) {
 
 					$url = wp_upload_dir()['baseurl'] . $path;
-					
+
 					if( is_ssl() ){
 						$url = str_replace( 'http://', 'https://', $url );
 					}
@@ -318,7 +323,11 @@ if( ! class_exists('Mfn_Builder_Front') )
 
 				} else {
 
-					return wp_upload_dir()['basedir'] . $path;
+					$path = wp_upload_dir()['basedir'] . $path;
+
+					if( file_exists($path) ){
+						return $path;
+					}
 
 				}
 
@@ -393,6 +402,7 @@ if( ! class_exists('Mfn_Builder_Front') )
 
   		if( !$items ) {
 	  		if( $this->template_type ) {
+	  			
 	  			$main_div_classes[] = 'mfn-'.$this->template_type.'-tmpl-builder';
 
 	  			if( $this->template_type == 'cart' ) {
@@ -412,22 +422,24 @@ if( ! class_exists('Mfn_Builder_Front') )
 	  				if( self::$is_bebuilder ) echo '<a href="#" class="exit-mfn-popup exit-mfn-popup-abs">&#10005;</a><div class="mfn-popup-tmpl-content-wrapper">';
 	  			}else{
 
-	  				if( $this->template_type == 'archive-product' ){
+	  				if( $this->template_type == 'archive-product' ) {
 	  					if( !empty( get_post_meta($this->post_id, 'mfn-shop-list-results-count', true) ) ) $main_div_classes[] = 'mfn-shop-list-results-count-'.get_post_meta($this->post_id, 'mfn-shop-list-results-count', true);
 	  					if( !empty( get_post_meta($this->post_id, 'mfn-shop-list-layout', true) ) ) $main_div_classes[] = 'mfn-shop-list-layout-'.get_post_meta($this->post_id, 'mfn-shop-list-layout', true);
 	  					if( !empty( get_post_meta($this->post_id, 'mfn-shop-list-perpage', true) ) ) $main_div_classes[] = 'mfn-shop-list-perpage-'.get_post_meta($this->post_id, 'mfn-shop-list-perpage', true);
 	  					if( !empty( get_post_meta($this->post_id, 'mfn-shop-list-active-filters', true) ) ) $main_div_classes[] = 'mfn-shop-list-active-filters-'.get_post_meta($this->post_id, 'mfn-shop-list-active-filters', true);
 	  					if( !empty( get_post_meta($this->post_id, 'mfn-shop-list-sorting', true) ) ) $main_div_classes[] = 'mfn-shop-list-sorting-'.get_post_meta($this->post_id, 'mfn-shop-list-sorting', true);
 	  				}
-	  				
+
 	  				echo '<div data-id="'.$this->post_id.'" class="'.implode(' ', $main_div_classes).'">';
 	  				if( $this->template_type == 'sidemenu' ) echo '<a href="#" class="mfn-sidemenu-closebutton">&#10005;</a>';
 	  			}
+
 	  		}else{
 	  			 //echo '<div class="mfn-builder-content mfn-default-content-buider">';
 	  			$main_div_classes[] = 'mfn-default-content-buider';
 	  			echo '<div data-id="'.$this->post_id.'" class="'.implode(' ', $main_div_classes).'">';
 	  		}
+
 	  	}
 
   		if ( post_password_required() && !self::$is_bebuilder && ( !$this->template_type || !in_array($this->template_type, array('header', 'footer', 'megamenu', 'sidemenu')) ) ) {
@@ -465,6 +477,10 @@ if( ! class_exists('Mfn_Builder_Front') )
   			$this->the_content();
   		}
 
+
+  		$this->post_id = false;
+			self::$post_id2 = false;
+
   	}
 
   	public function show_sections($mfn_items, $vbtoolsoff = false) {
@@ -499,7 +515,7 @@ if( ! class_exists('Mfn_Builder_Front') )
   							$section['attr'] = array_merge($this->be_classes[$bc], $section['attr']);
   						}
   					}
-  				} 
+  				}
 
 					// unique ID
 
@@ -520,8 +536,6 @@ if( ! class_exists('Mfn_Builder_Front') )
 					if( !empty($section['mfn_global_section_id']) && is_numeric($section['mfn_global_section_id']) && get_post_status($section['mfn_global_section_id']) == 'publish' ){
 						$refresh_content = get_post_meta($section['mfn_global_section_id'], 'mfn-page-items', true);
 
-
-
 						if( !is_array($refresh_content) ) {
 							$refresh_content = unserialize( call_user_func('base'.'64_decode', $refresh_content), ['allowed_classes' => false] );
 							/*echo '<pre>';
@@ -539,8 +553,6 @@ if( ! class_exists('Mfn_Builder_Front') )
 				  		}
 						}
 
-
-
 						//refresh content
 						$section['attr']  = $refresh_content[0]['attr'];
 						$section['wraps'] = $refresh_content[0]['wraps'];
@@ -556,7 +568,7 @@ if( ! class_exists('Mfn_Builder_Front') )
 	  							$section['attr'] = array_merge($this->be_classes[$bc], $section['attr']);
 	  						}
 	  					}
-	  				} 
+	  				}
 
 						$global_section_id = ' data-mfn-global="' . $section['mfn_global_section_id'] .'"';
 
@@ -703,6 +715,35 @@ if( ! class_exists('Mfn_Builder_Front') )
 							$section_class[] = 'mfn-looped-items-masonry';
 						}
 
+  				}else if( isset($section['attr']['type']) && $section['attr']['type'] == 'tabber' ){
+  					$section_class[] = 'mfn-section-tabber';
+
+  					$section_class[] = !empty( $section['attr']['tabber_nav_open_opt'] ) ? 'mfn-tabber-open-on-'.$section['attr']['tabber_nav_open_opt'] : 'mfn-tabber-open-on-click';
+
+  					if( isset( $section['attr']['tabber_nav_position']['desktop'] ) ){
+				 			$section_class[] = 'mfn-tabber-nav-'. esc_attr( $section['attr']['tabber_nav_position']['desktop'] );
+				 		}else{
+				 			$section_class[] = 'mfn-tabber-nav-left';
+				 		}
+
+				 		if( isset( $section['attr']['tabber_nav_position']['laptop'] ) ) $section_class[] = 'mfn-tabber-nav-laptop-'. esc_attr( $section['attr']['tabber_nav_position']['laptop'] );
+				 		if( isset( $section['attr']['tabber_nav_position']['tablet'] ) ) $section_class[] = 'mfn-tabber-nav-tablet-'. esc_attr( $section['attr']['tabber_nav_position']['tablet'] );
+				 		if( isset( $section['attr']['tabber_nav_position']['mobile'] ) ) $section_class[] = 'mfn-tabber-nav-mobile-'. esc_attr( $section['attr']['tabber_nav_position']['mobile'] );
+
+
+				 		if( isset( $section['attr']['tabber_icon_position']['desktop'] ) ) {
+				 			$section_class[] = 'mfn-tabber-icon-'. esc_attr( $section['attr']['tabber_icon_position']['desktop'] );
+				 		}else{
+				 			$section_class[] = 'mfn-tabber-icon-left';
+				 		}
+
+				 		if( isset( $section['attr']['tabber_icon_position']['laptop'] ) ) $section_class[] = 'mfn-tabber-icon-laptop-'. esc_attr( $section['attr']['tabber_icon_position']['laptop'] );
+				 		if( isset( $section['attr']['tabber_icon_position']['tablet'] ) ) $section_class[] = 'mfn-tabber-icon-tablet-'. esc_attr( $section['attr']['tabber_icon_position']['tablet'] );
+				 		if( isset( $section['attr']['tabber_icon_position']['mobile'] ) ) $section_class[] = 'mfn-tabber-icon-mobile-'. esc_attr( $section['attr']['tabber_icon_position']['mobile'] );
+
+				 		wp_enqueue_style('mfn-tabber', get_theme_file_uri('/css/elements/tabber.css'), null, MFN_THEME_VERSION);
+
+  					self::$is_tabber = true;
   				}
 
   				// navigation arrows
@@ -711,7 +752,7 @@ if( ! class_exists('Mfn_Builder_Front') )
   					$section_class[] = 'has-navi';
   				}
 
-  				if( ! empty($section['attr']['height_switcher']) && $section['attr']['height_switcher'] == 'full-screen' ){
+  				if( ! empty($section['attr']['height_switcher']) && $section['attr']['height_switcher'] == 'full-screen' ) {
   					$section_class[] = 'full-screen';
   				}
 
@@ -988,7 +1029,8 @@ if( ! class_exists('Mfn_Builder_Front') )
 					// background: parallax | translate3d background image
 
 					if ( $parallax && ! mfn_is_mobile() && 'translate3d' == mfn_parallax_plugin() ) {
-						echo '<img class="mfn-parallax" src="'. $parallax_bg_image .'" alt="parallax background" style="opacity:0" />';
+						$parallax_alt = mfn_get_attachment_data($parallax_bg_image, 'alt');
+						echo '<img class="mfn-parallax" src="'. $parallax_bg_image .'" alt="'. esc_attr($parallax_alt) .'" style="opacity:0" />';
 					}
 
 					// background: video
@@ -998,9 +1040,11 @@ if( ! class_exists('Mfn_Builder_Front') )
 
 							echo '<div class="mask"></div>';
 
-							$poster = false;
+							$poster = '';
 
-							if( !empty($section['attr']['bg_image']) ) $poster = $section['attr']['bg_image'];
+							if( !empty($section['attr']['css_advanced_background_image']['val']['desktop']) ){
+								$poster = $section['attr']['css_advanced_background_image']['val']['desktop'];
+							}
 
 							if( self::$is_bebuilder ){
 
@@ -1078,6 +1122,42 @@ if( ! class_exists('Mfn_Builder_Front') )
 
 					echo '<div class="section_wrapper mfn-wrapper-for-wraps mcb-section-inner '.$inner_section_class_uid.'">';
 
+						if( isset($section['attr']['type']) && $section['attr']['type'] == 'tabber' ){
+
+							$tabber_ul_classes = array('mfn-tabber-nav');
+							if(!empty( $section['attr']['tabber_nav_items_hover_type'] )) $tabber_ul_classes[] = 'mfn-tabber-nav-hover-'.$section['attr']['tabber_nav_items_hover_type'];
+
+							echo '<ul class="'.implode(' ', $tabber_ul_classes).'">';
+
+								if( !empty( $section['attr']['tabber_nav_items_hover_type'] ) ) echo '<span class="mfn-tabber-nav-slide-helper"></span>';
+
+								if( !empty($section['wraps']) ) {
+									foreach ($section['wraps'] as $w => $wrap) {
+										echo '<li class="mfn-nav-tab-'.$wrap['uid'].' '.($w == 0 ? 'active' : '').'" data-uid="'.$wrap['uid'].'"><a href="'.( !empty($wrap['attr']['tab_link']) ? be_dynamic_data($wrap['attr']['tab_link']) : '#' ).'" data-tab=".mcb-wrap-'.$wrap['uid'].'" class="mfn-tabber-nav-li-wrapper">';
+											if( !empty($wrap['attr']['tab_image']) ) {
+												echo '<div class="mfn-tabber-nav-li-icon"><img src="'.$wrap['attr']['tab_image'].'" alt="" /></div>';
+											}else if( !empty($wrap['attr']['tab_icon']) ) {
+												echo '<div class="mfn-tabber-nav-li-icon"><i class="'.$wrap['attr']['tab_icon'].'"></i></div>';
+											}
+
+											if( !empty($wrap['attr']['tab_desc']) || !empty($wrap['attr']['tab_title']) || self::$is_bebuilder ){
+												echo '<div class="mfn-tabber-nav-li-desc">';
+													if( !empty($wrap['attr']['tab_title']) ) echo '<span class="mfn-tabber-nav-title">'.be_dynamic_data($wrap['attr']['tab_title']).'</span>';
+													if( !empty($wrap['attr']['tab_desc']) ) echo '<span class="mfn-tabber-nav-desc">'.be_dynamic_data($wrap['attr']['tab_desc']).'</span>';
+
+
+													if( empty($wrap['attr']['tab_title']) && empty($wrap['attr']['tab_icon']) && empty($wrap['attr']['tab_image']) ) {
+															echo '<span class="mfn-tabber-nav-title">'.'Wrap #'.($w+1).'</span>';
+													}
+												echo '</div>';
+											}
+										echo '</a></li>';
+									}
+								}
+
+							echo '</ul>';
+						}
+
 						// WRAPS -----
 
 						// FIX | Muffin Builder 2 compatibility
@@ -1113,7 +1193,7 @@ if( ! class_exists('Mfn_Builder_Front') )
                *
                * */
 
-              if( /*!self::$is_bebuilder &&*/ isset($section['attr']['type']) && $section['attr']['type'] == 'query' ){
+              if( /*!self::$is_bebuilder &&*/ isset($section['attr']['type']) && $section['attr']['type'] == 'query' ) {
 
               	$s_wrapper_params = false;
 
@@ -1127,7 +1207,7 @@ if( ! class_exists('Mfn_Builder_Front') )
             				$s_tablet_columns = !empty($section['attr']['query_slider_columns']['tablet']) ? $section['attr']['query_slider_columns']['tablet'] : $s_laptop_columns;
             				$s_mobile_columns = !empty($section['attr']['query_slider_columns']['mobile']) ? $section['attr']['query_slider_columns']['mobile'] : 1;
 
-            				if( !self::$updated_version ){
+            				if( !self::$updated_version ) {
             					$s_desktop_columns = !empty($section['attr']['query_slider_columns']) ? $section['attr']['query_slider_columns'] : 1;
 	              			$s_laptop_columns = !empty($section['attr']['query_slider_columns_laptop']) ? $section['attr']['query_slider_columns_laptop'] : $s_desktop_columns;
 	              			$s_tablet_columns = !empty($section['attr']['query_slider_columns_tablet']) ? $section['attr']['query_slider_columns_tablet'] : $s_laptop_columns;
@@ -1135,9 +1215,9 @@ if( ! class_exists('Mfn_Builder_Front') )
             				}
 
 			  						$s_wrapper_params = 'data-columns="'.$s_desktop_columns.'"';
-			  						$s_wrapper_params .= 'data-columns-tablet="'.$s_tablet_columns.'"';
-			  						$s_wrapper_params .= 'data-columns-laptop="'.$s_laptop_columns.'"';
-										$s_wrapper_params .= 'data-columns-mobile="'.$s_mobile_columns.'"';
+			  						$s_wrapper_params .= ' data-columns-tablet="'.$s_tablet_columns.'"';
+			  						$s_wrapper_params .= ' data-columns-laptop="'.$s_laptop_columns.'"';
+										$s_wrapper_params .= ' data-columns-mobile="'.$s_mobile_columns.'"';
 			  						$s_wrapper_params .= ' data-animationtype="'.(!empty($section['attr']['query_slider_animation']) ? $section['attr']['query_slider_animation'] : 'slide').'"';
 			  						$s_wrapper_params .= ' data-dots="'.(!empty($section['attr']['query_slider_dots']) ? $section['attr']['query_slider_dots'] : '0').'"';
 			  						$s_wrapper_params .= ' data-dots-count="'.(!empty($section['attr']['query_slider_dots_count']) ? $section['attr']['query_slider_dots_count'] : '0').'"';
@@ -1147,6 +1227,7 @@ if( ! class_exists('Mfn_Builder_Front') )
 			  						$s_wrapper_params .= ' data-mousewheel="'.(!empty($section['attr']['query_slider_mousewheel']) ? $section['attr']['query_slider_mousewheel'] : '0').'"';
 			  						$s_wrapper_params .= ' data-centered="'.(!empty($section['attr']['query_slider_centered']) ? $section['attr']['query_slider_centered'] : '0').'"';
 			  						$s_wrapper_params .= ' data-infinity="'.(!empty($section['attr']['query_slider_infinity']) ? $section['attr']['query_slider_infinity'] : '0').'"';
+			  						$s_wrapper_params .= ' data-pausehover="'.(!empty($section['attr']['query_slider_pause_hover']) ? $section['attr']['query_slider_pause_hover'] : '0').'"';
 			  						$s_wrapper_params .= ' data-arrownext="'.(!empty($section['attr']['query_display_slider_arrow_next']) ? $section['attr']['query_display_slider_arrow_next'] : 'icon-right-open-big').'"';
 			  						$s_wrapper_params .= ' data-arrowprev="'.(!empty($section['attr']['query_display_slider_arrow_prev']) ? $section['attr']['query_display_slider_arrow_prev'] : 'icon-left-open-big').'"';
 
@@ -1162,7 +1243,6 @@ if( ! class_exists('Mfn_Builder_Front') )
 		  							if( !empty($section['attr']['css_queryloop_item_margin']['val']['mobile']['left']) ) $qlslm_left_mobile = str_replace(array('px', '%', 'em', 'rem', 'vw'), '', $section['attr']['css_queryloop_item_margin']['val']['mobile']['left']);
 		  							if( !empty($section['attr']['css_queryloop_item_margin']['val']['mobile']['right']) ) $qlslm_right_mobile = str_replace(array('px', '%', 'em', 'rem', 'vw'), '', $section['attr']['css_queryloop_item_margin']['val']['mobile']['right']);
 
-
 		  							if( !self::$updated_version ){
 
 		  								if( !empty($section['attr']['style:.mcb-section-mfnuidelement .mcb-section-inner .mfn-queryloop-item-wrapper:margin']['left']) ) $qlslm_left = str_replace(array('px', '%', 'em', 'rem', 'vw'), '', $section['attr']['style:.mcb-section-mfnuidelement .mcb-section-inner .mfn-queryloop-item-wrapper:margin']['left']);
@@ -1173,6 +1253,7 @@ if( ! class_exists('Mfn_Builder_Front') )
 
 			  							if( !empty($section['attr']['css_queryloop_item_margin_mobile']['val']['left']) ) $qlslm_left_mobile = str_replace(array('px', '%', 'em', 'rem', 'vw'), '', $section['attr']['css_queryloop_item_margin_mobile']['val']['left']);
 			  							if( !empty($section['attr']['css_queryloop_item_margin_mobile']['val']['right']) ) $qlslm_right_mobile = str_replace(array('px', '%', 'em', 'rem', 'vw'), '', $section['attr']['css_queryloop_item_margin_mobile']['val']['right']);
+
 		  							}
 
 		  							$s_wrapper_params .= ' data-space_desktop="'.($qlslm_left + $qlslm_right).'"';
@@ -1193,27 +1274,29 @@ if( ! class_exists('Mfn_Builder_Front') )
 
               	$q_args = array();
 
-              	if( !empty( $section['attr']['query_type'] ) && $section['attr']['query_type'] == 'terms' ){
+              	if( !empty( $section['attr']['query_type'] ) && $section['attr']['query_type'] == 'terms' ) {
 
               		$q_args['orderby'] = $section['attr']['query_terms_orderby'] ?? 'none';
               		$q_args['order'] = $section['attr']['query_terms_order'] ?? 'ASC';
               		$q_args['hide_empty'] = !empty($section['attr']['query_terms_hide_empty']) ? true : false;
               		$q_args['number'] = $section['attr']['query_terms_number'] ?? '0';
 
-              		if( self::$is_bebuilder ){
+              		if( self::$is_bebuilder ) {
+
               			if( !empty($section['attr']['query_terms_number']) ) $q_args['number'] = $section['attr']['query_terms_number'] > 8 ? 8 : $section['attr']['query_terms_number'];
 
-              			if( !empty($section['attr']['query_display']) && $section['attr']['query_display'] == 'slider' ){
+              			if( !empty($section['attr']['query_display']) && $section['attr']['query_display'] == 'slider' ) {
+
               				if( empty($section['attr']['query_slider_columns']['desktop']) ) $section['attr']['query_slider_columns']['desktop'] = 1;
-	              			if( !empty($section['attr']['query_slider_centered']) && $section['attr']['query_slider_centered'] == '2' ){
+	              			if( !empty($section['attr']['query_slider_centered']) && $section['attr']['query_slider_centered'] == '2' ) {
 	            					$q_args['number'] = $section['attr']['query_slider_columns']['desktop'] + 2;
 	            				}else{
 	            					$q_args['number'] = $section['attr']['query_slider_columns']['desktop'];
 	            				}
-	            
-		            			if( !self::$updated_version ){
+
+		            			if( !self::$updated_version ) {
 		            				if( empty($section['attr']['query_slider_columns']) ) $section['attr']['query_slider_columns'] = 1;
-		              			if( !empty($section['attr']['query_slider_centered']) && $section['attr']['query_slider_centered'] == '2' ){
+		              			if( !empty($section['attr']['query_slider_centered']) && $section['attr']['query_slider_centered'] == '2' ) {
 		            					$q_args['number'] = $section['attr']['query_slider_columns'] + 2;
 		            				}else{
 		            					$q_args['number'] = $section['attr']['query_slider_columns'];
@@ -1255,13 +1338,25 @@ if( ! class_exists('Mfn_Builder_Front') )
 
               					if( is_singular() ){
 
-		            					if( is_singular('product') ){
+              						$cp_id = !empty($section['attr']['vb_postid']) ? $section['attr']['vb_postid'] : get_the_ID();
+              						$cats = get_the_terms( $cp_id, $choosed_terms );
+              						if( !empty($cats) ) {
+		              					foreach ($cats as $cat) {
+		              						$arr_helper[] = $cat->term_id;
+		              					}
+		              				}else{
+		              					$arr_helper[] = 1;
+		              				}
+
+
+
+		            					/*if( is_singular('product') ){
 		            						$product_id = !empty($section['attr']['vb_postid']) && !is_singular('product') ? $section['attr']['vb_postid'] : get_the_ID();
 			              					$cats = get_the_terms( $product_id, 'product_cat' );
 			              					foreach ($cats as $cat) {
 			              						$arr_helper[] = $cat->term_id;
 			              					}
-		            					}
+		            					}*/
 
 		            				}else{
 		            					$mfn_queried_object = get_queried_object();
@@ -1317,24 +1412,35 @@ if( ! class_exists('Mfn_Builder_Front') )
 											if( !self::$is_bebuilder && !empty($section['attr']['query_display']) && $section['attr']['query_display'] == 'slider' ) echo '</div>';
 											self::$item_type = false;
 											self::$item_id = false;
-											
+
 										}
 
 										self::$is_ql_section = false;
-										
-									else:
+
+									/*else:
 										foreach ($section['wraps'] as $w => $wrap) {
 		              		$this->show_wraps($wrap, $w, $vb);
 		              	}
+									*/
 									endif;
 
               	}else{
 
               		$q_args['post_type'] = $section['attr']['query_post_type'] ?? 'post';
 
+              		if ( empty($section['attr']['query_type']) && self::$is_bebuilder && ! empty( $this->template_type ) && strpos( $this->template_type, 'archive-' ) !== false ) {
+										$pt_helper = str_replace( 'archive-', '', $this->template_type );
+
+										if ( 'post' === $pt_helper ) {
+											$q_args['post_type'] = 'post';
+										} else {
+											$q_args['post_type'] = $pt_helper;
+										}
+									}
+
               		if( function_exists('is_woocommerce') && !empty( $section['attr']['query_post_type_product_order'] ) ) {
 
-              			if( $section['attr']['query_post_type_product_order'] == 'on_sale' ){
+              			if( $section['attr']['query_post_type_product_order'] == 'on_sale' ) {
 
               				$product_on_sale = array();
 
@@ -1354,10 +1460,9 @@ if( ! class_exists('Mfn_Builder_Front') )
               					}
               				}
 
-
               				$q_args['post__in'] = $product_on_sale;
 
-	              		}else if( $section['attr']['query_post_type_product_order'] == 'top_rated' ){
+	              		}else if( $section['attr']['query_post_type_product_order'] == 'top_rated' ) {
               				$q_args['meta_key'] = '_wc_average_rating';
 	      							$q_args['orderby'] = 'meta_value_num';
 	      							$q_args['order'] = 'DESC';
@@ -1373,8 +1478,9 @@ if( ! class_exists('Mfn_Builder_Front') )
               		}
 
 
-              		if( self::$is_bebuilder ){
-              			if( !empty($section['attr']['query_display']) && $section['attr']['query_display'] == 'slider' && !empty($section['attr']['query_slider_columns']['desktop']) ){
+              		if( self::$is_bebuilder ) {
+
+              			if( !empty($section['attr']['query_display']) && $section['attr']['query_display'] == 'slider' && !empty($section['attr']['query_slider_columns']['desktop']) ) {
 
               				$qs_columns = $section['attr']['query_slider_columns']['desktop'] ?? 1;
 
@@ -1391,12 +1497,13 @@ if( ! class_exists('Mfn_Builder_Front') )
               				}else{
               					$q_args['posts_per_page'] = $qs_columns;
               				}
+
               			}else{
               				$q_args['posts_per_page'] = !empty($section['attr']['query_post_per_page']) && $section['attr']['query_post_per_page'] < 8 ? $section['attr']['query_post_per_page'] : '8';
               			}
 
 
-              			if( !self::$updated_version ){
+              			if( !self::$updated_version ) {
               				if( !empty($section['attr']['query_display']) && $section['attr']['query_display'] == 'slider' && !empty($section['attr']['query_slider_columns']) ){
 
 	              				$qs_columns = $section['attr']['query_slider_columns'] ?? 1;
@@ -1419,12 +1526,11 @@ if( ! class_exists('Mfn_Builder_Front') )
 	              			}
               			}
 
-
               		}else{
               			$q_args['posts_per_page'] = !empty($section['attr']['query_post_per_page']) ? $section['attr']['query_post_per_page'] : get_option( 'posts_per_page' );
               		}
 
-              		if( !empty($section['attr']['query_post_offset']) ) $q_args['offset'] = $section['attr']['query_post_offset'];
+              		// if( !empty($section['attr']['query_post_offset']) ) $q_args['offset'] = $section['attr']['query_post_offset'];
 
               		if( !empty($q_args['post_type']) ) {
               			$tax_q = $this->getTaxQuery($q_args, $section);
@@ -1432,47 +1538,78 @@ if( ! class_exists('Mfn_Builder_Front') )
               		}
 
               		$q_args['post_status'] = 'publish';
+              		if( !empty($section['attr']['query_post_ignore_sticky_posts']) ) $q_args['ignore_sticky_posts'] = true;
 
               		/*print_r($q_args);
               		echo '<br />';
               		print_r($tax_q);*/
 
-              		if( in_array($this->template_type, array('portfolio', 'blog')) && (is_home() || is_category() || is_tag() || is_author() || is_tax( 'portfolio-types' ) /*|| ( is_page() && get_the_ID() == mfn_opts_get('portfolio-page') )*/ ) ) {
+              		if( (!empty($section['attr']['query_type']) || !empty($section['attr']['query_loop_is_main'])) && in_array($this->template_type, array('portfolio', 'blog')) && (is_home() || is_category() || is_tag() || is_author() || is_tax( 'portfolio-types' ) ) ) {
+
               			global $wp_query;
-
-              			/*echo '<pre>';
-              			print_r($wp_query);
-              			echo '</pre>';*/
-
               			$section_posts_query = $wp_query;
 
-              		}else if( is_archive() && strpos($this->template_type, 'archive-') !== false ) {
-              			global $wp_query;
+              		}else if( ( (!empty($section['attr']['query_type']) && empty( get_post_meta($this->post_id, 'mfn-tmpl-has-main-query', true) )) || !empty($section['attr']['query_loop_is_main'])) && is_archive() && strpos($this->template_type, 'archive-') !== false ) {
 
+              			global $wp_query;
               			$section_posts_query = $wp_query;
 
               		}else{
 
-              			if( !empty($section['attr']['query_post_pagination']) && !empty($section['attr']['type']) && $section['attr']['type'] == 'query' ) {
+              			/*if( !empty($section['attr']['query_post_pagination']) && !empty($section['attr']['type']) && $section['attr']['type'] == 'query' ) {
               				$paged = ( get_query_var( 'paged' ) ) ? get_query_var( 'paged' ) : 1;
               				$q_args['paged'] = $paged;
-              			}
+              			}*/
 
-              			$section_posts_query = new WP_Query( $q_args );
+              			if ( ! empty( $section['attr']['query_post_pagination'] ) && ! empty( $section['attr']['type'] ) && $section['attr']['type'] === 'query' ) {
+
+											$paged = get_query_var( 'paged' ) ? (int) get_query_var( 'paged' ) : ( get_query_var( 'page' ) ? (int) get_query_var( 'page' ) : 1 );
+											$q_args['paged'] = max( 1, $paged );
+
+											$base_offset = ! empty( $section['attr']['query_post_offset'] ) ? (int) $section['attr']['query_post_offset'] : 0;
+											$ppp         = ! empty( $q_args['posts_per_page'] ) ? (int) $q_args['posts_per_page'] : (int) get_option( 'posts_per_page' );
+
+											$q_args['offset'] = $base_offset + ( ( $q_args['paged'] - 1 ) * $ppp );
+											$q_args['mfn_base_offset'] = $base_offset;
+
+										} elseif ( ! empty( $section['attr']['query_post_offset'] ) ) {
+											$q_args['offset'] = (int) $section['attr']['query_post_offset'];
+										}
+
+										$url_filters = mfn_get_filters_from_url();
+
+										if ( ! empty( $url_filters['tax_query'] ) ) {
+											$q_args['tax_query'] = array_merge(
+												$url_filters['tax_query'],
+												$q_args['tax_query'] ?? []
+											);
+										}
+
+										if ( ! empty( $url_filters['meta_query'] ) ) {
+											$q_args['meta_query'] = array_merge(
+												$url_filters['meta_query'],
+												$q_args['meta_query'] ?? []
+											);
+										}
+
+										/*echo '<pre>';
+										print_r($q_args);
+										echo '</pre>';*/
+
+										$section_posts_query = new WP_Query( $q_args );
               		}
-
 
               		if ( $section_posts_query->have_posts() ) :
 
               			$s_iterate = 0;
+
               			while ( $section_posts_query->have_posts() ) : $section_posts_query->the_post();
               				self::$item_type = 'post';
 											self::$item_id = get_the_ID();
 
 											$sectionqi_inner_inline_styles = false;
 
-
-              				if( !self::$updated_version ){
+              				if( !self::$updated_version ) {
 
               					if ( !empty( $section['attr']['style:.mcb-section-mfnuidelement .mcb-section-inner .mfn-queryloop-item-wrapper:background-image'] ) && strpos($section['attr']['style:.mcb-section-mfnuidelement .mcb-section-inner .mfn-queryloop-item-wrapper:background-image'], '{featured_image') !== false ) {
 													$sectionqi_bg_dd = be_dynamic_data($section['attr']['style:.mcb-section-mfnuidelement .mcb-section-inner .mfn-queryloop-item-wrapper:background-image']);
@@ -1486,26 +1623,88 @@ if( ! class_exists('Mfn_Builder_Front') )
 													$sectionqi_inner_inline_styles = 'style="background-image: url('.$sectionqi_bg_dd.')"';
 												}
 
-	              				if( !self::$is_bebuilder && !empty($section['attr']['query_display']) && $section['attr']['query_display'] == 'slider' ){
+	              				if( !self::$is_bebuilder && !empty($section['attr']['query_display']) && $section['attr']['query_display'] == 'slider' ) {
 	              					echo '<div class="swiper-slide">';
 	              					echo '<div '.$sectionqi_inner_inline_styles.' class="mfn-queryloop-item-wrapper" data-post="'.(!empty(self::$item_id) ? self::$item_id : $this->post_id).'">';
 	              				}else{
 	              					echo '<div '.$sectionqi_inner_inline_styles.' class="mfn-queryloop-item-wrapper mfn-ql-item-default" data-post="'.(!empty(self::$item_id) ? self::$item_id : $this->post_id).'">';
               					}
-              					
+
               				}else{
-              					if ( !empty( $section['attr']['css_queryloop_item_bg_image']['val']['desktop'] ) && strpos($section['attr']['css_queryloop_item_bg_image']['val']['desktop'], '{featured_image') !== false ) {
+
+
+              					$bg_vals = $section['attr']['css_queryloop_item_bg_image']['val'] ?? array();
+												$bg_vals_hover = $section['attr']['css_queryloop_item_bg_image_hover']['val'] ?? array();
+
+												if ( ! empty(array_filter($bg_vals)) ) {
+													$style_prop = $section['attr']['css_queryloop_item_bg_image']['style'] ?? 'background-image';
+													$selector  = 'html body .mcb-section-'.$section['uid'].' .mfn-queryloop-item-wrapper[data-post="' . self::$item_id . '"]';
+													$css_output = '';
+													foreach( $bg_vals as $device => $bg ) {
+														if( ! is_string($bg) || strpos($bg, '{') === false ) continue;
+														$get_bg = be_dynamic_data($bg);
+														if( !empty($get_bg) && is_numeric($get_bg) ) {
+															$get_bg = wp_get_attachment_image_url($get_bg, 'full');
+														}
+														if( empty($get_bg) ) continue;
+														$rule = $selector . '{' . $style_prop . ':url(' . esc_url($get_bg) . ');}';
+														if( $device === 'desktop' ) {
+															$css_output .= $rule;
+														} elseif( $device === 'laptop' ) {
+															$css_output .= '@media only screen and (max-width: 1440px){' . $rule . '}';
+														} elseif( $device === 'tablet' ) {
+															$css_output .= '@media only screen and (max-width: 959px){' . $rule . '}';
+														} elseif( $device === 'mobile' ) {
+															$css_output .= '@media only screen and (max-width: 767px){' . $rule . '}';
+														}
+													}
+													if( !empty($css_output) ) {
+														echo '<style>' . $css_output . '</style>';
+													}
+												}
+
+												if ( ! empty(array_filter($bg_vals_hover)) ) {
+													$style_prop = $section['attr']['css_queryloop_item_bg_image_hover']['style'] ?? 'background-image';
+													$selector  = 'html body .mcb-section-'.$section['uid'].' .mfn-queryloop-item-wrapper[data-post="' . self::$item_id . '"]:hover';
+													$css_output = '';
+													foreach( $bg_vals_hover as $device => $bg ) {
+														if( ! is_string($bg) || strpos($bg, '{') === false ) continue;
+														$get_bg = be_dynamic_data($bg);
+														if( !empty($get_bg) && is_numeric($get_bg) ) {
+															$get_bg = wp_get_attachment_image_url($get_bg, 'full');
+														}
+														if( empty($get_bg) ) continue;
+														$rule = $selector . '{' . $style_prop . ':url(' . esc_url($get_bg) . ');}';
+														if( $device === 'desktop' ) {
+															$css_output .= $rule;
+														} elseif( $device === 'laptop' ) {
+															$css_output .= '@media only screen and (max-width: 1440px){' . $rule . '}';
+														} elseif( $device === 'tablet' ) {
+															$css_output .= '@media only screen and (max-width: 959px){' . $rule . '}';
+														} elseif( $device === 'mobile' ) {
+															$css_output .= '@media only screen and (max-width: 767px){' . $rule . '}';
+														}
+													}
+													if( !empty($css_output) ) {
+														echo '<style>' . $css_output . '</style>';
+													}
+												}
+
+
+
+              					/*if ( !empty( $section['attr']['css_queryloop_item_bg_image']['val']['desktop'] ) && strpos($section['attr']['css_queryloop_item_bg_image']['val']['desktop'], '{featured_image') !== false ) {
 													$sectionqi_bg_dd = be_dynamic_data($section['attr']['css_queryloop_item_bg_image']['val']['desktop']);
 													if( is_numeric($sectionqi_bg_dd) ) $sectionqi_bg_dd = wp_get_attachment_image_src( $sectionqi_bg_dd, 'full' )[0];
 													$sectionqi_inner_inline_styles = 'style="background-image: url('.$sectionqi_bg_dd.')"';
 												}
-
-	              				if( !self::$is_bebuilder && !empty($section['attr']['query_display']) && $section['attr']['query_display'] == 'slider' ){
+*/
+	              				if( !self::$is_bebuilder && !empty($section['attr']['query_display']) && $section['attr']['query_display'] == 'slider' ) {
 	              					echo '<div class="swiper-slide">';
 	              					echo '<div '.$sectionqi_inner_inline_styles.' class="mfn-queryloop-item-wrapper" data-post="'.(!empty(self::$item_id) ? self::$item_id : $this->post_id).'">';
 	              				}else{
 	              					echo '<div '.$sectionqi_inner_inline_styles.' class="mfn-queryloop-item-wrapper mfn-ql-item-default" data-post="'.(!empty(self::$item_id) ? self::$item_id : $this->post_id).'">';
 	              				}
+
               				}
 
               				foreach ($section['wraps'] as $w => $wrap) {
@@ -1519,29 +1718,33 @@ if( ! class_exists('Mfn_Builder_Front') )
               				self::$item_type = false;
 											self::$item_id = false;
 											$s_iterate++;
-											
+
               			endwhile;
 
               			self::$is_ql_section = false;
               			wp_reset_postdata();
 
-              		else:
+              		elseif(self::$is_bebuilder) :
 
               			foreach ($section['wraps'] as $w => $wrap) {
 		              		$this->show_wraps($wrap, $w, $vb);
 		              	}
 
+              		else:
+
+              			echo '<div class="alert alert_warning"><div class="alert_wrapper">'.__('There are no posts on the list.', 'betheme').'</div></div>';
+
               		endif;
 
               	}
 
-              	if( !self::$is_bebuilder && !empty($section['attr']['query_display']) && $section['attr']['query_display'] == 'slider' ){
+              	if( !self::$is_bebuilder && !empty($section['attr']['query_display']) && $section['attr']['query_display'] == 'slider' ) {
               		echo '</div></div>';
-              	}else if( !empty($section['attr']['query_display_style']) && $section['attr']['query_display_style'] == 'masonry' ){
+              	}else if( !empty($section['attr']['query_display_style']) && $section['attr']['query_display_style'] == 'masonry' ) {
               		wp_enqueue_script('mfn-imagesloaded', get_theme_file_uri('/js/plugins/imagesloaded.min.js'), ['jquery'], MFN_THEME_VERSION, true);
               		wp_enqueue_script('mfn-isotope', get_theme_file_uri('/js/plugins/isotope.min.js'), array('jquery'), MFN_THEME_VERSION, true);
 									echo '</div>';
-								}else if( self::$is_bebuilder && !empty($section['attr']['query_display']) && $section['attr']['query_display'] == 'slider' ){
+								}else if( self::$is_bebuilder && !empty($section['attr']['query_display']) && $section['attr']['query_display'] == 'slider' ) {
 									echo '</div>';
 								}
 
@@ -1568,6 +1771,7 @@ if( ! class_exists('Mfn_Builder_Front') )
 					if ( isset($section_posts_query) && $section_posts_query->have_posts() ) :
 
 						if( !empty($section['attr']['query_post_pagination']) && !empty($section['attr']['type']) && $section['attr']['type'] == 'query' ) {
+
       				if( self::$is_bebuilder ) {
       					$mfnQPagination = new MfnQueryPagination($section, true);
       					$mfnQPagination->bebuilderHtml();
@@ -1575,6 +1779,7 @@ if( ! class_exists('Mfn_Builder_Front') )
       					$mfnQPagination = new MfnQueryPagination($section, $section_posts_query);
       					$mfnQPagination->render();
       				}
+
 						}
 
 					endif;
@@ -1601,6 +1806,7 @@ if( ! class_exists('Mfn_Builder_Front') )
 
   			self::$item_id = false;
   			self::$item_type = false;
+  			self::$is_tabber = false;
   	}
 
 
@@ -1633,6 +1839,11 @@ if( ! class_exists('Mfn_Builder_Front') )
 					}
 
 				}
+			}
+
+			if( self::$is_tabber && empty($wrap['item_is_wrap']) ) {
+				$wrap_class[] = 'mfn-tabber-content';
+				if( !$w ) $wrap_class[] = 'active';
 			}
 
   		// Muffin Builder ACM compatibility
@@ -1843,37 +2054,42 @@ if( ! class_exists('Mfn_Builder_Front') )
 
 				// sticky
 
+
+
 				if( ! empty( $wrap['attr']['sticky'] ) ) {
 
-					if( !empty( $wrap['attr']['sticky']['desktop'] ) ) {
-						$wrap_class[] = 'sticky-desktop';
+					if( self::$updated_version ){
 
-						if( !empty($wrap['attr']['sticky_offset']['desktop']) ){
-							$wrap_style[] = '--sticky-offset-desktop:'. $wrap['attr']['sticky_offset']['desktop'] .'px';
+						if( !empty( $wrap['attr']['sticky']['desktop'] ) ) {
+							$wrap_class[] = 'sticky-desktop';
+
+							if( !empty($wrap['attr']['sticky_offset']['desktop']) ) {
+								$wrap_style[] = '--sticky-offset-desktop:'. $wrap['attr']['sticky_offset']['desktop'] .'px';
+							}
 						}
-					}
 
-					if( !empty( $wrap['attr']['sticky']['laptop'] ) ) {
-						$wrap_class[] = 'sticky-laptop';
+						if( !empty( $wrap['attr']['sticky']['laptop'] ) ) {
+							$wrap_class[] = 'sticky-laptop';
 
-						if( !empty($wrap['attr']['sticky_offset']['laptop']) ){
-							$wrap_style[] = '--sticky-offset-laptop:'. $wrap['attr']['sticky_offset']['laptop'] .'px';
+							if( !empty($wrap['attr']['sticky_offset']['laptop']) ){
+								$wrap_style[] = '--sticky-offset-laptop:'. $wrap['attr']['sticky_offset']['laptop'] .'px';
+							}
 						}
-					}
 
-					if( !empty( $wrap['attr']['sticky']['tablet'] ) ) {
-						$wrap_class[] = 'sticky-tablet';
+						if( !empty( $wrap['attr']['sticky']['tablet'] ) ) {
+							$wrap_class[] = 'sticky-tablet';
 
-						if( !empty($wrap['attr']['sticky_offset']['tablet']) ){
-							$wrap_style[] = '--sticky-offset-tablet:'. $wrap['attr']['sticky_offset']['tablet'] .'px';
+							if( !empty($wrap['attr']['sticky_offset']['tablet']) ){
+								$wrap_style[] = '--sticky-offset-tablet:'. $wrap['attr']['sticky_offset']['tablet'] .'px';
+							}
 						}
-					}
 
-					if( !empty( $wrap['attr']['sticky']['mobile'] ) ) {
-						$wrap_class[] = 'sticky-mobile';
+						if( !empty( $wrap['attr']['sticky']['mobile'] ) ) {
+							$wrap_class[] = 'sticky-mobile';
 
-						if( !empty($wrap['attr']['sticky_offset']['mobile']) ){
-							$wrap_style[] = '--sticky-offset-mobile:'. $wrap['attr']['sticky_offset']['mobile'] .'px';
+							if( !empty($wrap['attr']['sticky_offset']['mobile']) ){
+								$wrap_style[] = '--sticky-offset-mobile:'. $wrap['attr']['sticky_offset']['mobile'] .'px';
+							}
 						}
 					}
 
@@ -1881,7 +2097,7 @@ if( ! class_exists('Mfn_Builder_Front') )
 						if( ! empty( $wrap['attr']['sticky'] ) ) {
 							$wrap_class[] = 'sticky-desktop';
 
-							if( !empty($wrap['attr']['sticky_offset']) ){
+							if( !empty($wrap['attr']['sticky_offset']) && is_string($wrap['attr']['sticky_offset']) ){
 								$wrap_style[] = '--sticky-offset-desktop:'. $wrap['attr']['sticky_offset'] .'px';
 								// $wrap_data[] = 'data-stickyoffset="'.$wrap['attr']['sticky_offset'].'"';
 							}
@@ -1914,8 +2130,7 @@ if( ! class_exists('Mfn_Builder_Front') )
 							}
 						}
 					}
- 
-					
+
 				}
 
 				// styles ---
@@ -2003,10 +2218,71 @@ if( ! class_exists('Mfn_Builder_Front') )
 					}
 
 
-					if ( !empty( $wrap['attr']['css_advanced_background_image']['val']['desktop'] ) && strpos($wrap['attr']['css_advanced_background_image']['val']['desktop'], '{featured_image') !== false ) {
+
+					// wrap bg get
+
+					$bg_vals = $wrap['attr']['css_advanced_background_image']['val'] ?? array();
+					$bg_vals_hover = $wrap['attr']['css_advanced_background_image_hover']['val'] ?? array();
+
+					if ( ! empty(array_filter($bg_vals)) ) {
+						$style_prop = $wrap['attr']['css_advanced_background_image']['style'] ?? 'background-image';
+						$selector  = '.mfn-queryloop-item-wrapper[data-post="' . self::$item_id . '"] .mcb-wrap-'.$wrap['uid'].' > .mcb-wrap-inner';
+						$css_output = '';
+						foreach( $bg_vals as $device => $bg ) {
+							if( ! is_string($bg) || strpos($bg, '{') === false ) continue;
+							$get_bg = be_dynamic_data($bg);
+							if( !empty($get_bg) && is_numeric($get_bg) ) {
+								$get_bg = wp_get_attachment_image_url($get_bg, 'full');
+							}
+							if( empty($get_bg) ) continue;
+							$rule = $selector . '{' . $style_prop . ':url(' . esc_url($get_bg) . ');}';
+							if( $device === 'desktop' ) {
+								$css_output .= $rule;
+							} elseif( $device === 'laptop' ) {
+								$css_output .= '@media only screen and (max-width: 1440px){' . $rule . '}';
+							} elseif( $device === 'tablet' ) {
+								$css_output .= '@media only screen and (max-width: 959px){' . $rule . '}';
+							} elseif( $device === 'mobile' ) {
+								$css_output .= '@media only screen and (max-width: 767px){' . $rule . '}';
+							}
+						}
+						if( !empty($css_output) ) {
+							echo '<style>' . $css_output . '</style>';
+						}
+					}
+
+					if ( ! empty(array_filter($bg_vals_hover)) ) {
+						$style_prop = $wrap['attr']['css_advanced_background_image_hover']['style'] ?? 'background-image';
+						$selector  = '.mfn-queryloop-item-wrapper[data-post="' . self::$item_id . '"] .mcb-wrap-'.$wrap['uid'].':hover > .mcb-wrap-inner';
+						$css_output = '';
+						foreach( $bg_vals_hover as $device => $bg ) {
+							if( ! is_string($bg) || strpos($bg, '{') === false ) continue;
+							$get_bg = be_dynamic_data($bg);
+							if( !empty($get_bg) && is_numeric($get_bg) ) {
+								$get_bg = wp_get_attachment_image_url($get_bg, 'full');
+							}
+							if( empty($get_bg) ) continue;
+							$rule = $selector . '{' . $style_prop . ':url(' . esc_url($get_bg) . ');}';
+							if( $device === 'desktop' ) {
+								$css_output .= $rule;
+							} elseif( $device === 'laptop' ) {
+								$css_output .= '@media only screen and (max-width: 1440px){' . $rule . '}';
+							} elseif( $device === 'tablet' ) {
+								$css_output .= '@media only screen and (max-width: 959px){' . $rule . '}';
+							} elseif( $device === 'mobile' ) {
+								$css_output .= '@media only screen and (max-width: 767px){' . $rule . '}';
+							}
+						}
+						if( !empty($css_output) ) {
+							echo '<style>' . $css_output . '</style>';
+						}
+					}
+
+
+					/*if ( !empty( $wrap['attr']['css_advanced_background_image']['val']['desktop'] ) && strpos($wrap['attr']['css_advanced_background_image']['val']['desktop'], '{featured_image') !== false ) {
 						$wrap_bg_dd = be_dynamic_data($wrap['attr']['css_advanced_background_image']['val']['desktop']);
 						if( is_numeric($wrap_bg_dd) ) $wrap_bg_dd = wp_get_attachment_image_src( $wrap_bg_dd, 'full' )[0];
-						$wrap_inner_inline_styles = 'style="background-image: url('.$wrap_bg_dd.')"';
+						$wrap_inner_inline_styles = 'style="background-image: url('.$wrap_bg_dd.'); color: inherit;"';
 					}
 
 					if ( !empty( $wrap['attr']['css_advanced_background_image_hover']['val']['desktop'] ) && is_string($wrap['attr']['css_advanced_background_image_hover']['val']['desktop']) && strpos($wrap['attr']['css_advanced_background_image_hover']['val']['desktop'], '{featured_image') !== false ) {
@@ -2015,7 +2291,7 @@ if( ! class_exists('Mfn_Builder_Front') )
 						$tmp_w_class = 'mfn-wrap-tmp-'.rand(0, 99999);
 						$wrap_class[] = $tmp_w_class;
 						echo '<style>.mcb-wrap-'.$wrap['uid'].'.'.$tmp_w_class.':hover > .mcb-wrap-inner{background-image: url('.$wrap_bg_dd.') !important}</style>';
-					}
+					}*/
 
 					// parallax for BeBuilder
 
@@ -2152,14 +2428,16 @@ if( ! class_exists('Mfn_Builder_Front') )
 				if ( $split_text_stagger !== '' ) {
 					$animate .= ' data-stagger="'. esc_attr($split_text_stagger) .'"';
 				}
+			}
 
-				$scroll_smoother_enable = !empty($wrap['attr']['scroll_smoother_enable']) ? $wrap['attr']['scroll_smoother_enable'] : '';
-				if ( $scroll_smoother_enable == '1' ) {
-					$scroll_smoother_speed = !empty($wrap['attr']['scroll_smoother_speed']) ? $wrap['attr']['scroll_smoother_speed'] : '1';
-					$scroll_smoother_lag = !empty($wrap['attr']['scroll_smoother_lag']) ? $wrap['attr']['scroll_smoother_lag'] : '0';
-					$animate .= ' data-speed="'. esc_attr($scroll_smoother_speed) .'"';
-					$animate .= ' data-lag="'. esc_attr($scroll_smoother_lag) .'"';
-				}
+			if ( isset( $wrap['attr']['scroll_smoother_enable'] ) && (string) $wrap['attr']['scroll_smoother_enable'] === '1' ) {
+				$wrap_class[] = 'gsap-smoother-fx';
+				$scroll_smoother_speed = ! empty( $wrap['attr']['scroll_smoother_speed'] ) ? $wrap['attr']['scroll_smoother_speed'] : '1';
+				$scroll_smoother_lag = ( isset( $wrap['attr']['scroll_smoother_lag'] ) && $wrap['attr']['scroll_smoother_lag'] !== '' )
+					? $wrap['attr']['scroll_smoother_lag']
+					: '0';
+				$animate .= ' data-speed="'. esc_attr( (string) $scroll_smoother_speed ) .'"';
+				$animate .= ' data-lag="'. esc_attr( (string) $scroll_smoother_lag ) .'"';
 			}
 
 
@@ -2172,7 +2450,7 @@ if( ! class_exists('Mfn_Builder_Front') )
 			$wrap_style = array_merge($wrap_style, $wrap_bg);
 			$wrap_style = implode( ';', $wrap_style );
 
-			if( ! empty( $wrap['attr']['style'] ) ){
+			if( ! empty( $wrap['attr']['style'] ) ) {
 				$wrap_style .= ';'. $wrap['attr']['style'];
 			}
 
@@ -2197,7 +2475,7 @@ if( ! class_exists('Mfn_Builder_Front') )
 
 			if( $vb ) {
 				if( !self::$is_ql_section && !self::$is_ql_wrap ) $wrap_class .= ' vb-item';
-				echo '<div '. $wrap_id .' class="'. $wrap_class .' clearfix mfn-module test1" '. $global_wrap_attr .' data-desktop-col="'. $desktop_size_col .'" data-laptop-col="'. $laptop_size_col .'" data-tablet-col="'. $tablet_size_col .'" data-mobile-col="'. $mobile_size_col .'" data-desktop-size="'. $desktop_size .'" data-laptop-size="'. $laptop_size .'" data-tablet-size="'. $tablet_size .'" data-mobile-size="'. $mobile_size .'" data-order="'. $w .'"  data-uid="'. $original_uid .'" style="'. $wrap_style .'" '. $parallax .' '. $wrap_data .'>';
+				echo '<div '. $wrap_id .' class="'. $wrap_class .' clearfix mfn-module" '. $global_wrap_attr .' data-desktop-col="'. $desktop_size_col .'" data-laptop-col="'. $laptop_size_col .'" data-tablet-col="'. $tablet_size_col .'" data-mobile-col="'. $mobile_size_col .'" data-desktop-size="'. $desktop_size .'" data-laptop-size="'. $laptop_size .'" data-tablet-size="'. $tablet_size .'" data-mobile-size="'. $mobile_size .'" data-order="'. $w .'"  data-uid="'. $original_uid .'" style="'. $wrap_style .'" '. $parallax .' '. $wrap_data .'>';
 
 				if( empty($wrap['attr']['type']) ) echo '<div class="mfn-drag-helper mfn-dh-before placeholder-wrap"></div><div class="mfn-drag-helper mfn-dh-after placeholder-wrap"></div>';
 
@@ -2207,7 +2485,7 @@ if( ! class_exists('Mfn_Builder_Front') )
 				}
 			} else {
 				if( !$vb ) $wrap_class .= ' vb-item';
-				echo '<div '. $wrap_id .' class="'. $wrap_class .' clearfix test2" data-desktop-col="'. $desktop_size_col .'" data-laptop-col="'. $laptop_size_col .'" data-tablet-col="'. $tablet_size_col .'" data-mobile-col="'. $mobile_size_col .'" style="'. $wrap_style .'" '. $parallax .' '. $animate .' '. $wrap_data .'>';
+				echo '<div '. $wrap_id .' class="'. $wrap_class .' clearfix" data-desktop-col="'. $desktop_size_col .'" data-laptop-col="'. $laptop_size_col .'" data-tablet-col="'. $tablet_size_col .'" data-mobile-col="'. $mobile_size_col .'" style="'. $wrap_style .'" '. $parallax .' '. $animate .' '. $wrap_data .'>';
 			}
 
 
@@ -2277,9 +2555,9 @@ if( ! class_exists('Mfn_Builder_Front') )
 									$w_wrapper_params .= ' data-mousewheel="'.(!empty($wrap['attr']['query_slider_mousewheel']) ? $wrap['attr']['query_slider_mousewheel'] : '0').'"';
 									$w_wrapper_params .= ' data-centered="'.(!empty($wrap['attr']['query_slider_centered']) ? $wrap['attr']['query_slider_centered'] : '0').'"';
 									$w_wrapper_params .= ' data-infinity="'.(!empty($wrap['attr']['query_slider_infinity']) ? $wrap['attr']['query_slider_infinity'] : '0').'"';
+									$w_wrapper_params .= ' data-pausehover="'.(!empty($wrap['attr']['query_slider_pause_hover']) ? $wrap['attr']['query_slider_pause_hover'] : '0').'"';
 									$w_wrapper_params .= ' data-arrownext="'.(!empty($wrap['attr']['query_display_slider_arrow_next']) ? $wrap['attr']['query_display_slider_arrow_next'] : 'icon-right-open-big').'"';
 			  					$w_wrapper_params .= ' data-arrowprev="'.(!empty($wrap['attr']['query_display_slider_arrow_prev']) ? $wrap['attr']['query_display_slider_arrow_prev'] : 'icon-left-open-big').'"';
-
 
 									$qlslm_left = 12;
 		  						$qlslm_right = 12;
@@ -2292,8 +2570,6 @@ if( ! class_exists('Mfn_Builder_Front') )
 
 		  						if( !empty($wrap['attr']['css_queryloop_item_margin']['val']['mobile']['left']) ) $qlslm_left_mobile = str_replace(array('px', '%', 'em', 'rem', 'vw'), '', $wrap['attr']['css_queryloop_item_margin']['val']['mobile']['left']);
 		  						if( !empty($wrap['attr']['css_queryloop_item_margin']['val']['mobile']['right']) ) $qlslm_right_mobile = str_replace(array('px', '%', 'em', 'rem', 'vw'), '', $wrap['attr']['css_queryloop_item_margin']['val']['mobile']['right']);
-
-
 
 		  						if( !self::$updated_version ){
 		  							if( !empty($wrap['attr']['style:.mcb-section .mcb-wrap-mfnuidelement .mcb-wrap-inner .mfn-queryloop-item-wrapper:margin']['left']) ) $qlslm_left = str_replace(array('px', '%', 'em', 'rem', 'vw'), '', $wrap['attr']['style:.mcb-section .mcb-wrap-mfnuidelement .mcb-wrap-inner .mfn-queryloop-item-wrapper:margin']['left']);
@@ -2385,13 +2661,24 @@ if( ! class_exists('Mfn_Builder_Front') )
 
               					if( is_singular() ){
 
-		            					if( is_singular('product') ){
+              						$cp_id = !empty($wrap['attr']['vb_postid']) ? $wrap['attr']['vb_postid'] : get_the_ID();
+              						$cats = get_the_terms( $cp_id, $choosed_terms );
+
+              						if( !empty($cats) ){
+		              					foreach ($cats as $cat) {
+		              						$arr_helper[] = $cat->term_id;
+		              					}
+		              				}else{
+		              					$arr_helper[] = 1;
+		              				}
+
+		            					/*if( is_singular('product') ){
 		            						$product_id = !empty($wrap['attr']['vb_postid']) && !is_singular('product') ? $wrap['attr']['vb_postid'] : get_the_ID();
 			              					$cats = get_the_terms( $product_id, 'product_cat' );
 			              					foreach ($cats as $cat) {
 			              						$arr_helper[] = $cat->term_id;
 			              					}
-		            					}
+		            					}*/
 
 		            				}else{
 		            					$mfn_queried_object = get_queried_object();
@@ -2403,6 +2690,8 @@ if( ! class_exists('Mfn_Builder_Front') )
               			}
               			$q_args['include'] = $arr_helper;
               		}
+
+
 
               		$mfn_queried_object = get_queried_object();
               		$child_of = false;
@@ -2421,6 +2710,7 @@ if( ! class_exists('Mfn_Builder_Front') )
               		/*echo '<pre>';
               		print_r($q_args);
               		echo '</pre>';*/
+
 
               		$q_terms = get_terms( $q_args );
 
@@ -2450,10 +2740,10 @@ if( ! class_exists('Mfn_Builder_Front') )
 
 										self::$is_ql_wrap = false;
 
-									else:
+									/*else:
 										foreach ($wrap['items'] as $i => $item) {
 		              		$this->show_items($item, $i, $vb);
-		              	}
+		              	}*/
 									endif;
 
               	}else{
@@ -2557,29 +2847,50 @@ if( ! class_exists('Mfn_Builder_Front') )
 
 	              		$q_args['offset'] = $wrap['attr']['query_post_offset'] ?? '0';
 
-
 	              		if( !empty($q_args['post_type']) ) {
 	              			$tax_q = $this->getTaxQuery($q_args, $wrap);
 	              			if( !empty($tax_q) ) $q_args = array_merge($q_args, $tax_q);
 	              		}
 
 	              		$q_args['post_status'] = 'publish';
+	              		if( !empty($wrap['attr']['query_post_ignore_sticky_posts']) ) $q_args['ignore_sticky_posts'] = true;
 
-	              		if( in_array($this->template_type, array('portfolio', 'blog')) && (is_home() || is_category() || is_tag() || is_author() ) ) {
+
+	              		if( (!empty($wrap['attr']['query_type']) || !empty($wrap['attr']['query_loop_is_main'])) && in_array($this->template_type, array('portfolio', 'blog')) && (is_home() || is_category() || is_tag() || is_author() || is_tax( 'portfolio-types' ) ) ) {
+
 	              			global $wp_query;
-
-	              			/*echo '<pre>';
-	              			print_r($wp_query);
-	              			echo '</pre>';*/
-
-	              			$wrap_posts_query = $wp_query;
-              			}else if( is_archive() && strpos($this->template_type, 'archive-') !== false ) {
-	              			global $wp_query;
-
 	              			$wrap_posts_query = $wp_query;
 
-										}else{
+	              		}else if( ( (!empty($wrap['attr']['query_type']) && empty( get_post_meta($this->post_id, 'mfn-tmpl-has-main-query', true) )) || !empty($wrap['attr']['query_loop_is_main'])) && is_archive() && strpos($this->template_type, 'archive-') !== false ) {
+
+	              			global $wp_query;
+	              			$wrap_posts_query = $wp_query;
+
+	              		}else{
+
+		              		/*if( (!empty($wrap['attr']['query_type']) || !empty($wrap['attr']['query_loop_is_main'])) && in_array($this->template_type, array('portfolio', 'blog')) && (is_home() || is_category() || is_tag() || is_author() ) ) {
+		              			global $wp_query;
+
+		              			$wrap_posts_query = $wp_query;
+
+	              			}else if( (!empty($wrap['attr']['query_type']) || !empty($wrap['attr']['query_loop_is_main'])) && (is_home() || is_home() || is_category() || is_tag() || is_author() || is_archive()) && strpos($this->template_type, 'archive-') !== false ) {
+		              			global $wp_query;
+
+		              			$wrap_posts_query = $wp_query;
+
+											}else{*/
+
+											$q_args['offset'] = $wrap['attr']['query_post_offset'] ?? '0';
+
+		              		/*if( !empty($q_args['post_type']) ) {
+		              			$tax_q = $this->getTaxQuery($q_args, $wrap);
+		              			if( !empty($tax_q) ) $q_args = array_merge($q_args, $tax_q);
+		              		}*/
+
+		              		$q_args['post_status'] = 'publish';
+
 	              			$wrap_posts_query = new WP_Query( $q_args );
+
               			}
 
 	              		if ( $wrap_posts_query->have_posts() ) :
@@ -2604,14 +2915,78 @@ if( ! class_exists('Mfn_Builder_Front') )
 														$wrapqi_inner_inline_styles = 'style="background-image: url('.$wrapqi_bg_dd.')"';
 													}
 												}else{
-													if ( !empty( $wrap['attr']['css_queryloop_item_bg_image']['val']['desktop'] ) && strpos($wrap['attr']['css_queryloop_item_bg_image']['val']['desktop'], '{featured_image') !== false ) {
+
+
+
+													$bg_vals = $wrap['attr']['css_queryloop_item_bg_image']['val'] ?? array();
+													$bg_vals_hover = $wrap['attr']['css_queryloop_item_bg_image_hover']['val'] ?? array();
+
+													if ( ! empty(array_filter($bg_vals)) ) {
+														$style_prop = $wrap['attr']['css_queryloop_item_bg_image']['style'] ?? 'background-image';
+														$selector  = 'html body .mcb-section .mcb-wrap-'.$wrap['uid'].' .mfn-queryloop-item-wrapper[data-post="' . self::$item_id . '"]';
+														$css_output = '';
+														foreach( $bg_vals as $device => $bg ) {
+															if( ! is_string($bg) || strpos($bg, '{') === false ) continue;
+															$get_bg = be_dynamic_data($bg);
+															if( !empty($get_bg) && is_numeric($get_bg) ) {
+																$get_bg = wp_get_attachment_image_url($get_bg, 'full');
+															}
+															if( empty($get_bg) ) continue;
+															$rule = $selector . '{' . $style_prop . ':url(' . esc_url($get_bg) . ');}';
+															if( $device === 'desktop' ) {
+																$css_output .= $rule;
+															} elseif( $device === 'laptop' ) {
+																$css_output .= '@media only screen and (max-width: 1440px){' . $rule . '}';
+															} elseif( $device === 'tablet' ) {
+																$css_output .= '@media only screen and (max-width: 959px){' . $rule . '}';
+															} elseif( $device === 'mobile' ) {
+																$css_output .= '@media only screen and (max-width: 767px){' . $rule . '}';
+															}
+														}
+														if( !empty($css_output) ) {
+															echo '<style>' . $css_output . '</style>';
+														}
+													}
+
+													if ( ! empty(array_filter($bg_vals_hover)) ) {
+														$style_prop = $wrap['attr']['css_queryloop_item_bg_image_hover']['style'] ?? 'background-image';
+														$selector  = 'html body .mcb-section .mcb-wrap-'.$wrap['uid'].' .mfn-queryloop-item-wrapper[data-post="' . self::$item_id . '"]:hover';
+														$css_output = '';
+														foreach( $bg_vals_hover as $device => $bg ) {
+															if( ! is_string($bg) || strpos($bg, '{') === false ) continue;
+															$get_bg = be_dynamic_data($bg);
+															if( !empty($get_bg) && is_numeric($get_bg) ) {
+																$get_bg = wp_get_attachment_image_url($get_bg, 'full');
+															}
+															if( empty($get_bg) ) continue;
+															$rule = $selector . '{' . $style_prop . ':url(' . esc_url($get_bg) . ');}';
+															if( $device === 'desktop' ) {
+																$css_output .= $rule;
+															} elseif( $device === 'laptop' ) {
+																$css_output .= '@media only screen and (max-width: 1440px){' . $rule . '}';
+															} elseif( $device === 'tablet' ) {
+																$css_output .= '@media only screen and (max-width: 959px){' . $rule . '}';
+															} elseif( $device === 'mobile' ) {
+																$css_output .= '@media only screen and (max-width: 767px){' . $rule . '}';
+															}
+														}
+														if( !empty($css_output) ) {
+															echo '<style>' . $css_output . '</style>';
+														}
+													}
+
+
+
+
+													/*if ( !empty( $wrap['attr']['css_queryloop_item_bg_image']['val']['desktop'] ) && strpos($wrap['attr']['css_queryloop_item_bg_image']['val']['desktop'], '{featured_image') !== false ) {
 														$wrapqi_bg_dd = be_dynamic_data($wrap['attr']['css_queryloop_item_bg_image']['val']['desktop']);
 														if( is_numeric($wrapqi_bg_dd) ) $wrapqi_bg_dd = wp_get_attachment_image_src( $wrapqi_bg_dd, 'full' )[0];
-														$wrapqi_inner_inline_styles = 'style="background-image: url('.$wrapqi_bg_dd.')"';
-													}
+														$wrapqi_inner_inline_styles = 'style="background-image: url('.$wrapqi_bg_dd.'); color: inherit;"';
+													}*/
+
 												}
 
-	              				if( !self::$is_bebuilder && !empty($wrap['attr']['query_display']) && $wrap['attr']['query_display'] == 'slider' ){
+	              				if( !self::$is_bebuilder && !empty($wrap['attr']['query_display']) && $wrap['attr']['query_display'] == 'slider' ) {
 	              					echo '<div class="swiper-slide">';
 	              					echo '<div '.$wrapqi_inner_inline_styles.' class="mfn-queryloop-item-wrapper" data-post="'.(!empty(self::$item_id) ? self::$item_id : $this->post_id).'">';
 	              				}else{
@@ -2697,9 +3072,39 @@ if( ! class_exists('Mfn_Builder_Front') )
   		print_r($item);
   		echo '</pre>';*/
 
-  		if( function_exists('is_woocommerce') && !empty($item['jsclass']) && $item['jsclass'] == 'woo_alert' && !$vb && wc_notice_count() == 0 ){
+  		if( !empty($item['jsclass']) && $item['jsclass'] == 'woo_alert' && !$vb && ( wc_notice_count() == 0 || !function_exists('is_woocommerce') ) ){
   			return;
   		}
+
+  		if( !empty($item['jsclass']) && $item['jsclass'] == 'product_rating' && !$vb && is_singular('product')) {
+  			if( !wc_review_ratings_enabled() || !function_exists('is_woocommerce') ) return;
+
+  			$product_id = false;
+
+  			if( !empty(self::$item_id) && get_post_type(self::$item_id) == 'product' ) {
+  				$product_id = self::$item_id;
+  			}else if( is_singular() ) {
+  				$product_id = get_the_ID();
+  			}
+
+  			if( !empty($product_id) && get_post_type($product_id) == 'product' ) {
+  				$product = wc_get_product($product_id);
+
+  				if ( ! $product ) {
+			        return; // invalid ID or not a product
+			    }
+
+  				$rating_count = $product->get_rating_count();
+
+  				if( empty($rating_count) ) return;
+  			}
+
+
+  		}
+
+
+
+  		self::$item_obj = $item;
 
   		$inner_class = array();
   		$item_class = array();
@@ -2742,6 +3147,8 @@ if( ! class_exists('Mfn_Builder_Front') )
     		$item['tablet_size'] = !empty($item['size']) ? $item['size'] : '1/1';
     		$item['mobile_size'] = '1/1';
     	}
+
+    	if( !empty($item['type']) && $item['type'] == 'shop_products' && function_exists('is_woocommerce') ) $item_class[] = 'woocommerce';
 
 			$type = 'item_'. $item['type'];
 
@@ -2844,14 +3251,16 @@ if( ! class_exists('Mfn_Builder_Front') )
 					if ( $split_text_stagger !== '' ) {
 						$animate .= ' data-stagger="'. esc_attr($split_text_stagger) .'"';
 					}
+				}
 
-					$scroll_smoother_enable = !empty($item['attr']['scroll_smoother_enable']) ? $item['attr']['scroll_smoother_enable'] : '';
-					if ( $scroll_smoother_enable == '1' ) {
-						$scroll_smoother_speed = !empty($item['attr']['scroll_smoother_speed']) ? $item['attr']['scroll_smoother_speed'] : '1';
-						$scroll_smoother_lag = !empty($item['attr']['scroll_smoother_lag']) ? $item['attr']['scroll_smoother_lag'] : '0';
-						$animate .= ' data-speed="'. esc_attr($scroll_smoother_speed) .'"';
-						$animate .= ' data-lag="'. esc_attr($scroll_smoother_lag) .'"';
-					}
+				if ( isset( $item['attr']['scroll_smoother_enable'] ) && (string) $item['attr']['scroll_smoother_enable'] === '1' ) {
+					$item_class[] = 'gsap-smoother-fx';
+					$scroll_smoother_speed = ! empty( $item['attr']['scroll_smoother_speed'] ) ? $item['attr']['scroll_smoother_speed'] : '1';
+					$scroll_smoother_lag = ( isset( $item['attr']['scroll_smoother_lag'] ) && $item['attr']['scroll_smoother_lag'] !== '' )
+						? $item['attr']['scroll_smoother_lag']
+						: '0';
+					$animate .= ' data-speed="'. esc_attr( (string) $scroll_smoother_speed ) .'"';
+					$animate .= ' data-lag="'. esc_attr( (string) $scroll_smoother_lag ) .'"';
 				}
 
 				if ( !empty( $item['attr']['image_parallax_enable'] ) && $item['attr']['image_parallax_enable'] == '1' ) {
@@ -2921,7 +3330,65 @@ if( ! class_exists('Mfn_Builder_Front') )
 					$item_style .= $item['attr']['custom_css'];
 				}
 
-				if ( !empty( $item['attr']['css_advanced_background_image']['val']['desktop'] ) && !empty($item['attr']['css_advanced_background_image']['val']['desktop']) && strpos($item['attr']['css_advanced_background_image']['val']['desktop'], '{featured_image') !== false ){
+				$bg_vals = $item['attr']['css_advanced_background_image']['val'] ?? array();
+				$bg_vals_hover = $item['attr']['css_advanced_background_image_hover']['val'] ?? array();
+
+				if ( ! empty(array_filter($bg_vals)) ) {
+					$style_prop = $item['attr']['css_advanced_background_image']['style'] ?? 'background-image';
+					$selector  = '.mfn-queryloop-item-wrapper[data-post="' . self::$item_id . '"] .mcb-item-'.$item['uid'].' > .mcb-column-inner';
+					$css_output = '';
+					foreach( $bg_vals as $device => $bg ) {
+						if( ! is_string($bg) || strpos($bg, '{') === false ) continue;
+						$get_bg = be_dynamic_data($bg);
+						if( !empty($get_bg) && is_numeric($get_bg) ) {
+							$get_bg = wp_get_attachment_image_url($get_bg, 'full');
+						}
+						if( empty($get_bg) ) continue;
+						$rule = $selector . '{' . $style_prop . ':url(' . esc_url($get_bg) . ');}';
+						if( $device === 'desktop' ) {
+							$css_output .= $rule;
+						} elseif( $device === 'laptop' ) {
+							$css_output .= '@media only screen and (max-width: 1440px){' . $rule . '}';
+						} elseif( $device === 'tablet' ) {
+							$css_output .= '@media only screen and (max-width: 959px){' . $rule . '}';
+						} elseif( $device === 'mobile' ) {
+							$css_output .= '@media only screen and (max-width: 767px){' . $rule . '}';
+						}
+					}
+					if( !empty($css_output) ) {
+						echo '<style>' . $css_output . '</style>';
+					}
+				}
+
+				if ( ! empty(array_filter($bg_vals_hover)) ) {
+					$style_prop = $item['attr']['css_advanced_background_image_hover']['style'] ?? 'background-image';
+					$selector  = '.mfn-queryloop-item-wrapper[data-post="' . self::$item_id . '"] .mcb-item-'.$item['uid'].':hover > .mcb-column-inner';
+					$css_output = '';
+					foreach( $bg_vals_hover as $device => $bg ) {
+						if( ! is_string($bg) || strpos($bg, '{') === false ) continue;
+						$get_bg = be_dynamic_data($bg);
+						if( !empty($get_bg) && is_numeric($get_bg) ) {
+							$get_bg = wp_get_attachment_image_url($get_bg, 'full');
+						}
+						if( empty($get_bg) ) continue;
+						$rule = $selector . '{' . $style_prop . ':url(' . esc_url($get_bg) . ');}';
+						if( $device === 'desktop' ) {
+							$css_output .= $rule;
+						} elseif( $device === 'laptop' ) {
+							$css_output .= '@media only screen and (max-width: 1440px){' . $rule . '}';
+						} elseif( $device === 'tablet' ) {
+							$css_output .= '@media only screen and (max-width: 959px){' . $rule . '}';
+						} elseif( $device === 'mobile' ) {
+							$css_output .= '@media only screen and (max-width: 767px){' . $rule . '}';
+						}
+					}
+					if( !empty($css_output) ) {
+						echo '<style>' . $css_output . '</style>';
+					}
+				}
+
+
+				/*if ( !empty( $item['attr']['css_advanced_background_image']['val']['desktop'] ) && !empty($item['attr']['css_advanced_background_image']['val']['desktop']) && strpos($item['attr']['css_advanced_background_image']['val']['desktop'], '{featured_image') !== false ){
 					$item_bg_dd = be_dynamic_data($item['attr']['css_advanced_background_image']['val']['desktop']);
 					if( is_numeric($item_bg_dd) ) $item_bg_dd = wp_get_attachment_image_src( $item_bg_dd, 'full' )[0];
 					$item_inline_style = 'style="background-image: url('.$item_bg_dd.')"';
@@ -2931,7 +3398,7 @@ if( ! class_exists('Mfn_Builder_Front') )
 					$item_bg_dd = be_dynamic_data($item['attr']['css_advanced_background_image_hover']['val']['desktop']);
 					if( is_numeric($item_bg_dd) ) $item_bg_dd = wp_get_attachment_image_src( $item_bg_dd, 'full' )[0];
 					echo '<style>.mcb-section .mcb-wrap .mcb-item-'.$item['uid'].' .mcb-column-inner:hover{background-image: url('.$item_bg_dd.') !important}</style>';
-				}
+				}*/
 
 
 				if( !self::$updated_version ) {
@@ -2969,7 +3436,7 @@ if( ! class_exists('Mfn_Builder_Front') )
 
 				// output -----
 
-				if( mfn_is_blocks() ){
+				if( mfn_is_blocks() ) {
 					$item_style = '';
 					$parallax = '';
 				}
@@ -2977,7 +3444,7 @@ if( ! class_exists('Mfn_Builder_Front') )
 				if( $vb ) {
 					$tooltip = false;
 
-					if( !self::$is_ql_section && !self::$is_ql_wrap ) $item_class .= ' vb-item'; 
+					if( !self::$is_ql_section && !self::$is_ql_wrap ) $item_class .= ' vb-item';
 
 					echo '<div '.$tooltip.' '.$item_id.' data-order="'. $i .'"  data-uid="'. $item['uid'] .'" data-minsize="'.$item['size'].'" data-desktop-size="'.$desktop_size.'" data-laptop-size="'.$laptop_size.'" data-tablet-size="'.$tablet_size.'" data-mobile-size="'.$mobile_size.'" class="column mcb-column '. $item_class .' mfn-module" style="'.$item_style.'">';
 					// echo Mfn_Builder_Helper::itemTools($item['size']);
@@ -3017,6 +3484,10 @@ if( ! class_exists('Mfn_Builder_Front') )
 
 				// if( $item_id_from_vb ) self::$item_id = false;
 			}
+
+
+			self::$item_obj = false;
+
   	}
 
 
@@ -3041,6 +3512,7 @@ if( ! class_exists('Mfn_Builder_Front') )
 								$mfn_taxonomies = get_object_taxonomies( get_post_type( $post_id ) );
 								foreach ( $mfn_taxonomies as $tx ) {
 										if( $tx == 'product_type' ) continue;
+										if( $tx == 'translation_priority' ) continue;
 								    $terms = get_the_terms( $post_id, $tx );
 								    if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
 								        foreach ( $terms as $term ) {
@@ -3083,6 +3555,7 @@ if( ! class_exists('Mfn_Builder_Front') )
 								$mfn_taxonomies = get_object_taxonomies( get_post_type( $post_id ) );
 								foreach ( $mfn_taxonomies as $tx ) {
 										if( $tx == 'product_type' ) continue;
+										if( $tx == 'translation_priority' ) continue;
 								    $terms = get_the_terms( $post_id, $tx );
 								    if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
 								        foreach ( $terms as $term ) {
@@ -3110,11 +3583,11 @@ if( ! class_exists('Mfn_Builder_Front') )
 						$tax_q['tax_query'][] = array('taxonomy' => $t, 'field' => 'term_id', 'operator' => 'NOT IN', 'terms' => $tx);
 					}
 				}
-			
+
 			}
-			
+
 			return $tax_q;
-  
+
   	}
 
   }

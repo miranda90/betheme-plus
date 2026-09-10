@@ -5,6 +5,8 @@
  * @package Betheme
  * @author Muffin group
  * @link https://muffingroup.com
+ *
+ * Based on Betheme 28.4.3 + GSAP Plus patch.
  */
 
 if( ! defined( 'ABSPATH' ) ){
@@ -70,7 +72,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
       $this->set_wrap();
       $this->set_items();
 
-      if( ! $this->vb ){
+      if( ! $this->vb ) {
 				$this->get_advanced( $limited );
 			}
 
@@ -99,6 +101,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
  			return $this->advanced;
 
     }
+
 
     /**
      * GET section fields
@@ -164,10 +167,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 				'fadeInDown' => esc_html__('Fade in down', 'mfn-opts'),
 				'fadeInLeft' => esc_html__('Fade in left', 'mfn-opts'),
 				'fadeInRight' => esc_html__('Fade in right', 'mfn-opts'),
-				'scaleIn' => esc_html__('Scale in', 'mfn-opts'),
-				'rotateIn' => esc_html__('Rotate in', 'mfn-opts'),
-				'slideInLeft' => esc_html__('Slide in left', 'mfn-opts'),
-				'slideInRight' => esc_html__('Slide in right', 'mfn-opts'),
 				'splitText' => esc_html__('Split text', 'mfn-opts'),
 				// Máscara / clip-path (GSAP)
 				'maskRevealLeft' => esc_html__( 'Máscara · desde la izquierda', 'mfn-opts' ),
@@ -336,8 +335,45 @@ if( ! class_exists('Mfn_Builder_Fields') )
   				'options' => array(
   					'' => __('Default', 'mfn-opts'),
   					'query' => __('Query loop', 'mfn-opts'),
+  					'tabber' => __('Tabber', 'mfn-opts'),
   				),
   				'std' => ''
+  			),
+
+  			array(
+  				'id' => 'tabber_nav_position',
+  				'attr_id' => 'tabber_nav_position',
+  				'type' => 'switch',
+  				'responsive' => true,
+  				'condition' => array( 'id' => 'section_type', 'opt' => 'is', 'val' => 'tabber' ),
+  				'title' => __('Nav position', 'mfn-opts'),
+  				'options' => array(
+  					'left' => __('Left', 'mfn-opts'),
+  					'top' => __('Top', 'mfn-opts'),
+  					'bottom' => __('Bottom', 'mfn-opts'),
+  					'right' => __('Right', 'mfn-opts'),
+  				),
+  				'std' => 'left'
+  			),
+
+  			array(
+  				'id' => 'tabber_nav_open_opt',
+  				'type' => 'switch',
+  				'condition' => array( 'id' => 'section_type', 'opt' => 'is', 'val' => 'tabber' ),
+  				'title' => __('Tab content open on', 'mfn-opts'),
+  				'options' => array(
+  					'' => __('Click', 'mfn-opts'),
+  					'hover' => __('Hover', 'mfn-opts'),
+  				),
+  				'std' => ''
+  			),
+
+  			array(
+  				'id' => 'tabber_content_order',
+  				'type' => 'order',
+  				'condition' => array( 'id' => 'section_type', 'opt' => 'is', 'val' => 'tabber' ),
+  				'title' => __('Tabs order', 'mfn-opts'),
+  				'options' => 'this_wraps'
   			),
 
   			/* query type */
@@ -346,12 +382,12 @@ if( ! class_exists('Mfn_Builder_Fields') )
   				'id' => 'query_type',
   				'attr_id' => 'query_type',
   				're_render' => true,
-  				'class' => 'hidden-header-builder hidden-archive-template-builder',
+  				'class' => 'hidden-header-builder',
   				'condition' => array( 'id' => 'section_type', 'opt' => 'is', 'val' => 'query' ),
   				'type' => 'select',
   				'title' => __('Query type', 'mfn-opts'),
   				'options' => array(
-  					'' => __('Select', 'mfn-opts'),
+  					'' 			=> __('Select', 'mfn-opts'),
   					'posts' => __('Posts', 'mfn-opts'),
   					'terms' => __('Terms', 'mfn-opts')
   				),
@@ -363,42 +399,30 @@ if( ! class_exists('Mfn_Builder_Fields') )
   			array(
   				'id' => 'query_post_type',
   				'attr_id' => 'query_post_type',
-  				'class' => 'hidden-header-builder hidden-archive-template-builder',
+  				'class' => 'hidden-header-builder',
   				're_render' => true,
   				're_render_sidebar' => true,
   				'condition' => array( 'id' => 'query_type', 'opt' => 'is', 'val' => 'posts' ),
   				'type' => 'select',
   				'title' => __('Post type', 'mfn-opts'),
   				'mfn_options' => 'post_types',
-  				/*'options' => array(
-  					'' => __('- Select -', 'mfn-opts'),
-  					'post' => __('Post', 'mfn-opts'),
-  					'page' => __('Page', 'mfn-opts'),
-  					'portfolio' => __('Portfolio', 'mfn-opts'),
-  					'offer' => __('Offer', 'mfn-opts'),
-  					'client' => __('Clients', 'mfn-opts'),
-  					'slide' => __('Slides', 'mfn-opts'),
-  					'product' => __('Product', 'mfn-opts'),
-  					'testimonial' => __('Testimonial', 'mfn-opts'),
-  				),*/
   				'std' => ''
   			),
 
   			array(
 					'id' => 'query_post_type_{mfn.current_post_type}',
-					'condition' => array( 'id' => 'query_post_type', 'opt' => 'isnt', 'val' => '' ),
+					'condition' => array( 'id' => 'query_type', 'opt' => 'is', 'val' => 'posts' ),
 					're_render' => true,
 					'type' => 'multiselect',
-					'class' => 'hidden-archive-template-builder',
 					'title' => __('Taxonomies included', 'mfn-opts'),
    				'post_tax' => true,
 				),
+
 				array(
 					'id' => 'query_post_type_{mfn.current_post_type}_exclude',
-					'condition' => array( 'id' => 'query_post_type', 'opt' => 'isnt', 'val' => '' ),
+					'condition' => array( 'id' => 'query_type', 'opt' => 'is', 'val' => 'posts' ),
 					're_render' => true,
 					'type' => 'multiselect',
-					'class' => 'hidden-archive-template-builder',
 					'title' => __('Taxonomies excluded', 'mfn-opts'),
    				'post_tax' => true,
 				),
@@ -418,6 +442,15 @@ if( ! class_exists('Mfn_Builder_Fields') )
 					),
 					'std' => '',
 				),
+
+				array(
+					'id' => 'query_post_ignore_sticky_posts',
+  				'type' => 'switcher',
+  				're_render' => true,
+  				'condition' => array( 'id' => 'query_type', 'opt' => 'is', 'val' => 'posts' ),
+  				'title' => __('Ignore sticky posts', 'mfn-opts'),
+  				'option' => '1',
+  			),
 
   			array(
   				'id' => 'query_post_orderby',
@@ -456,7 +489,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
   				'id' => 'query_post_per_page',
   				're_render' => true,
   				'class' => 'hidden-header-builder',
-  				'condition' => array( 'id' => 'query_type', 'opt' => 'is', 'val' => 'posts' ),
+  				'condition' => array( 'AND', array( 'id' => 'section_type', 'opt' => 'is', 'val' => 'query' ), array( 'id' => 'query_type', 'opt' => 'isnt', 'val' => 'terms' )),
   				'type' => 'text',
   				'title' => __('Limit', 'mfn-opts'),
   				'desc' => __('By default limit from Admin > Settings > Reading > Blog pages show at most', 'mfn-opts'),
@@ -470,7 +503,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
   				'id' => 'query_post_offset',
   				're_render' => true,
   				'class' => 'hidden-header-builder',
-  				'condition' => array( 'id' => 'query_type', 'opt' => 'is', 'val' => 'posts' ),
+  				'condition' => array( 'AND', array( 'id' => 'section_type', 'opt' => 'is', 'val' => 'query' ), array( 'id' => 'query_type', 'opt' => 'isnt', 'val' => 'terms' )),
   				'type' => 'text',
   				'title' => __('Offset', 'mfn-opts'),
   				'desc' => __('This option omits provided quantity of posts (from the beginning)', 'mfn-opts'),
@@ -484,12 +517,13 @@ if( ! class_exists('Mfn_Builder_Fields') )
   				'attr_id' => 'query_post_pagination',
   				're_render' => true,
   				'class' => 'hidden-header-builder',
-  				'condition' => array( 'id' => 'query_type', 'opt' => 'is', 'val' => 'posts' ),
+  				'condition' => array( 'AND', array( 'id' => 'section_type', 'opt' => 'is', 'val' => 'query' ), array( 'id' => 'query_type', 'opt' => 'isnt', 'val' => 'terms' )),
   				'type' => 'select',
   				'title' => __('Pagination', 'mfn-opts'),
   				'options' => array(
   					'' => __('Hidden', 'mfn-opts'),
   					'numbers' => __('Numbers + links', 'mfn-opts'),
+  					'numbers_shortened' => __('Numbers shortened + links', 'mfn-opts'),
   					'dots' => __('Dots + links', 'mfn-opts'),
   					'prevnext' => __('Prev / Next links', 'mfn-opts'),
   					'loadmore' => __('Load more', 'mfn-opts'),
@@ -531,6 +565,9 @@ if( ! class_exists('Mfn_Builder_Fields') )
   				'desc' => __('IDs of taxonomies to include', 'mfn-opts'),
   				//'options' => mfn_get_categories('post_tag'),
    				'tax_cpt' => true,
+   				'opt_append' => array(
+						'0-current' => 'Current'
+					),
   			),
 
   			array(
@@ -542,11 +579,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
   				'desc' => __('IDs of taxonomies to exclude', 'mfn-opts'),
    				'tax_cpt' => true,
   			),
-
-
-
-
-
 
   			array(
   				'id' => 'query_terms_child_of_product_cat',
@@ -619,20 +651,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 
   			/* END posts query builder */
 
-  			array(
-  				'type' => 'header',
-  				'class' => 'hidden-header-builder',
-					'title' => __('Style', 'mfn-opts'),
-				),
 
-				array(
-  				'class' => 'hidden-header-builder',
-  				'id' => 'style',
-  				'type' => 'checkbox_pseudo',
-  				'title' => __('Style', 'mfn-opts'),
-  				'desc' => __('<strong>Notice!</strong> Options grayed out and marked with OLD tag are deprecated and will be removed in the future. Please use <a href="https://support.muffingroup.com/documentation/muffin-live-builder/positioning/" target="_blank">Positioning</a> instead.', 'mfn-opts'),
-  				'options' => mfna_section_style(),
-  			),
 
 				// shape dividers
 
@@ -913,6 +932,21 @@ if( ! class_exists('Mfn_Builder_Fields') )
   				),
   			),
 
+  			array(
+  				'type' => 'header',
+  				'class' => 'hidden-header-builder',
+					'title' => __('Style', 'mfn-opts'),
+				),
+
+				array(
+  				'class' => 'hidden-header-builder',
+  				'id' => 'style',
+  				'type' => 'checkbox_pseudo',
+  				'title' => __('Style', 'mfn-opts'),
+  				'desc' => __('<strong>Notice!</strong> Options grayed out and marked with OLD tag are deprecated and will be removed in the future. Please use <a href="https://support.muffingroup.com/documentation/muffin-live-builder/positioning/" target="_blank">Positioning</a> instead.', 'mfn-opts'),
+  				'options' => mfna_section_style(),
+  			),
+
 				// hidden attributes
 
   			array(
@@ -1041,6 +1075,32 @@ if( ! class_exists('Mfn_Builder_Fields') )
 					'html' => '</div>', // end: modalbox-card
 				),
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 				array(
 					'type' => 'html',
 					'html' => '<div class="modalbox-card modalbox-card-style">',
@@ -1050,6 +1110,673 @@ if( ! class_exists('Mfn_Builder_Fields') )
 				array(
 					'type' => 'header',
 					'class' => 'toggled_header',
+					'condition' => array( 'id' => 'section_type', 'opt' => 'is', 'val' => 'tabber' ),
+					'title' => __('Tabber nav', 'mfn-opts'),
+				),
+
+				array(
+					'type' => 'subheader',
+					'class' => 'mfn-builder-subheader mfn-toggled',
+					'title' => __('Container', 'mfn-opts'),
+				),
+
+				array(
+					'id' => 'css_tabber_nav_margin',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav',
+					'style' => 'margin',
+  				'type' => 'dimensions',
+  				'version' => 'separated-fields',
+  				'title' => __('Margin', 'mfn-opts'),
+					'responsive' => true,
+					'class' => 'mfn-toggled',
+  			),
+
+  			array(
+					'id' => 'css_tabber_nav_padding',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav',
+					'style' => 'padding',
+  				'type' => 'dimensions',
+  				'version' => 'separated-fields',
+  				'title' => __('Padding', 'mfn-opts'),
+					'responsive' => true,
+					'class' => 'mfn-toggled',
+  			),
+
+  			array(
+					'id' => 'css_tabber_gap',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner',
+					'style' => '--mfn-section-tabber-gap',
+					'type' => 'sliderbar',
+					'responsive' => true,
+					'class' => 'mfn-toggled',
+					'title' => __('Gap', 'mfn-opts'),
+					'after' => 'px',
+					'param' => array(
+						'min' => '0',
+						'max' => '200',
+						'step' => '1',
+						'unit' => 'px',
+					),
+					'std' => '30'
+				),
+
+  			array(
+					'id' => 'tabber_nav_width_switcher',
+					'attr_id' => 'tabber_nav_width_switcher',
+					'type' => 'switch',
+					'class' => 'mfn-toggled',
+					'title' => __('Width', 'mfn-opts'),
+					'options' => [
+						'' => __('Auto', 'mfn-opts'),
+						'custom' => __('Custom', 'mfn-opts'),
+					],
+				),
+
+  			array(
+					'id' => 'css_tabber_nav_width',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav',
+					'style' => 'width',
+					'type' => 'sliderbar',
+					'responsive' => true,
+					'condition' => array( 'id' => 'tabber_nav_width_switcher', 'opt' => 'is', 'val' => 'custom' ),
+					'class' => 'mfn-toggled',
+					'title' => __('Custom width', 'mfn-opts'),
+					'units' => array(
+						'px' 	=> array('min' => 0, 'max' => 1200, 'step' => 1),
+						'%' 	=> array('min' => 0, 'max' => 100, 'step' => 1),
+						'vw' 	=> array('min' => 0, 'max' => 100, 'step' => 1),
+					),
+				),
+
+				array(
+					'id' => 'css_tabber_nav_overflow',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav',
+					'style' => 'overflow',
+  				'type' => 'switcher',
+  				'title' => __('Overflow hidden', 'mfn-opts'),
+  				'desc' => __('Usable with border radius on items', 'mfn-opts'),
+  				'option' => 'hidden',
+					'class' => 'mfn-toggled',
+  			),
+
+				array(
+					'type' => 'html',
+					'html' => '<div class="mfn-form-row mfn-toggled mfn-field-info mfn-alert section"><div class="alert-icon mfn-icon-information"></div>
+						<div class="alert-content"><p>If you want to align the whole nav container, go to Advanced / Positioning.</p></div>
+						</div>',
+				),
+
+  			array(
+					'id' => 'css_tabber_nav_justify_content',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav',
+					'style' => 'justify-content',
+					'type' => 'select',
+					'responsive' => true,
+					'condition' => array( 'OR', array('id' => 'tabber_nav_position', 'opt' => 'is', 'val' => 'top'), array('id' => 'tabber_nav_position', 'opt' => 'is', 'val' => 'bottom') ),
+					'class' => 'mfn-toggled',
+					'title' => __('Horizontal align', 'mfn-opts'),
+					'desc' => __('It works when the nav width is custom and wider than the nav items’ width', 'mfn-opts'),
+					'options' => [
+						'' => __('Default', 'mfn-opts'),
+						'flex-start' => __('Left', 'mfn-opts'),
+						'center' => __('Center', 'mfn-opts'),
+						'flex-end' => __('Right', 'mfn-opts'),
+						'space-around' => __('Space around', 'mfn-opts'),
+						'space-between' => __('Space between', 'mfn-opts'),
+					],
+				),
+
+  			array(
+					'id' => 'css_tabber_nav_border_style',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav',
+					'style' => 'border-style',
+					'attr_id' => 'border_style_tabber_nav',
+					'type' => 'select',
+					'class' => 'mfn-toggled',
+					'title' => __('Border style', 'mfn-opts'),
+					'options' => [
+						'none' => __('None', 'mfn-opts'),
+						'solid' => __('Solid', 'mfn-opts'),
+						'dashed' => __('Dashed', 'mfn-opts'),
+						'dotted' => __('Dotted', 'mfn-opts'),
+						'double' => __('Double', 'mfn-opts'),
+					],
+				),
+
+				array(
+					'id' => 'css_tabber_nav_border_color',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav',
+					'style' => 'border-color',
+					'condition' => array( 'id' => 'border_style_tabber_nav', 'opt' => 'isnt', 'val' => 'none' ),
+					'type' => 'color',
+					'class' => 'mfn-toggled',
+					'title' => __('Border color', 'mfn-opts'),
+				),
+
+				array(
+					'id' => 'css_tabber_nav_border_width',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav',
+					'style' => 'border-width',
+  				'condition' => array( 'id' => 'border_style_tabber_nav', 'opt' => 'isnt', 'val' => 'none' ),
+  				'type' => 'dimensions',
+  				'title' => __('Border width', 'mfn-opts'),
+					'responsive' => true,
+					'class' => 'mfn-toggled',
+  			),
+
+				array(
+					'id' => 'css_tabber_nav_border_radius',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav',
+					'style' => 'border-radius',
+  				'type' => 'dimensions',
+  				'title' => __('Border radius', 'mfn-opts'),
+					'responsive' => true,
+					'class' => 'mfn-toggled',
+  			),
+
+  			array(
+					'id' => 'css_tabber_nav_background',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav',
+					'style' => 'background-color',
+					'type' => 'color',
+					'class' => 'mfn-toggled',
+					'title' => __('Background color', 'mfn-opts'),
+				),
+
+
+  			array(
+					'type' => 'header',
+					'class' => 'toggled_header',
+					'condition' => array( 'id' => 'section_type', 'opt' => 'is', 'val' => 'tabber' ),
+					'title' => __('Tabber nav items', 'mfn-opts'),
+				),
+
+				array(
+					'id' => 'css_tabber_nav_items_padding',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav li a',
+					'style' => 'padding',
+  				'type' => 'dimensions',
+  				'version' => 'separated-fields',
+  				'title' => __('Padding', 'mfn-opts'),
+					'responsive' => true,
+					'class' => 'mfn-toggled',
+  			),
+
+  			array(
+					'id' => 'css_tabber_nav_items_gap',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav',
+					'style' => 'gap',
+					'type' => 'sliderbar',
+					'responsive' => true,
+					'class' => 'mfn-toggled',
+					'title' => __('Items gap', 'mfn-opts'),
+					'after' => 'px',
+					'param' => array(
+						'min' => '0',
+						'max' => '100',
+						'step' => '1',
+						'unit' => 'px',
+					)
+				),
+
+				/*array(
+					'id' => 'css_tabber_nav_items_justify_content',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav li a',
+					'style' => 'justify-content',
+					'type' => 'switch',
+					'title' => __('Align', 'mfn-opts'),
+					'class' => 'mfn-toggled',
+					'responsive' => true,
+					'options' => [
+						'' => __('Default', 'mfn-opts'),
+						'flex-start' => __('Left', 'mfn-opts'),
+						'center' => __('Center', 'mfn-opts'),
+						'flex-end' => __('Right', 'mfn-opts'),
+					],
+					'std' => '',
+				),*/
+
+				array(
+					'id' => 'css_tabber_nav_items_text_align',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav li a',
+					'style' => 'text-align',
+					'type' => 'switch',
+					'title' => __('Text align', 'mfn-opts'),
+					'class' => 'mfn-toggled',
+					'responsive' => true,
+					'options' => [
+						'' => __('Default', 'mfn-opts'),
+						'left' => __('Left', 'mfn-opts'),
+						'center' => __('Center', 'mfn-opts'),
+						'right' => __('Right', 'mfn-opts'),
+					],
+					'std' => '',
+				),
+
+
+				array(
+					'id' => 'css_tabber_nav_items_border_style',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav li a',
+					'style' => 'border-style',
+					'attr_id' => 'border_style_tabber_navli',
+					'type' => 'select',
+					'class' => 'mfn-toggled',
+					'title' => __('Border style', 'mfn-opts'),
+					'options' => [
+						'none' => __('None', 'mfn-opts'),
+						'solid' => __('Solid', 'mfn-opts'),
+						'dashed' => __('Dashed', 'mfn-opts'),
+						'dotted' => __('Dotted', 'mfn-opts'),
+						'double' => __('Double', 'mfn-opts'),
+					],
+				),
+
+				array(
+					'id' => 'css_tabber_nav_items_border_width',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav li a',
+					'style' => 'border-width',
+  				'condition' => array( 'id' => 'border_style_tabber_navli', 'opt' => 'isnt', 'val' => 'none' ),
+  				'type' => 'dimensions',
+  				'title' => __('Border width', 'mfn-opts'),
+					'responsive' => true,
+					'class' => 'mfn-toggled',
+  			),
+
+  			array(
+					'id' => 'css_tabber_nav_items_border_width_last_children',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav li:last-child a',
+					'style' => 'border',
+  				'condition' => array( 'id' => 'border_style_tabber_navli', 'opt' => 'isnt', 'val' => 'none' ),
+  				'type' => 'switcher',
+  				'title' => __('Last item border', 'mfn-opts'),
+  				'option' => 'none',
+  				'invert' => true,
+					'class' => 'mfn-toggled',
+  			),
+
+				array(
+					'id' => 'css_tabber_nav_items_border_radius',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav li a, .mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav .mfn-tabber-nav-slide-helper',
+					'style' => 'border-radius',
+  				'type' => 'dimensions',
+  				'title' => __('Border radius', 'mfn-opts'),
+					'responsive' => true,
+					'class' => 'mfn-toggled',
+  			),
+
+				array(
+					'id' => 'css_tabber_nav_items_width',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav li',
+					'style' => 'width',
+					'type' => 'sliderbar',
+					'responsive' => true,
+					'class' => 'mfn-toggled',
+					'title' => __('Width', 'mfn-opts'),
+					'units' => array(
+						'px' 	=> array('min' => 0, 'max' => 1200, 'step' => 1),
+						'%' 	=> array('min' => 0, 'max' => 100, 'step' => 1),
+						'vw' 	=> array('min' => 0, 'max' => 100, 'step' => 1),
+					),
+				),
+
+				array(
+					'id' => 'tabber_nav_items_hover_type',
+					'attr_id' => 'tabber_nav_items_hover_type',
+					'type' => 'switch',
+					'class' => 'mfn-toggled',
+					'title' => __('Hover type', 'mfn-opts'),
+					'options' => [
+						'' => __('Default', 'mfn-opts'),
+						'sliding' => __('Sliding', 'mfn-opts')
+					],
+				),
+
+  			array(
+					'type' => 'html',
+					'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li><li><a href="#active" data-tab="active">Active</a></li></ul><div class="mfn-sft mfn-sft-normal">',
+				),
+
+				array(
+					'id' => 'css_tabber_nav_items_background',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav',
+					'style' => '--mfn-section-tabber-nav-bg',
+					'type' => 'color',
+					'class' => 'mfn-toggled',
+					'title' => __('Background color', 'mfn-opts'),
+				),
+
+				array(
+					'id' => 'css_tabber_nav_items_border_color',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav li a',
+					'style' => 'border-color',
+					'condition' => array( 'id' => 'border_style_tabber_navli', 'opt' => 'isnt', 'val' => 'none' ),
+					'type' => 'color',
+					'class' => 'mfn-toggled',
+					'title' => __('Border color', 'mfn-opts'),
+				),
+
+				array(
+					'type' => 'html',
+					'html' => '</div><div class="mfn-sft mfn-sft-hover">',
+				),
+
+  			array(
+					'id' => 'css_tabber_nav_items_background_hover',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav',
+					'style' => '--mfn-section-tabber-nav-hover-bg',
+					'type' => 'color',
+					'class' => 'mfn-toggled',
+					'title' => __('Background color', 'mfn-opts'),
+				),
+
+				array(
+					'id' => 'css_tabber_nav_items_border_color_hover',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav li a:hover',
+					'style' => 'border-color',
+					'condition' => array( 'id' => 'border_style_tabber_navli', 'opt' => 'isnt', 'val' => 'none' ),
+					'type' => 'color',
+					'class' => 'mfn-toggled',
+					'title' => __('Border color', 'mfn-opts'),
+				),
+
+				array(
+					'type' => 'html',
+					'html' => '</div><div class="mfn-sft mfn-sft-active">',
+				),
+
+				array(
+					'id' => 'css_tabber_nav_items_background_active',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav',
+					'style' => '--mfn-section-tabber-nav-active-bg',
+					'type' => 'color',
+					'class' => 'mfn-toggled',
+					'title' => __('Background color', 'mfn-opts'),
+				),
+
+				array(
+					'id' => 'css_tabber_nav_items_border_color_active',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav li.active a',
+					'style' => 'border-color',
+					'condition' => array( 'id' => 'border_style_tabber_navli', 'opt' => 'isnt', 'val' => 'none' ),
+					'type' => 'color',
+					'class' => 'mfn-toggled',
+					'title' => __('Border color', 'mfn-opts'),
+				),
+
+				array(
+					'type' => 'html',
+					'html' => '</div></div>',
+				),
+
+				array(
+					'type' => 'subheader',
+					'class' => 'mfn-builder-subheader mfn-toggled',
+					'title' => __('Icon', 'mfn-opts'),
+				),
+
+				array(
+					'id' => 'css_tabber_icon_size',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav',
+					'style' => '--mfn-section-tabber-nav-icon-size',
+					'type' => 'sliderbar',
+					'responsive' => true,
+					'title' => __('Icon size', 'mfn-opts'),
+					'class' => 'mfn-toggled',
+					'param' => array(
+						'min' => '0',
+						'max' => '200',
+						'step' => '1',
+						'unit' => 'px',
+					)
+				),
+
+				array(
+					'id' => 'css_tabber_icon_wrapper_width',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav .mfn-tabber-nav-li-icon',
+					'style' => '--mfn-section-tabber-nav-icon-wrapper-size',
+					'type' => 'sliderbar',
+					'responsive' => true,
+					'title' => __('Icon wrapper size', 'mfn-opts'),
+					'class' => 'mfn-toggled',
+					'param' => array(
+						'min' => '0',
+						'max' => '100',
+						'step' => '1',
+						'unit' => 'px',
+					)
+				),
+
+				array(
+					'id' => 'css_tabber_icon_gap',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav li a',
+					'style' => 'gap',
+					'type' => 'sliderbar',
+					'responsive' => true,
+					'class' => 'mfn-toggled',
+					'title' => __('Gap', 'mfn-opts'),
+					'after' => 'px',
+					'param' => array(
+						'min' => '0',
+						'max' => '200',
+						'step' => '1',
+						'unit' => 'px',
+					),
+				),
+
+				array(
+					'id' => 'tabber_icon_position',
+					'type' => 'switch',
+					'responsive' => true,
+					'class' => 'mfn-toggled',
+					'title' => __('Icon position', 'mfn-opts'),
+					'options' => array(
+						'left' => __('Left', 'mfn-opts'),
+						'top' => __('Top', 'mfn-opts'),
+						'right' => __('Right', 'mfn-opts'),
+						'center-left' => __('Center Left', 'mfn-opts'),
+						'center-right' => __('Center Right', 'mfn-opts'),
+					),
+					'std' => 'left',
+				),
+
+				array(
+					'type' => 'html',
+					'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li><li><a href="#active" data-tab="active">Active</a></li></ul><div class="mfn-sft mfn-sft-normal">',
+				),
+
+  			array(
+					'id' => 'css_tabber_nav_items_icon_color',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav li .mfn-tabber-nav-li-icon',
+					'style' => 'color',
+					'type' => 'color',
+					'class' => 'mfn-toggled',
+					'title' => __('Color', 'mfn-opts'),
+				),
+
+				array(
+					'type' => 'html',
+					'html' => '</div><div class="mfn-sft mfn-sft-hover">',
+				),
+
+				array(
+					'id' => 'css_tabber_nav_items_icon_color_hover',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav li:not(.active) a:hover .mfn-tabber-nav-li-icon',
+					'style' => 'color',
+					'type' => 'color',
+					'class' => 'mfn-toggled',
+					'title' => __('Color', 'mfn-opts'),
+				),
+
+				array(
+					'type' => 'html',
+					'html' => '</div><div class="mfn-sft mfn-sft-active">',
+				),
+
+				array(
+					'id' => 'css_tabber_nav_items_icon_color_active',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav li.active .mfn-tabber-nav-li-icon',
+					'style' => 'color',
+					'type' => 'color',
+					'class' => 'mfn-toggled',
+					'title' => __('Color', 'mfn-opts'),
+				),
+
+				array(
+					'type' => 'html',
+					'html' => '</div></div>',
+				),
+
+				array(
+					'type' => 'subheader',
+					'class' => 'mfn-builder-subheader mfn-toggled',
+					'title' => __('Title', 'mfn-opts'),
+				),
+
+				array(
+					'id' => 'css_tabber_nav_items_title_typography',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav li .mfn-tabber-nav-title',
+					'style' => 'typography',
+					'responsive' => true,
+					'type' => 'typography_vb',
+					'label_tools' => true,
+					'class' => 'mfn-toggled toggle_fields',
+					'title' => __('Typography', 'mfn-opts'),
+				),
+
+				array(
+					'type' => 'html',
+					'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li><li><a href="#active" data-tab="active">Active</a></li></ul><div class="mfn-sft mfn-sft-normal">',
+				),
+
+  			array(
+					'id' => 'css_tabber_nav_items_title_color',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav li .mfn-tabber-nav-title',
+					'style' => 'color',
+					'type' => 'color',
+					'class' => 'mfn-toggled',
+					'title' => __('Color', 'mfn-opts'),
+				),
+
+				array(
+					'type' => 'html',
+					'html' => '</div><div class="mfn-sft mfn-sft-hover">',
+				),
+
+				array(
+					'id' => 'css_tabber_nav_items_title_color_hover',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav li:not(.active) a:hover .mfn-tabber-nav-title',
+					'style' => 'color',
+					'type' => 'color',
+					'class' => 'mfn-toggled',
+					'title' => __('Color', 'mfn-opts'),
+				),
+
+				array(
+					'type' => 'html',
+					'html' => '</div><div class="mfn-sft mfn-sft-active">',
+				),
+
+				array(
+					'id' => 'css_tabber_nav_items_title_color_active',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav li.active .mfn-tabber-nav-title',
+					'style' => 'color',
+					'type' => 'color',
+					'class' => 'mfn-toggled',
+					'title' => __('Color', 'mfn-opts'),
+				),
+
+				array(
+					'type' => 'html',
+					'html' => '</div></div>',
+				),
+
+				array(
+					'type' => 'subheader',
+					'class' => 'mfn-builder-subheader mfn-toggled',
+					'title' => __('Desc', 'mfn-opts'),
+				),
+
+				array(
+					'id' => 'css_tabber_nav_items_desc_typography',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav li .mfn-tabber-nav-desc',
+					'style' => 'typography',
+					'responsive' => true,
+					'type' => 'typography_vb',
+					'label_tools' => true,
+					'class' => 'mfn-toggled toggle_fields',
+					'title' => __('Typography', 'mfn-opts'),
+				),
+
+				array(
+					'type' => 'html',
+					'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li><li><a href="#active" data-tab="active">Active</a></li></ul><div class="mfn-sft mfn-sft-normal">',
+				),
+
+  			array(
+					'id' => 'css_tabber_nav_items_desc_color',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav li .mfn-tabber-nav-desc',
+					'style' => 'color',
+					'type' => 'color',
+					'class' => 'mfn-toggled',
+					'title' => __('Color', 'mfn-opts'),
+				),
+
+				array(
+					'type' => 'html',
+					'html' => '</div><div class="mfn-sft mfn-sft-hover">',
+				),
+
+				array(
+					'id' => 'css_tabber_nav_items_desc_color_hover',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav li:not(.active) a:hover .mfn-tabber-nav-desc',
+					'style' => 'color',
+					'type' => 'color',
+					'class' => 'mfn-toggled',
+					'title' => __('Color', 'mfn-opts'),
+				),
+
+				array(
+					'type' => 'html',
+					'html' => '</div><div class="mfn-sft mfn-sft-active">',
+				),
+
+				array(
+					'id' => 'css_tabber_nav_items_desc_color_active',
+					'selector' => '.mcb-section-mfnuidelement.mfn-section-tabber .mcb-section-inner .mfn-tabber-nav li.active .mfn-tabber-nav-desc',
+					'style' => 'color',
+					'type' => 'color',
+					'class' => 'mfn-toggled',
+					'title' => __('Color', 'mfn-opts'),
+				),
+
+
+				array(
+					'type' => 'html',
+					'html' => '</div></div>',
+				),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+				array(
+					'type' => 'header',
+					'class' => 'toggled_header',
+					'condition' => array( 'id' => 'section_type', 'opt' => 'is', 'val' => 'query' ),
 					'title' => __('Container', 'mfn-opts'),
 				),
 
@@ -1081,6 +1808,19 @@ if( ! class_exists('Mfn_Builder_Fields') )
   			),
 
   			array(
+					'id' => 'query_slider_pause_hover',
+  				'condition' => array( 'id' => 'query_display', 'opt' => 'is', 'val' => 'slider' ),
+  				'class' => 'mfn-toggled',
+  				'type' => 'switch',
+  				'title' => __('Pause on hover', 'mfn-opts'),
+  				'options' => array(
+  					'' => __('Off', 'mfn-opts'),
+  					'1' => __('On', 'mfn-opts'),
+  				),
+  				'std' => ''
+  			),
+
+  			array(
   				'id' => 'query_slider_infinity',
   				'condition' => array( 'id' => 'query_display', 'opt' => 'is', 'val' => 'slider' ),
   				'class' => 'mfn-toggled',
@@ -1100,7 +1840,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 					'default_unit' => '',
 					'class' => 'mfn-toggled',
 					'title' => __('Autoplay speed', 'mfn-opts'),
-					'desc' => __('Leave empty to disallow autoplay', 'mfn-opts'),
+					'desc' => __('Time in ms. Leave empty to disallow autoplay', 'mfn-opts'),
 					'param' => array(
 						'min' => '0',
 						'max' => '15000',
@@ -1116,6 +1856,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 					'default_unit' => '',
 					'class' => 'mfn-toggled',
 					'title' => __('Animation speed', 'mfn-opts'),
+					'desc' => __('Time in ms.', 'mfn-opts'),
 					'param' => array(
 						'min' => '0',
 						'max' => '15000',
@@ -1369,6 +2110,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
   			array(
   				'type' => 'header',
   				'class' => 'toggled_header',
+  				'condition' => array( 'id' => 'section_type', 'opt' => 'is', 'val' => 'query' ),
 					'title' => __('Item', 'mfn-opts'),
 				),
 
@@ -2651,6 +3393,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 					'alias' => 'section-flex-align-content',
 					'responsive' => true,
 					'class' => 'form-content-full-width small mfn-toggled',
+					'extra_classes' => 'positioning-options',
 					'title' => __('Section content position', 'mfn-opts'),
 					'options' => array(
 						'' => 'Default',
@@ -2670,6 +3413,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 					'alias' => 'section-flex-align',
 					'responsive' => true,
 					'class' => 'form-content-full-width small mfn-toggled adv_align-items_section',
+					'extra_classes' => 'positioning-options',
 					'title' => __('Wraps vertical spacing', 'mfn-opts'),
 					'options' => array(
 						'flex-start' => 'Top',
@@ -2690,6 +3434,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 					'alias' => 'section-flex-justify',
 					'responsive' => true,
 					'class' => 'form-content-full-width small mfn-toggled',
+					'extra_classes' => 'positioning-options',
 					'title' => __('Horizontal align', 'mfn-opts'),
 					'options' => [
 						'flex-start' => __('Left', 'mfn-opts'),
@@ -3722,11 +4467,11 @@ if( ! class_exists('Mfn_Builder_Fields') )
   			array(
   				'id' => 'sticky',
   				'attr_id' => 'wrap_sticky_rwd',
-  				'class' => 'hidden-header-builder mfn-hidden-nested-wrap',
+  				'class' => 'hidden-header-builder mfn-hidden-nested-wrap hidden-in-tabber',
   				'type' => 'switch',
   				'responsive' => true,
   				'title' => __('Sticky', 'mfn-opts'),
-  				'desc' => __('Does <b>not</b> work with Move up and Parallax', 'mfn-opts'),
+  				'desc' => __('Does <b>not</b> work with Move up, Parallax and Footer sliding', 'mfn-opts'),
 					'options' => [
 						0 => __('Disable', 'mfn-opts'),
 						1 => __('Enable', 'mfn-opts'),
@@ -3738,7 +4483,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
   				'id' => 'sticky_offset',
 					'condition' => array( 'id' => 'wrap_sticky_rwd', 'opt' => 'is', 'val' => '1' ),
 					'type' => 'sliderbar',
-					'class' => 'hidden-header-builder mfn-hidden-nested-wrap',
+					'class' => 'hidden-header-builder mfn-hidden-nested-wrap hidden-in-tabber',
 					'responsive' => true,
 					'title' => __('Sticky offset', 'mfn-opts'),
 					'desc' => __('Offset from top during scrolling', 'mfn-opts'),
@@ -3756,6 +4501,50 @@ if( ! class_exists('Mfn_Builder_Fields') )
 					'type' => 'info',
 					'title' => __('This element has no attributes. Please check <b>advanced</b> tab for more customisation options.', 'mfn-opts'),
 				),
+
+
+				array(
+  				'id' => 'tab_title',
+  				'class' => 'visible-in-tabber',
+  				'type' => 'text',
+  				'dynamic_data' => 'title',
+  				'title' => __('Tab nav title', 'mfn-opts'),
+  			),
+
+  			array(
+  				'id' => 'tab_desc',
+  				'class' => 'visible-in-tabber',
+  				'type' => 'textarea',
+  				'dynamic_data' => 'content',
+  				'title' => __('Tab nav desc', 'mfn-opts'),
+  			),
+
+  			array(
+  				'id' => 'tab_link',
+  				'class' => 'visible-in-tabber',
+  				'type' => 'text',
+  				'dynamic_data' => 'permalink',
+  				'title' => __('Tab nav link', 'mfn-opts'),
+  			),
+
+
+
+  			array(
+  				'id' => 'tab_icon',
+  				'attr_id' => 'tab_icon',
+  				'type' => 'icon',
+  				'class' => 'visible-in-tabber',
+  				'title' => __('Tab nav icon', 'mfn-opts'),
+  			),
+
+  			array(
+  				'id' => 'tab_image',
+  				'attr_id' => 'tab_image',
+  				'class' => 'visible-in-tabber',
+  				'type' => 'upload',
+  				'title' => __('Tab nav image', 'mfn-opts'),
+  			),
+
 
   			array(
   				'id' => 'type',
@@ -3779,7 +4568,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
   				'id' => 'query_type',
   				're_render' => true,
   				'attr_id' => 'query_type',
-  				'class' => 'hidden-header-builder hidden-archive-template-builder',
+  				'class' => 'hidden-header-builder',
   				'condition' => array( 'id' => 'wrap_type', 'opt' => 'is', 'val' => 'query' ),
   				'type' => 'select',
   				'title' => __('Query type', 'mfn-opts'),
@@ -3798,7 +4587,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
   				're_render' => true,
   				're_render_sidebar' => true,
   				'attr_id' => 'query_post_type',
-  				'class' => 'hidden-header-builder hidden-archive-template-builder',
+  				'class' => 'hidden-header-builder',
   				'condition' => array( 'id' => 'query_type', 'opt' => 'is', 'val' => 'posts' ),
   				'type' => 'select',
   				'title' => __('Post type', 'mfn-opts'),
@@ -3820,9 +4609,8 @@ if( ! class_exists('Mfn_Builder_Fields') )
 
   			array(
 					'id' => 'query_post_type_{mfn.current_post_type}',
-					'condition' => array( 'id' => 'query_post_type', 'opt' => 'isnt', 'val' => '' ),
+					'condition' => array( 'id' => 'query_type', 'opt' => 'is', 'val' => 'posts' ),
 					're_render' => true,
-					'class' => 'hidden-archive-template-builder',
 					'type' => 'multiselect',
 					'title' => __('Taxonomies included', 'mfn-opts'),
    				'post_tax' => true,
@@ -3830,9 +4618,8 @@ if( ! class_exists('Mfn_Builder_Fields') )
 
 				array(
 					'id' => 'query_post_type_{mfn.current_post_type}_exclude',
-					'condition' => array( 'id' => 'query_post_type', 'opt' => 'isnt', 'val' => '' ),
+					'condition' => array( 'id' => 'query_type', 'opt' => 'is', 'val' => 'posts' ),
 					're_render' => true,
-					'class' => 'hidden-archive-template-builder',
 					'type' => 'multiselect',
 					'title' => __('Taxonomies excluded', 'mfn-opts'),
    				'post_tax' => true,
@@ -3843,6 +4630,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 					'condition' => array( 'id' => 'query_post_type', 'opt' => 'is', 'val' => 'product' ),
 					're_render' => true,
 					'type' => 'select',
+					'class' => 'hidden-in-tabber',
 					'desc' => __('This option turns off standard order settings', 'mfn-opts'),
 					'title' => __('Display', 'mfn-opts'),
 					'options' => array(
@@ -3853,6 +4641,15 @@ if( ! class_exists('Mfn_Builder_Fields') )
 					),
 					'std' => '',
 				),
+
+				array(
+					'id' => 'query_post_ignore_sticky_posts',
+  				'type' => 'switcher',
+  				're_render' => true,
+  				'condition' => array( 'id' => 'query_type', 'opt' => 'is', 'val' => 'posts' ),
+  				'title' => __('Ignore sticky posts', 'mfn-opts'),
+  				'option' => '1',
+  			),
 
   			array(
   				'id' => 'query_post_orderby',
@@ -3891,7 +4688,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
   				'id' => 'query_post_per_page',
   				're_render' => true,
   				'class' => 'hidden-header-builder',
-  				'condition' => array( 'id' => 'query_type', 'opt' => 'is', 'val' => 'posts' ),
+  				'condition' => array( 'AND', array( 'id' => 'wrap_type', 'opt' => 'is', 'val' => 'query' ), array( 'id' => 'query_type', 'opt' => 'isnt', 'val' => 'terms' )),
   				'type' => 'text',
   				'title' => __('Limit', 'mfn-opts'),
   				'desc' => __('By default limit from Admin > Settings > Reading > Blog pages show at most', 'mfn-opts'),
@@ -3905,7 +4702,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
   				'id' => 'query_post_offset',
   				're_render' => true,
   				'class' => 'hidden-header-builder',
-  				'condition' => array( 'id' => 'query_type', 'opt' => 'is', 'val' => 'posts' ),
+  				'condition' => array( 'AND', array( 'id' => 'wrap_type', 'opt' => 'is', 'val' => 'query' ), array( 'id' => 'query_type', 'opt' => 'isnt', 'val' => 'terms' )),
   				'type' => 'text',
   				'title' => __('Offset', 'mfn-opts'),
   				'desc' => __('This option omits provided quantity of posts (from the beginning)', 'mfn-opts'),
@@ -3967,8 +4764,12 @@ if( ! class_exists('Mfn_Builder_Fields') )
   				'type' => 'multiselect',
   				'title' => __('Includes', 'mfn-opts'),
   				'desc' => __('IDs of taxonomies to include', 'mfn-opts'),
+  				//'class' => 'hidden-in-tabber',
   				//'options' => mfn_get_categories('post_tag'),
    				'tax_cpt' => true,
+   				'opt_append' => array(
+						'0-current' => 'Current'
+					),
   			),
 
   			array(
@@ -3994,6 +4795,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
   				'condition' => array( 'id' => 'query_terms_taxonomy', 'opt' => 'is', 'val' => 'product_cat' ),
   				're_render' => true,
   				'type' => 'select',
+  				'class' => 'hidden-in-tabber',
   				'title' => __('Child of', 'mfn-opts'),
 					'mfn_taxonomies' => 'product_cat',
 					'opt_append' => array(
@@ -4057,7 +4859,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 					'preview' => 'number',
 					'std' => '0',
   			),
-
 
 
 
@@ -4231,6 +5032,19 @@ if( ! class_exists('Mfn_Builder_Fields') )
 					'std' => '1',
   			),
 
+  			array(
+					'id' => 'query_slider_pause_hover',
+  				'condition' => array( 'id' => 'query_display', 'opt' => 'is', 'val' => 'slider' ),
+  				'class' => 'mfn-toggled',
+  				'type' => 'switch',
+  				'title' => __('Pause on hover', 'mfn-opts'),
+  				'options' => array(
+  					'' => __('Off', 'mfn-opts'),
+  					'1' => __('On', 'mfn-opts'),
+  				),
+  				'std' => ''
+  			),
+
 
   			array(
   				'id' => 'query_slider_infinity',
@@ -4252,7 +5066,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 					'default_unit' => '',
 					'class' => 'mfn-toggled',
 					'title' => __('Autoplay speed', 'mfn-opts'),
-					'desc' => __('Leave empty to disallow autoplay', 'mfn-opts'),
+					'desc' => __('Time in ms. Leave empty to disallow autoplay', 'mfn-opts'),
 					'param' => array(
 						'min' => '0',
 						'max' => '15000',
@@ -4268,6 +5082,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 					'default_unit' => '',
 					'class' => 'mfn-toggled',
 					'title' => __('Animation speed', 'mfn-opts'),
+					'desc' => __('Time in ms.', 'mfn-opts'),
 					'param' => array(
 						'min' => '0',
 						'max' => '15000',
@@ -5288,8 +6103,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 					'class' => 'mfn-toggled',
   			),
 
-
-
 				array(
   				'old_id' => 'style:.mcb-section .mcb-wrap-mfnuidelement.mfn-looped-items-slider-wrapper .mfn-swiper-arrow:border-radius',
 					'id' => 'css_queryloop_slider_arrow_border_radius',
@@ -5300,8 +6113,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 					'responsive' => true,
 					'class' => 'mfn-toggled',
   			),
-
-
 
   			array(
   				'old_id' => 'style:.mcb-section .mcb-wrap-mfnuidelement.mfn-looped-items-slider-wrapper .mfn-swiper-arrow:box-shadow',
@@ -5319,7 +6130,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 					'condition' => array( 'id' => 'query_display', 'opt' => 'is', 'val' => 'slider' ),
 					'title' => __('Color', 'mfn-opts'),
 				),
-
 
 				array(
 					'type' => 'html',
@@ -5398,7 +6208,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 					'type' => 'html',
 					'html' => '</div></div>',
 				),
-
 
   			array(
 					'type' => 'html',
@@ -5580,6 +6389,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 					'alias' => 'flex-align-self',
 					'responsive' => true,
 					'class' => 'form-content-full-width small mfn-toggled adv_alignself_wrap',
+					'extra_classes' => 'positioning-options',
 					'title' => __('Wrap position', 'mfn-opts'),
 					'options' => array(
 						'' => __('Default', 'mfn-opts'),
@@ -5601,6 +6411,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 					'alias' => 'flex-align-content',
 					'responsive' => true,
 					'class' => 'form-content-full-width small mfn-toggled',
+					'extra_classes' => 'positioning-options',
 					'title' => __('Wrap content position', 'mfn-opts'),
 					'desc' => __('Works with <b>Stretch</b> only', 'mfn-opts'),
 					'options' => array(
@@ -5624,6 +6435,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 					'type' => 'radio_img',
 					'alias' => 'flex-align-items',
 					'class' => 'form-content-full-width small mfn-toggled',
+					'extra_classes' => 'positioning-options',
 					'responsive' => true,
 					'title' => __('Elements vertical align', 'mfn-opts'),
 					'options' => [
@@ -5644,6 +6456,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 					'type' => 'radio_img',
 					'alias' => 'flex-justify',
 					'class' => 'small mfn-toggled',
+					'extra_classes' => 'positioning-options',
 					'responsive' => true,
 					'title' => __('Elements horizontal align', 'mfn-opts'),
 					'desc' => __('Works with flexbox and custom grid template columns', 'mfn-opts'),
@@ -5756,9 +6569,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 					'title' => __('Right', 'mfn-opts'),
 					'class' => 'mfn-toggled custom-abs-offset-values',
 				),
-
-
-
 
   			array(
   				'type' => 'header',
@@ -6685,7 +7495,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 				'attr_id' => 'wrap-scroll-smoother-enable',
 				'type' => 'switch',
 				'title' => __('Enable Scroll Smoother', 'mfn-opts'),
-				'desc' => __('Activate scroll smoother for this element', 'mfn-opts'),
+				'desc' => __('Speed/lag effect on this wrap. Speed 1 and lag 0 follow the page 1:1 (no visible offset). Does not require an entrance animation.', 'mfn-opts'),
 				'class' => 'mfn-toggled',
 				'options' => array(
 					0 => __('Disable', 'mfn-opts'),
@@ -6763,6 +7573,1004 @@ if( ! class_exists('Mfn_Builder_Fields') )
    	private function set_items(){
 
    		$this->items = array(
+
+
+   	// search results ----------------------------------------------------
+
+   			'search_results' => array(
+   				'type' => 'search_results',
+   				'title' => __('Search results', 'mfn-opts'),
+   				'size' => '1/1',
+   				'tablet_size' => '1/1',
+   				'mobile_size' => '1/1',
+   				'tablet_resized' => '0',
+   				'cat' => 'search',
+   				'attr' => array(
+
+   					array(
+							'type' => 'html',
+							'html' => '<div class="modalbox-card modalbox-re_render modalbox-card-content">',
+						),
+
+						array(
+   						'type' => 'header',
+   						'title' => __('Settings', 'mfn-opts'),
+   					),
+
+   					array(
+							'id' => 'heading_tag',
+							'type' => 'switch',
+							're_render' => true,
+							'title' => __('Group title tag', 'mfn-opts'),
+							'options' => [
+								'h1' => 'H1',
+								'h2' => 'H2',
+								'h3' => 'H3',
+								'h4' => 'H4',
+								'h5' => 'H5',
+								'h6' => 'H6',
+								'p' => 'p',
+								'span' => 'span',
+							],
+							'std' => 'h3',
+						),
+
+						array(
+							'id' => 'title_tag',
+							'type' => 'switch',
+							're_render' => true,
+							'title' => __('Box title tag', 'mfn-opts'),
+							'options' => [
+								'h1' => 'H1',
+								'h2' => 'H2',
+								'h3' => 'H3',
+								'h4' => 'H4',
+								'h5' => 'H5',
+								'h6' => 'H6',
+								'p' => 'p',
+								'span' => 'span',
+							],
+							'std' => 'h4',
+						),
+
+						array(
+   						'id' => 'readmore_label',
+   						'type' => 'text',
+   						'title' => __('Read more label', 'mfn-opts'),
+   						'std' => __('Read more', 'woocommerce'),
+   					),
+
+						array(
+		  				'id' => 'css_grid_columns',
+		  				'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-layout',
+							'style' => 'grid-template-columns',
+		  				'attr_id' => 'grid_columns',
+		  				'responsive' => true,
+		  				'class' => 'mfn-grid-columns-switcher',
+		  				'type' => 'switch',
+		  				'title' => __('Columns', 'mfn-opts'),
+		  				'options' => array(
+		  					'1fr' => __('1', 'mfn-opts'),
+		  					'repeat(2, 1fr)' => __('2', 'mfn-opts'),
+		  					'repeat(3, 1fr)' => __('3', 'mfn-opts'),
+		  					'repeat(4, 1fr)' => __('4', 'mfn-opts'),
+		  					'repeat(5, 1fr)' => __('5', 'mfn-opts'),
+		  				),
+		  				'std' => array('desktop' => 'repeat(3, 1fr)')
+		  			),
+
+						array(
+							'id' => 'box_type',
+							'attr_id' => 'box_type',
+							'type' => 'switch',
+							'title' => __('Box type', 'mfn-opts'),
+							'options' => [
+								'' => __('Vertical', 'mfn-opts'),
+								'horizontal' => __('Horizontal', 'mfn-opts'),
+							],
+							'std' => '',
+						),
+
+						array(
+							'id' => 'css_grid_item_vertical_align',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-desc',
+							'style' => 'align-items',
+							'type' => 'switch',
+							'title' => __('Desc align', 'mfn-opts'),
+							'responsive' => true,
+							'options' => [
+								'stretch' => __('Default', 'mfn-opts'),
+								'flex-start' => __('Left', 'mfn-opts'),
+								'center' => __('Center', 'mfn-opts'),
+								'flex-end' => __('Right', 'mfn-opts'),
+							],
+							'std' => 'flex-start',
+						),
+
+						array(
+							'id' => 'css_grid_item_img_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item.mfn-grid-item-horizontal .mfn-grid-item-image',
+							'style' => 'width',
+							'type' => 'sliderbar',
+							'responsive' => true,
+							'title' => __('Image width', 'mfn-opts'),
+							'condition' => array( 'id' => 'box_type', 'opt' => 'isnt', 'val' => '' ),
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'std' => '40',
+								'step' => '1',
+								'unit' => '%',
+							)
+						),
+
+
+						array(
+							'id' => 'css_results_image',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-image',
+							'style' => 'display',
+							'type' => 'switcher',
+							'invert' => true,
+							'title' => __('Image', 'mfn-opts'),
+							'option' => 'none',
+						),
+
+						array(
+							'id' => 'css_results_excerpt',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-excerpt',
+							'style' => 'display',
+							'type' => 'switcher',
+							'invert' => true,
+							'title' => __('Excerpt', 'mfn-opts'),
+							'option' => 'none',
+						),
+
+						array(
+							'id' => 'css_results_date',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-date',
+							'style' => 'display',
+							'type' => 'switcher',
+							'invert' => true,
+							'title' => __('Date', 'mfn-opts'),
+							'desc' => __('Posts & Portfolio', 'mfn-opts'),
+							'option' => 'none',
+						),
+
+						array(
+							'id' => 'css_results_price',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-price',
+							'style' => 'display',
+							'type' => 'switcher',
+							'invert' => true,
+							'title' => __('Price', 'mfn-opts'),
+							'desc' => __('Products', 'mfn-opts'),
+							'option' => 'none',
+						),
+
+						array(
+							'id' => 'css_results_readmore',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .button',
+							'style' => 'display',
+							'type' => 'switcher',
+							'invert' => true,
+							'title' => __('Read more', 'mfn-opts'),
+							'option' => 'none',
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="modalbox-card modalbox-card-style modalbox-re_render">',
+						),
+
+
+						array(
+							'title' => __('Group', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Group',
+						),
+
+						array(
+							'id' => 'css_group_gap',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mf-search-tmpl-results',
+							'style' => 'gap',
+							'type' => 'sliderbar',
+							'responsive' => true,
+							'title' => __('Groups gap', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							)
+						),
+
+						array(
+							'id' => 'css_grid_layout_gap',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-layout',
+							'style' => 'gap',
+							'type' => 'sliderbar',
+							'responsive' => true,
+							'title' => __('Posts gap', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							)
+						),
+
+
+						array(
+							'id' => 'css_group_padding',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mf-search-tmpl-results .mfn-search-group',
+							'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_group_background',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mf-search-tmpl-results .mfn-search-group',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_group_border_style',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mf-search-tmpl-results .mfn-search-group',
+							'style' => 'border-style',
+							'attr_id' => 'border_grid',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+							'id' => 'css_group_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mf-search-tmpl-results .mfn-search-group',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_grid', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'css_attr' => 'border-width',
+		  			),
+
+		  			array(
+							'id' => 'css_group_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mf-search-tmpl-results .mfn-search-group',
+							'style' => 'border-color',
+							'type' => 'color',
+							'condition' => array( 'id' => 'border_grid', 'opt' => 'isnt', 'val' => 'none' ),
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_group_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mf-search-tmpl-results .mfn-search-group',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'css_attr' => 'border-radius',
+		  			),
+
+
+
+
+
+						array(
+							'title' => __('Title', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Group',
+						),
+
+						array(
+							'id' => 'css_heading_margin',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-search-group-heading',
+							'style' => 'margin',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Margin', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+						array(
+							'id' => 'css_heading_text_align',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-search-group-heading',
+							'style' => 'text-align',
+							'type' => 'switch',
+							'title' => __('Text align', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+							'responsive' => true,
+							'options' => [
+								'' => __('Default', 'mfn-opts'),
+								'left' => __('Left', 'mfn-opts'),
+								'center' => __('Center', 'mfn-opts'),
+								'right' => __('Right', 'mfn-opts'),
+							],
+							'std' => '',
+						),
+
+						array(
+							'id' => 'css_heading_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-search-group-heading',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_heading_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-search-group-heading',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+
+
+
+
+
+		  			array(
+							'title' => __('Box', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Box',
+						),
+
+						
+						array(
+							'id' => 'css_grid_item_gap',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item',
+							'style' => 'gap',
+							'type' => 'sliderbar',
+							'responsive' => true,
+							'title' => __('Gap', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							)
+						),
+
+						array(
+							'id' => 'css_grid_item_padding',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item',
+							'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_grid_item_background',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_grid_item_border_style',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item',
+							'style' => 'border-style',
+							'attr_id' => 'border_grid_item',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+							'id' => 'css_grid_item_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_grid_item', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'css_attr' => 'border-width',
+		  			),
+
+		  			array(
+							'id' => 'css_grid_item_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item',
+							'style' => 'border-color',
+							'type' => 'color',
+							'condition' => array( 'id' => 'border_grid_item', 'opt' => 'isnt', 'val' => 'none' ),
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_grid_item_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'css_attr' => 'border-radius',
+		  			),
+
+
+		  			array(
+							'title' => __('Image', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Box',
+						),
+
+		  			array(
+							'id' => 'css_grid_item_img_height',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-image img',
+							'style' => 'height',
+							'type' => 'sliderbar',
+							'default_unit' => 'px',
+							'responsive' => true,
+							'class' => 'mfn-toggled narrow sliderbar-units',
+							'title' => __('Height', 'mfn-opts'),
+							'units' => array(
+								'px' 	=> array('min' => 0, 'max' => 1000, 'step' => 1),
+								'em' 	=> array('min' => 0, 'max' => 10, 'step' => 0.1),
+								'rem' => array('min' => 0, 'max' => 10, 'step' => 0.1),
+								'vw' 	=> array('min' => 0, 'max' => 100, 'step' => 1),
+							),
+						),
+
+		  			array(
+							'id' => 'css_grid_item_img_margin',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-image',
+							'style' => 'margin',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Margin', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+		  			array(
+							'id' => 'css_grid_item_img_border_style',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-image img',
+							'style' => 'border-style',
+							'attr_id' => 'border_style_grid_img',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+							'id' => 'css_grid_item_img_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-image img',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_style_grid_img', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'css_attr' => 'border-width',
+		  			),
+
+		  			array(
+							'id' => 'css_grid_item_img_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-image img',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_grid_img', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_grid_item_img_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-image img',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'css_attr' => 'border-radius',
+		  			),
+
+
+
+
+
+
+
+
+
+
+		  			array(
+							'title' => __('Desc', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Box',
+						),
+
+						array(
+							'id' => 'css_grid_item_desc_gap',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-desc',
+							'style' => 'gap',
+							'type' => 'sliderbar',
+							'responsive' => true,
+							'title' => __('Gap', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							)
+						),
+
+		  			array(
+							'id' => 'css_grid_item_desc_padding',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-desc',
+							'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_grid_item_desc_background',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-desc',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background color', 'mfn-opts'),
+						),
+
+
+						array(
+							'title' => __('Title', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Box',
+						),
+
+		  			array(
+							'id' => 'css_grid_item_desc_title_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-title a',
+							'style' => 'color',
+		  				'type' => 'color',
+		  				'title' => __('Color', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_grid_item_desc_title_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-title',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+
+						array(
+							'title' => __('Excerpt', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Box',
+						),
+
+		  			array(
+							'id' => 'css_grid_item_desc_excerpt_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-excerpt',
+							'style' => 'color',
+		  				'type' => 'color',
+		  				'title' => __('Color', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_grid_item_desc_excerpt_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-excerpt',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+
+		  			
+		  			array(
+							'title' => __('Price', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Box',
+						),
+
+		  			array(
+							'id' => 'css_grid_item_desc_price_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-price',
+							'style' => 'color',
+		  				'type' => 'color',
+		  				'title' => __('Color', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_grid_item_desc_price_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-price',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+
+
+
+
+						array(
+							'title' => __('Date', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Box',
+						),
+
+		  			array(
+							'id' => 'css_grid_item_desc_date_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-date',
+							'style' => 'color',
+		  				'type' => 'color',
+		  				'title' => __('Color', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_grid_item_desc_date_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-date',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+
+						
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		  			array(
+							'title' => __('Button', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Box',
+						),
+
+
+
+
+
+		  			array(
+							'id' => 'css_grid_item_button_padding',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .button',
+							'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_grid_item_button_margin',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .button',
+							'style' => 'margin',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Margin', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_grid_item_button_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .button',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_grid_item_button_border_style',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .button',
+							'style' => 'border-style',
+							'attr_id' => 'border_style_button',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+							'id' => 'css_grid_item_button_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .button',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_style_button', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'css_attr' => 'border-width',
+		  			),
+
+						array(
+							'id' => 'css_grid_item_button_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .button',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'css_attr' => 'border-radius',
+		  			),
+
+		  			array(
+							'id' => 'css_grid_item_button_transition',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .button',
+							'style' => 'transition',
+							'type' => 'sliderbar',
+							'class' => 'mfn-toggled',
+							'title' => __('Transition duration', 'mfn-opts'),
+							'param' => array(
+								'min' => '0',
+								'max' => '3',
+								'step' => '0.1',
+								'unit' => 's',
+							)
+						),
+
+   					array(
+							'type' => 'html',
+							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li></ul><div class="mfn-sft mfn-sft-normal">',
+						),
+
+						array(
+							'id' => 'css_grid_item_button_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .button',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_grid_item_button_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .button',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_button', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'background_switcher',
+							'attr_id' => 'background_switcher_button',
+							'type' => 'switch',
+							'class' => 'mfn-fields-switcher disable-history mfn-disable-reset-value',
+							'title' => __('Background type', 'mfn-opts'),
+							'options' => array(
+		  					'default' => __('Default', 'mfn-opts'),
+		  					'gradient' 	=> __('Gradient', 'mfn-opts'),
+		  				),
+							'visual_options' => array(
+		  					'default' => '',
+		  					'gradient' 	=> '',
+		  				),
+		  				'std' => 'default',
+						),
+
+						array(
+							'id' => 'css_grid_item_button_background_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .button',
+							'style' => 'background-color',
+							'condition' => array( 'id' => 'background_switcher_button', 'opt' => 'is', 'val' => 'default' ),
+							'type' => 'color',
+							'title' => __('Background color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_grid_item_button_gradient',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .button',
+							'style' => 'gradient',
+		  				'condition' => array( 'id' => 'background_switcher_button', 'opt' => 'is', 'val' => 'gradient' ),
+		  				'type' => 'gradient',
+		  				'title' => __('Gradient', 'mfn-opts'),
+		  				'class' => 'mfn-toggled',
+							'css_attr' => 'gradient',
+		  			),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
+						),
+
+						array(
+							'id' => 'css_grid_item_button_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .button:hover',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_grid_item_button_border_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .button:hover',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_button', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'background_switcher_hover',
+							'attr_id' => 'background_switcher_hover_button',
+							'type' => 'switch',
+							'class' => 'mfn-fields-switcher disable-history',
+							'title' => __('Background type', 'mfn-opts'),
+							'options' => array(
+		  					'default' => __('Default', 'mfn-opts'),
+		  					'gradient' 	=> __('Gradient', 'mfn-opts'),
+		  				),
+							'visual_options' => array(
+		  					'default' => '',
+		  					'gradient' 	=> '',
+		  				),
+		  				'std' => 'default',
+						),
+
+						array(
+							'id' => 'css_grid_item_button_background_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .button:hover, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .button:before',
+							'style' => 'background',
+							'condition' => array( 'id' => 'background_switcher_hover_button', 'opt' => 'is', 'val' => 'default' ),
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Background color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_grid_item_button_gradient_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .button:hover, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .button:before',
+							'style' => 'gradient',
+		  				'condition' => array( 'id' => 'background_switcher_hover_button', 'opt' => 'is', 'val' => 'gradient' ),
+		  				'type' => 'gradient',
+		  				'title' => __('Gradient', 'mfn-opts'),
+		  				'class' => 'mfn-toggled',
+							'css_attr' => 'gradient',
+		  			),
+
+						array(
+							'type' => 'html',
+							'html' => '</div></div>',
+						),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   					// HTML end: style
+
+						array(
+   						'type' => 'html',
+   						'html' => '</div>',
+   					),
+
+					),
+   			),
+
+
+
+
+
+
+
+
+
 
 		// thank you ----------------------------------------------------
 
@@ -9199,13 +11007,44 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'title' => __('Typography', 'mfn-opts'),
 						),
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 						array(
 							'type' => 'subheader',
 							'class' => 'mfn-builder-subheader mfn-toggled',
    						'title' => __('Quantity', 'mfn-opts'),
    					),
 
-   					array(
+
+
+
+
+						array(
 							'id' => 'css_tableshop_inputqty_background',
 							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement table.shop_table.cart .quantity input.qty',
 							'style' => 'background',
@@ -9224,13 +11063,75 @@ if( ! class_exists('Mfn_Builder_Fields') )
 						),
 
 						array(
+							'id' => 'css_tableshop_inputqty_border_style',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement table.shop_table.cart .quantity input.qty',
+							'style' => 'border-style',
+							'attr_id' => 'border_qty_input',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
 							'id' => 'css_tableshop_inputqty_border_color',
 							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement table.shop_table.cart .quantity input.qty',
 							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_qty_input', 'opt' => 'isnt', 'val' => 'none' ),
 							'type' => 'color',
-							'class' => 'main-color mfn-toggled',
+							'class' => 'mfn-toggled',
 							'title' => __('Border color', 'mfn-opts'),
 						),
+
+						array(
+							'id' => 'css_tableshop_inputqty_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement table.shop_table.cart .quantity input.qty',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_qty_input', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+		  			array(
+							'id' => 'css_tableshop_inputqty_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement table.shop_table.cart .quantity input.qty',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_tableshop_inputqty_height',
+		  				'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement table.shop_table.cart .quantity input.qty',
+							'style' => 'height',
+							'type' => 'sliderbar',
+							'default_unit' => 'px',
+							'title' => __('Height', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'narrow mfn-toggled',
+							'param' => array(
+								'unit' => 'px',
+								'min' => '15',
+								'max' => '100',
+								'step' => '1',
+							),
+							'std' => '52px',
+						),
+
+
+
+
 
 						array(
 							'id' => 'css_tableshop_aquantity-change_color',
@@ -9240,6 +11141,56 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'class' => 'main-color mfn-toggled',
 							'title' => __('Plus/Minus color', 'mfn-opts'),
 						),
+
+						array(
+							'id' => 'css_tableshop_aquantity-change_bg',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement table.shop_table.cart .quantity a.quantity-change',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Plus/Minus background', 'mfn-opts'),
+						),
+
+
+						array(
+							'id' => 'css_tableshop_aquantity-change_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement table.shop_table.cart .quantity a.quantity-change',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Plus/Minus border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 						array(
 							'type' => 'subheader',
@@ -10520,6 +12471,27 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'css_attr' => 'border-radius',
 		  			),
 
+		  			array(
+							'id' => 'css_product_image_bg',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .image_frame',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background color', 'mfn-opts'),
+						),
+
+
+		  			array(
+							'id' => 'css_product_image_margin',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .mfn-li-product-row-image',
+							'style' => 'margin',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Margin', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
 		  			// title
 
 						array(
@@ -11330,6 +13302,39 @@ if( ! class_exists('Mfn_Builder_Fields') )
    				),
    			),
 
+				// ALIAS: Custom query heading ----------------------------------------------------
+
+   			'heading_title' => array(
+   				'type' => 'heading',
+   				'title' => __('Title', 'mfn-opts'),
+   				'cat' => 'custom_query_loop',
+   			),
+
+   			'heading_price' => array(
+   				'type' => 'heading',
+   				'title' => __('Price', 'mfn-opts'),
+   				'cat' => 'custom_query_loop',
+   			),
+
+   			'image_featured_image' => array(
+   				'type' => 'image',
+   				'title' => __('Featured image', 'mfn-opts'),
+   				'cat' => 'custom_query_loop',
+   			),
+
+   			'button_read_more' => array(
+   				'type' => 'button',
+   				'title' => __('Read more', 'mfn-opts'),
+   				'cat' => 'custom_query_loop',
+   			),
+
+   			'plain_text_excerpt' => array(
+   				'type' => 'plain_text',
+   				'title' => __('Excerpt', 'mfn-opts'),
+   				'cat' => 'custom_query_loop',
+   			),
+			
+
    			// ALIAS: Blog Heading ----------------------------------------------------
 
    			'archive_heading' => array(
@@ -11798,8 +13803,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'class' => 'mfn-toggled',
 		  			),
 
-
-
 		  			array(
 							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-menu-wrapper:border-color',
 							'id' => 'css_menu-wrapper_border_color',
@@ -11822,10 +13825,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'class' => 'mfn-toggled',
 		  			),
 
-
-
-
-
    					array(
    						'type' => 'subheader',
 							'class' => 'mfn-builder-subheader mfn-toggled',
@@ -11838,6 +13837,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.mfn-sidemenu-menu li a.mfn-menu-link',
 							'style' => 'justify-content',
 							'type' => 'switch',
+							'class' => 'mfn-toggled',
 							'responsive' => true,
 							'title' => __('Alignment', 'mfn-opts'),
 							'options' => array(
@@ -11847,9 +13847,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							),
 							'std' => '',
 						),
-
-
-
 
    					array(
 		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.mfn-sidemenu-menu li a.mfn-menu-link:padding',
@@ -11862,8 +13859,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'responsive' => true,
 							'class' => 'mfn-toggled',
 		  			),
-
-
 
 		  			array(
 		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.mfn-sidemenu-menu li a.mfn-menu-link:margin',
@@ -12190,6 +14185,23 @@ if( ! class_exists('Mfn_Builder_Fields') )
 								'step' => '1',
 								'unit' => 'px',
 							)
+						),
+
+						array(
+							'id' => 'css_sidemenu-menuli_sidemenu_submenu_icon_offset_top',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-sidemenu-menu li',
+							'style' => '--mfn-sidemenu-submenu-icon-offset-top',
+							'type' => 'sliderbar',
+							'responsive' => true,
+							'title' => __('Offset top', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							),
+							'std' => array('desktop' => '4px')
 						),
 
 
@@ -13465,1054 +15477,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 					),
    			),
 
-   			// Mega menu Menu ----------------------------------------------------
 
-   			'megamenu_menu' => array(
-   				'type' => 'megamenu_menu',
-   				'title' => __('Menu', 'mfn-opts'),
-   				'size' => '1/1',
-   				'tablet_size' => '1/1',
-   				'mobile_size' => '1/1',
-   				'tablet_resized' => '0',
-   				'cat' => 'megamenu',
-   				'attr' => array(
-   				//'fields' => array(
-
-						/*array(
-							'type' => 'html',
-							'html' => $this->itemtabs,
-						),*/
-
-   					array(
-							'type' => 'html',
-							'html' => '<div class="modalbox-card modalbox-re_render modalbox-card-content">',
-						),
-
-						array(
-							'type' => 'header',
-							'title' => __('Menu', 'mfn-opts'),
-						),
-
-						array(
-   						'id' => 'menu_display',
-   						'type' => 'select',
-   						're_render' => true,
-   						'title' => __('Menu to display', 'mfn-opts'),
-							//'options' => mfna_menu(),
-							'js_options' => 'menus',
-   					),
-
-   					array(
-   						'id' => 'menu_style',
-   						'attr_id' => 'menu_style',
-   						'type' => 'select',
-   						're_render' => true,
-   						'title' => __('Style', 'mfn-opts'),
-							'options' => array(
-								'vertical' => __('Vertical', 'mfn-opts'),
-								'horizontal' => __('Horizontal', 'mfn-opts'),
-							),
-							'std' => 'vertical'
-   					),
-
-   					array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu.mfn-mm-menu-horizontal:justify-content',
-							'id' => 'css_megamenu-menu-mm-menu-horizontal_justify_content',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu.mfn-mm-menu-horizontal',
-							'style' => 'justify-content',
-							'attr_id' => 'menu-items-alignment',
-							'condition' => array( 'id' => 'menu_style', 'opt' => 'is', 'val' => 'horizontal' ),
-							'type' => 'select',
-							'responsive' => true,
-
-							'title' => __('Alignment', 'mfn-opts'),
-							'options' => array(
-								'flex-start' => 'Left',
-								'center' => 'Center',
-								'flex-end' => 'Right',
-								'space-between' => 'Space between',
-								'space-around' => 'Space around',
-								'space-evenly' => 'Space evenly',
-							),
-							'std' => 'flex-start',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu.mfn-mm-menu-horizontal > li:flex-grow',
-							'id' => 'css_megamenu-menu-mm-menu-horizontalli_flex_grow',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu.mfn-mm-menu-horizontal > li',
-							'style' => 'flex-grow',
-							'condition' => array( 'id' => 'menu_style', 'opt' => 'is', 'val' => 'horizontal' ),
-							'type' => 'select',
-							'responsive' => true,
-
-							'title' => __('Fit container', 'mfn-opts'),
-							'options' => [
-								'unset' => __('Default', 'mfn-opts'),
-								'1' => __('Fit', 'mfn-opts'),
-							],
-						),
-						array(
-							'id' => 'submenu_on',
-							'attr_id' => 'submenu_on',
-							're_render' => true,
-							'condition' => array( 'id' => 'menu_style', 'opt' => 'is', 'val' => 'vertical' ),
-							'type' => 'switch',
-							'title' => __('Submenu visibility', 'mfn-opts'),
-							'options' => array(
-								'visible' => 'Visible',
-								'toggled' => 'Toggled',
-							),
-							'std' => 'visible',
-						),
-
-						array(
-							'id' => 'submenu_hori_on',
-							're_render' => true,
-							'condition' => array( 'id' => 'menu_style', 'opt' => 'is', 'val' => 'horizontal' ),
-							'type' => 'switch',
-							'title' => __('Submenu visibility', 'mfn-opts'),
-							'options' => array(
-								'hover' => 'on Hover',
-								'click' => 'on Click',
-							),
-							'std' => 'hover',
-						),
-
-   					array(
-   						'type' => 'header',
-							'title' => __('Icon', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a .menu-icon:display',
-							'id' => 'css_megamenu-icon_display',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a .menu-icon',
-							'style' => 'display',
-							'attr_id' => 'icon_mm_visibility',
-							'type' => 'switch',
-							'title' => __('Icon visibility', 'mfn-opts'),
-							'options' => array(
-								'block' => 'Show',
-								'none' 	=> 'Hide',
-							),
-							'std' => 'block',
-						),
-
-						array(
-   						'id' => 'icon_align',
-   						//'condition' => array( 'id' => 'icon_mm_visibility', 'opt' => 'is', 'val' => 'block' ),
-   						'type' => 'switch',
-   						'title' => __('Icon align', 'mfn-opts'),
-							'options' => array(
-								'left' => 'Left',
-								'top' => 'Top',
-								'right' => 'Right'
-							),
-							'std' => 'left'
-   					),
-
-						array(
-   						'id' => 'icon_animation',
-   						//'condition' => array( 'id' => 'icon_mm_visibility', 'opt' => 'is', 'val' => 'block' ),
-   						'type' => 'select',
-   						'title' => __('Icon animation', 'mfn-opts'),
-							'options' => array(
-								'' => __('None', 'mfn-opts'),
-								'rotate' => 'Rotate',
-								'zoom' => 'Zoom'
-							),
-   					),
-
-   					array(
-   						'type' => 'header',
-							'title' => __('Submenu', 'mfn-opts'),
-						),
-
-   					array(
-							'id' => 'submenu',
-							'attr_id' => 'submenu',
-							're_render' => true,
-							'type' => 'switch',
-							'title' => __('Submenu', 'mfn-opts'),
-							'options' => array(
-								'on' => 'Show',
-								'off' => 'Hide',
-							),
-							'std' => 'on',
-						),
-
-						array(
-   						'id' => 'submenu_animation',
-   						'condition' => array( 'id' => 'submenu', 'opt' => 'is', 'val' => 'on' ),
-   						'type' => 'select',
-   						'title' => __('Submenu Animation', 'mfn-opts'),
-							'options' => array(
-								'' => __('None', 'mfn-opts'),
-								'fade-in' => 'Fade In',
-								'fade-up' => 'Fade In Up'
-							),
-   					),
-
-						array(
-							'id' => 'submenu_icon',
-							'condition' => array( 'id' => 'submenu', 'opt' => 'is', 'val' => 'on' ),
-							'type' => 'icon',
-							'title' => __('Submenu icon', 'mfn-opts'),
-							'preview' => 'icon',
-							'std' => 'fas fa-arrow-down'
-						),
-
-						array(
-   						'id' => 'submenu_icon_animation',
-   						'type' => 'select',
-   						'condition' => array( 'id' => 'submenu', 'opt' => 'is', 'val' => 'on' ),
-   						'title' => __('Icon Animation', 'mfn-opts'),
-							'options' => array(
-								'' => __('None', 'mfn-opts'),
-								'rotate' => 'Rotate',
-								'zoom' => 'Zoom'
-							),
-   					),
-
-   					array(
-   						'type' => 'header',
-							'title' => __('Desc', 'mfn-opts'),
-						),
-
-   					array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a .menu-desc:display',
-							'id' => 'css_megamenu-desc_display',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a .menu-desc',
-							'style' => 'display',
-							'type' => 'switch',
-							'title' => __('Desc visibility', 'mfn-opts'),
-							'options' => array(
-								'block' => 'Show',
-								'none' 	=> 'Hide',
-							),
-							'std' => 'block',
-						),
-
-						array(
-							'type' => 'header',
-							'title' => __('Decoration icon', 'mfn-opts'),
-						),
-
-						array(
-							'id' => 'decoration_icon',
-							'type' => 'icon',
-							'title' => __('Decoration icon', 'mfn-opts'),
-							'preview' => 'icon',
-						),
-
-						array(
-							'type' => 'html',
-							'html' => '</div><div class="modalbox-card modalbox-card-style modalbox-re_render">',
-						),
-
-						array(
-							'type' => 'header',
-							'class' => 'toggled_header',
-   						'title' => __('Menu', 'mfn-opts'),
-   					),
-
-   					array(
-   						'type' => 'subheader',
-							'class' => 'mfn-builder-subheader mfn-toggled',
-							'title' => __('Items', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a:typography',
-							'id' => 'css_megamenu-menua_typography',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a',
-							'style' => 'typography',
-							'responsive' => true,
-							'type' => 'typography_vb',
-							'label_tools' => true,
-							'class' => 'mfn-toggled toggle_fields',
-							'title' => __('Typography', 'mfn-opts'),
-						),
-
-						array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a:padding',
-							'id' => 'css_megamenu-menua_padding',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a',
-							'style' => 'padding',
-		  				'type' => 'dimensions',
-		  				'version' => 'separated-fields',
-		  				'title' => __('Padding', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-		  			),
-
-
-
-		  			array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a:border-style',
-							'id' => 'css_megamenu-menulia_border_style',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a',
-							'style' => 'border-style',
-							'attr_id' => 'border_style_header_mm_menu_link',
-							'type' => 'select',
-							'class' => 'mfn-toggled',
-							'title' => __('Border style', 'mfn-opts'),
-							'options' => [
-								'none' => __('None', 'mfn-opts'),
-								'solid' => __('Solid', 'mfn-opts'),
-								'dashed' => __('Dashed', 'mfn-opts'),
-								'dotted' => __('Dotted', 'mfn-opts'),
-								'double' => __('Double', 'mfn-opts'),
-							],
-						),
-
-						array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a:border-width',
-							'id' => 'css_megamenu-menulia_border_width',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a',
-							'style' => 'border-width',
-		  				'condition' => array( 'id' => 'border_style_header_mm_menu_link', 'opt' => 'isnt', 'val' => 'none' ),
-		  				'type' => 'dimensions',
-		  				'title' => __('Border width', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-		  			),
-
-
-
-		  			array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a:border-radius',
-							'id' => 'css_megamenu-menulia_border_radius',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a',
-							'style' => 'border-radius',
-		  				'type' => 'dimensions',
-		  				'title' => __('Border radius', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-		  			),
-
-
-
-		  			array(
-							'type' => 'html',
-							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li><li><a href="#active" data-tab="active">Active</a></li></ul><div class="mfn-sft mfn-sft-normal">',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a:color',
-							'id' => 'css_megamenu-menua_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a:background-color',
-							'id' => 'css_megamenu-menua_background_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a',
-							'style' => 'background-color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Background', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a:border-color',
-							'id' => 'css_megamenu-menulia_border_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a',
-							'style' => 'border-color',
-							'condition' => array( 'id' => 'border_style_header_mm_menu_link', 'opt' => 'isnt', 'val' => 'none' ),
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Border color', 'mfn-opts'),
-						),
-
-						array(
-							'type' => 'html',
-							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a|hover:color',
-							'id' => 'css_megamenu-menua_color_hover',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.mfn-megamenu-menu li a:hover',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a|hover:background-color',
-							'id' => 'css_megamenu-menua_background_color_hover',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a:hover',
-							'style' => 'background-color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Background', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a|hover:border-color',
-							'id' => 'css_megamenu-menulia_border_color_hover',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a:hover',
-							'style' => 'border-color',
-							'condition' => array( 'id' => 'border_style_header_mm_menu_link', 'opt' => 'isnt', 'val' => 'none' ),
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Border color', 'mfn-opts'),
-						),
-
-						array(
-							'type' => 'html',
-							'html' => '</div><div class="mfn-sft mfn-sft-active">',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu .current-menu-item > a:color',
-							'id' => 'css_megamenu-menucurrent-menu-itema_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu .current-menu-item > a,.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu .current-menu-ancestor > a,.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu .current-product_cat-ancestor > a',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu .current-menu-item > a:background-color',
-							'id' => 'css_megamenu-menucurrent-menu-itema_background_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu .current-menu-item > a,.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu .current-menu-ancestor > a,.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu .current-product_cat-ancestor > a',
-							'style' => 'background-color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Background', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu .current-menu-item > li > a:border-color',
-							'id' => 'css_megamenu-menucurrent-menu-itemlia_border_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu .current-menu-item > a,.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu .current-menu-ancestor > a,.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu .current-product_cat-ancestor > a',
-							'style' => 'border-color',
-							'condition' => array( 'id' => 'border_style_header_mm_menu_link', 'opt' => 'isnt', 'val' => 'none' ),
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Border color', 'mfn-opts'),
-						),
-
-						array(
-							'type' => 'html',
-							'html' => '</div></div>',
-						),
-
-						array(
-							'type' => 'subheader',
-							'class' => 'mfn-builder-subheader mfn-toggled',
-							'title' => __('Icon', 'mfn-opts'),
-						),
-
-   					array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li:--mfn-megamenu-menu-icon-gap',
-							'id' => 'css_megamenu-menuli_menu_icon_gap',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li',
-							'style' => '--mfn-megamenu-menu-icon-gap',
-							'type' => 'sliderbar',
-							//'condition' => array( 'id' => 'icon_visibility', 'opt' => 'is', 'val' => 'block' ),
-							'responsive' => true,
-							'title' => __('Gap', 'mfn-opts'),
-							'class' => 'mfn-toggled',
-							'param' => array(
-								'min' => '0',
-								'max' => '100',
-								'step' => '1',
-								'unit' => 'px',
-							)
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li:--mfn-megamenu-menu-icon-size',
-							'id' => 'css_megamenu-menuli_menu_icon_size',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li',
-							'style' => '--mfn-megamenu-menu-icon-size',
-							'type' => 'sliderbar',
-							'responsive' => true,
-							'title' => __('Icon size', 'mfn-opts'),
-							'class' => 'mfn-toggled',
-							'param' => array(
-								'min' => '0',
-								'max' => '100',
-								'step' => '1',
-								'unit' => 'px',
-							)
-						),
-
-
-						array(
-							'type' => 'html',
-							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li><li><a href="#active" data-tab="active">Active</a></li></ul><div class="mfn-sft mfn-sft-normal">',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu .menu-icon > i:color',
-							'id' => 'css_megamenu-menumenu-iconi_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu .menu-icon > i',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'type' => 'html',
-							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a|hover > .menu-icon > i:color',
-							'id' => 'css_megamenu-menuamenu-iconi_color_hover',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a:hover > .menu-icon > i',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'type' => 'html',
-							'html' => '</div><div class="mfn-sft mfn-sft-active">',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li.current-menu-item > a > .menu-icon i:color',
-							'id' => 'css_megamenu-menulicurrent-menu-itemamenu-iconi_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li.current-menu-item > a > .menu-icon i',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'type' => 'html',
-							'html' => '</div></div>',
-						),
-
-						array(
-							'type' => 'subheader',
-							'class' => 'mfn-builder-subheader mfn-toggled',
-							'title' => __('Submenu icon', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li:--mfn-megamenu-menu-submenu-icon-gap',
-							'id' => 'css_megamenu-menuli_menu_submenu_icon_gap',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li',
-							'style' => '--mfn-megamenu-menu-submenu-icon-gap',
-							'type' => 'sliderbar',
-							'responsive' => true,
-							'title' => __('Gap', 'mfn-opts'),
-							'class' => 'mfn-toggled',
-							'param' => array(
-								'min' => '0',
-								'max' => '100',
-								'step' => '1',
-								'unit' => 'px',
-							)
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li .menu-sub i:--mfn-megamenu-submenu-icon-size',
-							'id' => 'css_megamenu-menulimenu-subi_megamenu_submenu_icon_size',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li .menu-sub i',
-							'style' => '--mfn-megamenu-submenu-icon-size',
-							'type' => 'sliderbar',
-							'responsive' => true,
-							'title' => __('Icon size', 'mfn-opts'),
-							'class' => 'mfn-toggled',
-							'param' => array(
-								'min' => '0',
-								'max' => '100',
-								'step' => '1',
-								'unit' => 'px',
-							)
-						),
-
-						array(
-							'type' => 'html',
-							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li><li><a href="#active" data-tab="active">Active</a></li></ul><div class="mfn-sft mfn-sft-normal">',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a .menu-sub i:color',
-							'id' => 'css_megamenu-menuliamenu-subi_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a .menu-sub i',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'type' => 'html',
-							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a|hover .menu-sub i:color',
-							'id' => 'css_megamenu-menuliamenu-subi_color_hover',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a:hover .menu-sub i',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'type' => 'html',
-							'html' => '</div><div class="mfn-sft mfn-sft-active">',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li.current-menu-item > a .menu-sub i:color',
-							'id' => 'css_megamenu-menulicurrent-menu-itemamenu-subi_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li.current-menu-item > a .menu-sub i',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'type' => 'html',
-							'html' => '</div></div>',
-						),
-
-						array(
-							'type' => 'header',
-							'class' => 'toggled_header',
-							'condition' => array( 'id' => 'submenu', 'opt' => 'is', 'val' => 'on' ),
-   						'title' => __('Submenu', 'mfn-opts'),
-   					),
-
-   					array(
-   						'type' => 'subheader',
-							'class' => 'mfn-builder-subheader mfn-toggled',
-							'title' => __('Container', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li > ul:background-color',
-							'id' => 'css_megamenu-menuliul_background_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li > ul',
-							'style' => 'background-color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Background', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li > ul:border-style',
-							'id' => 'css_megamenu-menuliul_border_style',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li > ul',
-							'style' => 'border-style',
-							'attr_id' => 'border_style_header_submenu',
-							'type' => 'select',
-							'class' => 'mfn-toggled',
-							'title' => __('Border style', 'mfn-opts'),
-							'options' => [
-								'none' => __('None', 'mfn-opts'),
-								'solid' => __('Solid', 'mfn-opts'),
-								'dashed' => __('Dashed', 'mfn-opts'),
-								'dotted' => __('Dotted', 'mfn-opts'),
-								'double' => __('Double', 'mfn-opts'),
-							],
-						),
-
-						array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul:border-width',
-							'id' => 'css_megamenu-menuliul_border_width',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul',
-							'style' => 'border-width',
-		  				'condition' => array( 'id' => 'border_style_header_submenu', 'opt' => 'isnt', 'val' => 'none' ),
-		  				'type' => 'dimensions',
-		  				'title' => __('Border width', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-		  			),
-
-
-		  			array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul:border-color',
-							'id' => 'css_megamenu-menuliul_border_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul',
-							'style' => 'border-color',
-							'condition' => array( 'id' => 'border_style_header_submenu', 'opt' => 'isnt', 'val' => 'none' ),
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Border color', 'mfn-opts'),
-						),
-
-		  			array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul:box-shadow',
-							'id' => 'css_megamenu-menuliul_box_shadow',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul',
-							'style' => 'box-shadow',
-		  				'type' => 'box_shadow',
-		  				'title' => __('Box shadow', 'mfn-opts'),
-							'class' => 'mfn-toggled',
-		  			),
-
-		  			array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul:--mfn-megamenu-submenu-border-radius',
-							'id' => 'css_megamenu-menuliul_megamenu_submenu_border_radius',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul',
-							'style' => '--mfn-megamenu-submenu-border-radius',
-							'type' => 'dimensions',
-							'title' => __('Border radius', 'mfn-opts'),
-							'class' => 'mfn-toggled',
-							'version' => 'separated-fields',
-						),
-
-   					array(
-   						'type' => 'subheader',
-							'class' => 'mfn-builder-subheader mfn-toggled',
-							'title' => __('Items', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul a:typography',
-							'id' => 'css_megamenu-menuliula_typography',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul a',
-							'style' => 'typography',
-							'responsive' => true,
-							'type' => 'typography_vb',
-							'label_tools' => true,
-							'class' => 'mfn-toggled toggle_fields',
-							'title' => __('Typography', 'mfn-opts'),
-						),
-
-						array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul li a:padding',
-							'id' => 'css_megamenu-menuliullia_padding',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul li a',
-							'style' => 'padding',
-		  				'type' => 'dimensions',
-		  				'version' => 'separated-fields',
-		  				'title' => __('Padding', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-		  			),
-
-		  			array(
-							'type' => 'html',
-							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li><li><a href="#active" data-tab="active">Active</a></li></ul><div class="mfn-sft mfn-sft-normal">',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul a:color',
-							'id' => 'css_megamenu-menuliula_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul a',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul li a:background-color',
-							'id' => 'css_megamenu-menuliullia_background_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul li a',
-							'style' => 'background-color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Background color', 'mfn-opts'),
-						),
-
-						array(
-							'type' => 'html',
-							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul a|hover:color',
-							'id' => 'css_megamenu-menuliula_color_hover',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul a:hover',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'type' => 'html',
-							'html' => '</div><div class="mfn-sft mfn-sft-active">',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul .current-menu-item > a:color',
-							'id' => 'css_megamenu-menuliulcurrent-menu-itema_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul .current-menu-item > a',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'type' => 'html',
-							'html' => '</div></div>',
-						),
-
-						array(
-							'type' => 'subheader',
-							'class' => 'mfn-builder-subheader mfn-toggled',
-							'title' => __('Icon', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li:--mfn-megamenu-submenu-subicon-gap',
-							'id' => 'css_megamenu-menuli_submenu_subicon_gap',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li',
-							'style' => '--mfn-megamenu-submenu-subicon-gap',
-							'type' => 'sliderbar',
-							'responsive' => true,
-							'title' => __('Gap', 'mfn-opts'),
-							'class' => 'mfn-toggled',
-							'param' => array(
-								'min' => '0',
-								'max' => '100',
-								'step' => '1',
-								'unit' => 'px',
-							)
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul li .menu-icon i:--mfn-megamenu-submenu-subicon-size',
-							'id' => 'css_megamenu-menuliullimenu-iconi_megamenu_submenu_subicon_size',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul li .menu-icon i',
-							'style' => '--mfn-megamenu-submenu-subicon-size',
-							'type' => 'sliderbar',
-							'responsive' => true,
-							'title' => __('Icon size', 'mfn-opts'),
-							'class' => 'mfn-toggled',
-							'param' => array(
-								'min' => '0',
-								'max' => '100',
-								'step' => '1',
-								'unit' => 'px',
-							)
-						),
-
-						array(
-							'type' => 'html',
-							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li><li><a href="#active" data-tab="active">Active</a></li></ul><div class="mfn-sft mfn-sft-normal">',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a .menu-sub i:color',
-							'id' => 'css_megamenu-menuliamenu-subi_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a .menu-sub i',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'type' => 'html',
-							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a|hover .menu-sub i:color',
-							'id' => 'css_megamenu-menuliamenu-subi_color_hover',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a:hover .menu-sub i',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'type' => 'html',
-							'html' => '</div><div class="mfn-sft mfn-sft-active">',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li.current-menu-item > a .menu-sub i:color',
-							'id' => 'css_megamenu-menulicurrent-menu-itemamenu-subi_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li.current-menu-item > a .menu-sub i',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'type' => 'html',
-							'html' => '</div></div>',
-						),
-
-						array(
-							'type' => 'subheader',
-							'class' => 'mfn-builder-subheader mfn-toggled',
-							'title' => __('Submenu icon', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul li .menu-sub i:--mfn-megamenu-submenu-submenu-icon-size',
-							'id' => 'css_megamenu-menuliullimenu-subi_megamenu_submenu_submenu_icon_size',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul li .menu-sub i',
-							'style' => '--mfn-megamenu-submenu-submenu-icon-size',
-							'type' => 'sliderbar',
-							'responsive' => true,
-							'title' => __('Icon size', 'mfn-opts'),
-							'class' => 'mfn-toggled',
-							'param' => array(
-								'min' => '0',
-								'max' => '100',
-								'step' => '1',
-								'unit' => 'px',
-							)
-						),
-
-						array(
-							'type' => 'html',
-							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li><li><a href="#active" data-tab="active">Active</a></li></ul><div class="mfn-sft mfn-sft-normal">',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul > li > a .menu-sub i:color',
-							'id' => 'css_megamenu-menuliulliamenu-subi_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul > li > a .menu-sub i',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'type' => 'html',
-							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul > li > a|hover .menu-sub i:color',
-							'id' => 'css_megamenu-menuliulliamenu-subi_color_hover',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul > li > a:hover .menu-sub i',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'type' => 'html',
-							'html' => '</div><div class="mfn-sft mfn-sft-active">',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul > li.current-menu-item > a .menu-sub i:color',
-							'id' => 'css_megamenu-menuliullicurrent-menu-itemamenu-subi_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul > li.current-menu-item > a .menu-sub i',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'type' => 'html',
-							'html' => '</div></div>',
-						),
-
-						array(
-							'type' => 'header',
-							'type' => 'header',
-							'class' => 'toggled_header',
-							'title' => __('Decoration icon', 'mfn-opts'),
-						),
-
-						array(
-							'type' => 'html',
-							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li><li><a href="#active" data-tab="active">Active</a></li></ul><div class="mfn-sft mfn-sft-normal">',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li a .decoration-icon i:color',
-							'id' => 'css_megamenu-menuliadecoration-iconi_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li a .decoration-icon i',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'type' => 'html',
-							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li|hover > a > .decoration-icon i:color',
-							'id' => 'css_megamenu-menuliadecoration-iconi_color_hover',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li:hover > a > .decoration-icon i',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'type' => 'html',
-							'html' => '</div><div class="mfn-sft mfn-sft-active">',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li.current-menu-item > a .decoration-icon i:color',
-							'id' => 'css_megamenu-menulicurrent-menu-itemadecoration-iconi_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li.current-menu-item > a .decoration-icon i',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'type' => 'html',
-							'html' => '</div></div>',
-						),
-
-
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li a .decoration-icon i:font-size',
-							'id' => 'css_megamenu-menuliadecoration-iconi_font_size',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li a .decoration-icon i',
-							'style' => 'font-size',
-							'type' => 'sliderbar',
-							'responsive' => true,
-							'title' => __('Icon size', 'mfn-opts'),
-							'class' => 'mfn-toggled',
-							'param' => array(
-								'min' => '0',
-								'max' => '100',
-								'step' => '1',
-								'unit' => 'px',
-							)
-						),
-
-
-
-						array(
-							'type' => 'html',
-							'html' => '</div>',
-						),
-
-					),
-   			),
 
    			// Logo ----------------------------------------------------
 
@@ -14638,10 +15603,11 @@ if( ! class_exists('Mfn_Builder_Fields') )
 								'flex-end' => 'Right',
 								'space-between' => 'Space between',
 								'space-around' => 'Space around',
-								'space-evenly' => 'Space evenly',
+								'space-evenly' => 'Space evenly'
 							),
 							'std' => 'flex-end',
 						),
+
 						array(
 							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-header-menu > li.mfn-menu-li:flex-grow',
 							'id' => 'css_menu-li_flex_grow',
@@ -14650,12 +15616,14 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'condition' => array( 'id' => 'menu-items-alignment', 'opt' => 'is', 'val' => array('space-between', 'space-around', 'space-evenly') ),
 							'type' => 'select',
 							'responsive' => true,
-
-							'title' => __('Fit container', 'mfn-opts'),
+							'required' => true,
+							'title' => __('Menu items', 'mfn-opts'),
 							'options' => [
-								'unset' => __('Default', 'mfn-opts'),
-								'1' => __('Fit', 'mfn-opts'),
+								'' => __('Default', 'mfn-opts'),
+								'unset' => __('Unset', 'mfn-opts'),
+								'1' => __('Stretch', 'mfn-opts'),
 							],
+							'std' => '',
 						),
 
    					array(
@@ -15216,7 +16184,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 						array(
 							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-header-menu > li.mfn-menu-li > a.mfn-menu-link|hover .mfn-menu-subicon i:color',
 							'id' => 'css_menu-linkhover-menu-subiconi_color_hover',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-header-menu > li.mfn-menu-li > a.mfn-menu-link:hover .mfn-menu-subicon i',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-header-menu > li.mfn-menu-li:hover > a.mfn-menu-link > .mfn-menu-subicon i',
 							'style' => 'color',
 							'type' => 'color',
 							'class' => 'mfn-toggled',
@@ -16812,7 +17780,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 								'right' => __('Right', 'mfn-opts'),
 							),
 							'std' => 'top',
-							'responsive' => true,
 							'class' => 'mfn-toggled',
 						),
 
@@ -17610,6 +18577,25 @@ if( ! class_exists('Mfn_Builder_Fields') )
 						),
 
 						array(
+   						'id' => 'link_type',
+   						'attr_id' => 'link_type',
+   						'type' => 'select',
+   						'title' => __('On click action', 'mfn-opts'),
+   						'options' => array(
+   							'' => __('Default', 'mfn-opts'),
+   							'1' => __('Open popup', 'mfn-opts'),
+   						),
+   						'std' => ''
+   					),
+
+   					array(
+   						'id' => 'popup_id',
+   						'type' => 'text',
+   						'condition' => array( 'id' => 'link_type', 'opt' => 'is', 'val' => '1' ),
+   						'title' => __('Popup ID', 'mfn-opts'),
+   					),
+
+						array(
 							'id' => 'link',
 							'condition' => array( 'id' => 'header_icon_type', 'opt' => 'is', 'val' => 'tel,mail,default' ),
 							'type' => 'text',
@@ -17952,7 +18938,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'class' => 'mfn-toggled header-icon-hori-count',
 							'param' => array(
 								'min' => '-50',
-								'max' => '100',
+								'max' => '200',
 								'step' => '1',
 								'unit' => 'px',
 							),
@@ -17970,8 +18956,8 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'title' => __('Left', 'mfn-opts'),
 							'class' => 'mfn-toggled header-icon-hori-count',
 							'param' => array(
-								'min' => '0',
-								'max' => '100',
+								'min' => '-50',
+								'max' => '200',
 								'step' => '1',
 								'unit' => 'px',
 							)
@@ -18761,1506 +19747,21 @@ if( ! class_exists('Mfn_Builder_Fields') )
    				),
    			),
 
-				// Shop Products ----------------------------------------------------
 
-   			'shop_products' => array(
-   				'type' => 'shop_products',
-   				'title' => __('Shop products', 'mfn-opts'),
-   				'desc' => __('List of products from woocommerce', 'mfn-opts'),
-   				'size' => '1/1',
-   				'tablet_size' => '1/1',
-   				'mobile_size' => '1/1',
-   				'tablet_resized' => '0',
-   				'cat' => 'shop-archive',
-   				'attr' => array(
-   				//'fields' => array(
 
-   					array(
-							'type' => 'html',
-							'html' => '<div class="modalbox-card modalbox-re_render modalbox-card-content">',
-						),
 
-						array(
-   						'id' => 'products',
-   						'type' => 'text',
-   						're_render' => true,
-   						'title' => __('Products per page', 'mfn-opts'),
-   						'std' => '12',
-   						'after' => 'products',
-   						'param' => 'number',
-   						'class' => 'narrow',
-							'preview' => 'number',
-   					),
 
-   					array(
-   						'id' => 'layout',
-   						'type' => 'select',
-   						're_render' => true,
-   						'title' => __('Columns', 'mfn-opts'),
-							'options' => array(
-								'grid col-2' => __('Grid, 2 columns', 'mfn-opts'),
-								'grid' => __('Grid, 3 columns', 'mfn-opts'),
-								'grid col-4' => __('Grid, 4 columns', 'mfn-opts'),
-								'masonry' => __('Masonry, 3 columns', 'mfn-opts'),
-								'list' => __('List', 'mfn-opts'),
-							),
-   						'std' => 'grid',
-   					),
 
-   					array(
-   						'id' => 'ordering',
-   						'type' => 'select',
-   						're_render' => true,
-   						'title' => __('Order', 'mfn-opts'),
-							'options' => array(
-								'' => __('Default', 'mfn-opts'),
-								'menu_order' => __('Menu order', 'mfn-opts'),
-								'popularity' => __('Sales', 'mfn-opts'),
-								'rating' => __('Average rating', 'mfn-opts'),
-								'date' => __('Most recent', 'mfn-opts'),
-								'price' => __('Lowest price', 'mfn-opts'),
-								'price-desc' => __('Highest price', 'mfn-opts'),
-							),
-   						'std' => '',
-   					),
 
-						// options
 
-   					array(
-   						'type' => 'header',
-   						'title' => __('Options', 'mfn-opts'),
-   					),
 
-						array(
-							'id' => 'description',
-							're_render' => true,
-							'type' => 'switch',
-							'title' => __('Description', 'mfn-opts'),
-							'options' => array(
-								'0' => __('Hide', 'mfn-opts'),
-								'1' => __('Show', 'mfn-opts'),
-                'list' => __('List layout only', 'mfn-opts'),
-							),
-							'std' => '0'
-						),
 
-						array(
-							'id' => 'button',
-							're_render' => true,
-							'type' => 'switch',
-							'title' => __('Add to cart button', 'mfn-opts'),
-							'desc' => __('Required for some plugins', 'mfn-opts'),
-							'options' => array(
-								'0' => __('Hide', 'mfn-opts'),
-								'1' => __('Show', 'mfn-opts'),
-                'list' => __('List layout only', 'mfn-opts'),
-							),
-							'std' => '0',
-						),
 
-						array(
-							'id' => 'title_tag',
-							'type' => 'switch',
-							're_render' => true,
-							'title' => __('Title tag', 'mfn-opts'),
-							'options' => [
-								'h1' => 'H1',
-								'h2' => 'H2',
-								'h3' => 'H3',
-								'h4' => 'H4',
-								'h5' => 'H5',
-								'h6' => 'H6',
-								'p' => 'p',
-								'span' => 'span',
-							],
-							'std' => 'h2',
-						),
 
-						array(
-							'id' => 'equal_heights',
-							'attr_id' => 'equal_heights',
-							're_render' => true,
-							'type' => 'switch',
-							'title' => __('Products List Standardization', 'mfn-opts'),
-							'options' => [
-								'0' => __('Default', 'mfn-opts'),
-								'1' => __('Equal heights', 'mfn-opts'),
-							],
-							'std' => '',
-						),
 
-						array(
-							'id' => 'equal_heights_last_el_class',
-							'condition' => array( 'id' => 'equal_heights', 'opt' => 'is', 'val' => '1' ),
-							'type' => 'select',
-							're_render' => true,
-							'title' => __('Align to the bottom from', 'mfn-opts'),
-							'options' => [
-								'' => __('Default', 'mfn-opts'),
-								'image' => __('Image', 'mfn-opts'),
-								'title' => __('Title', 'mfn-opts'),
-								'price' => __('Price', 'mfn-opts'),
-								'variations' => __('Variations', 'mfn-opts'),
-								'description' => __('Description', 'mfn-opts'),
-								'button' => __('Button', 'mfn-opts'),
-							],
-							'std' => '',
-						),
 
-						array(
-   						'id' => 'load_more',
-   						're_render' => true,
-   						'type' => 'switch',
-   						'title' => __('Infinite Load More', 'mfn-opts'),
-   						'options' => array(
-								'' => __('Disable', 'mfn-opts'),
-   							'1' => __('Enable', 'mfn-opts'),
-   						),
-							'std' => '',
-   					),
 
-
-						array(
-   						'type' => 'header',
-   						'title' => __('Filters', 'mfn-opts'),
-   					),
-
-						array(
-							'id' => 'shop-list-active-filters',
-							'type' => 'switch',
-							'class' => 'shop-products-filters-switcher',
-							'title' => __('Active filters', 'mfn-opts'),
-							'options' => array(
-								'0' => __('Hide', 'mfn-opts'),
-								'1' => __('Show', 'mfn-opts'),
-							),
-							'std' => mfn_opts_get('shop-list-active-filters'),
-						),
-
-						array(
-							'id' => 'shop-list-perpage',
-							'type' => 'switch',
-							'class' => 'shop-products-filters-switcher',
-							'title' => __('Products per page', 'mfn-opts'),
-							'options' => array(
-								'0' => __('Hide', 'mfn-opts'),
-								'1' => __('Show', 'mfn-opts'),
-							),
-							'std' => mfn_opts_get('shop-list-perpage'),
-						),
-
-						array(
-							'id' => 'shop-list-layout',
-							'class' => 'shop-products-filters-switcher',
-							'type' => 'switch',
-							'title' => __('Layout switch', 'mfn-opts'),
-							'options' => array(
-								'0' => __('Hide', 'mfn-opts'),
-								'1' => __('Show', 'mfn-opts'),
-							),
-							'std' => mfn_opts_get('shop-list-layout'),
-						),
-
-						array(
-							'id' => 'shop-list-sorting',
-							'class' => 'shop-products-filters-switcher',
-							'type' => 'switch',
-							'title' => __('List sorting', 'mfn-opts'),
-							'options' => array(
-								'0' => __('Hide', 'mfn-opts'),
-								'1' => __('Show', 'mfn-opts'),
-							),
-							'std' => mfn_opts_get('shop-list-sorting'),
-						),
-
-						array(
-							'id' => 'shop-list-results-count',
-							'class' => 'shop-products-filters-switcher',
-							'type' => 'switch',
-							'title' => __('Results count', 'mfn-opts'),
-							'options' => array(
-								'0' => __('Hide', 'mfn-opts'),
-								'1' => __('Show', 'mfn-opts'),
-							),
-							'std' => mfn_opts_get('shop-list-results-count'),
-						),
-
-
-						// order
-
-						array(
-							'type' => 'header',
-							'title' => __('Order', 'mfn-opts'),
-						),
-
-						array(
-							'id' => 'order',
-							'type' => 'order',
-							're_render' => true,
-							'title' => __('Order', 'mfn-opts'),
-							'std' => 'image,title,price,description,button',
-						),
-
-						// HTML style
-
-						array(
-							'type' => 'html',
-							'html' => '</div><div class="modalbox-card modalbox-card-style modalbox-re_render">',
-						),
-
-   					// HTML end: style
-
-   					array(
-							'type' => 'header',
-							'class' => 'toggled_header',
-   						'title' => __('Container', 'mfn-opts'),
-   					),
-
-   					array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product:text-align',
-							'id' => 'css_product_text_align',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product',
-							'style' => 'text-align',
-							'type' => 'switch',
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-							'title' => __('Text align', 'mfn-opts'),
-							'options' => [
-								'' => __('Default', 'mfn-opts'),
-								'left' => __('Left', 'mfn-opts'),
-								'center' => __('Center', 'mfn-opts'),
-								'right' => __('Right', 'mfn-opts'),
-							],
-							'std' => '',
-						),
-
-   					array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product:background-color',
-							'id' => 'css_product_background_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product',
-							'style' => 'background-color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Background', 'mfn-opts'),
-						),
-
-						array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product:padding',
-							'id' => 'css_product_padding',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product',
-							'style' => 'padding',
-		  				'type' => 'dimensions',
-		  				'version' => 'separated-fields',
-		  				'title' => __('Padding', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-		  			),
-
-
-
-		  			array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product:border-style',
-							'id' => 'css_product_border_style',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product',
-							'style' => 'border-style',
-							'attr_id' => 'border_style_shop_li',
-							'type' => 'select',
-							'class' => 'mfn-toggled',
-							'title' => __('Border style', 'mfn-opts'),
-							'options' => [
-								'none' => __('None', 'mfn-opts'),
-								'solid' => __('Solid', 'mfn-opts'),
-								'dashed' => __('Dashed', 'mfn-opts'),
-								'dotted' => __('Dotted', 'mfn-opts'),
-								'double' => __('Double', 'mfn-opts'),
-							],
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product:border-color',
-							'id' => 'css_product_border_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product',
-							'style' => 'border-color',
-							'condition' => array( 'id' => 'border_style_shop_li', 'opt' => 'isnt', 'val' => 'none' ),
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Border color', 'mfn-opts'),
-						),
-
-						array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product:border-width',
-							'id' => 'css_product_border_width',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product',
-							'style' => 'border-width',
-		  				'condition' => array( 'id' => 'border_style_shop_li', 'opt' => 'isnt', 'val' => 'none' ),
-		  				'type' => 'dimensions',
-		  				'title' => __('Border width', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-		  			),
-
-
-		  			array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product:border-radius',
-							'id' => 'css_product_border_radius',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product',
-							'style' => 'border-radius',
-		  				'type' => 'dimensions',
-		  				'title' => __('Border radius', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-		  			),
-
-
-
-		  			array(
-							'type' => 'header',
-							'class' => 'toggled_header',
-   						'title' => __('Image', 'mfn-opts'),
-   					),
-
-		  			array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .image_frame:border-style',
-							'id' => 'css_product_image_frame_border_style',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .image_frame',
-							'style' => 'border-style',
-							'attr_id' => 'border_style_shopimg',
-							'type' => 'select',
-							'class' => 'mfn-toggled',
-							'title' => __('Border style', 'mfn-opts'),
-							'options' => [
-								'none' => __('None', 'mfn-opts'),
-								'solid' => __('Solid', 'mfn-opts'),
-								'dashed' => __('Dashed', 'mfn-opts'),
-								'dotted' => __('Dotted', 'mfn-opts'),
-								'double' => __('Double', 'mfn-opts'),
-							],
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .image_frame:border-color',
-							'id' => 'css_product_image_frame_border_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .image_frame',
-							'style' => 'border-color',
-							'condition' => array( 'id' => 'border_style_shopimg', 'opt' => 'isnt', 'val' => 'none' ),
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Border color', 'mfn-opts'),
-						),
-
-						array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .image_frame:border-width',
-							'id' => 'css_product_image_frame_border_width',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .image_frame',
-							'style' => 'border-width',
-		  				'condition' => array( 'id' => 'border_style_shopimg', 'opt' => 'isnt', 'val' => 'none' ),
-		  				'type' => 'dimensions',
-		  				'title' => __('Border width', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-		  			),
-
-
-
-						array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .image_frame:border-radius',
-							'id' => 'css_product_image_frame_border_radius',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .image_frame',
-							'style' => 'border-radius',
-		  				'type' => 'dimensions',
-		  				'title' => __('Border radius', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-		  			),
-
-		  			array(
-							'id' => 'css_product_image_bg',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .image_frame',
-							'style' => 'background-color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Background color', 'mfn-opts'),
-						),
-
-
-		  			array(
-							'id' => 'css_product_image_margin',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .mfn-li-product-row-image',
-							'style' => 'margin',
-		  				'type' => 'dimensions',
-		  				'version' => 'separated-fields',
-		  				'title' => __('Margin', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-		  			),
-
-
-		  			// title
-
-						array(
-							'title' => __('Title', 'mfn-opts'),
-							'type' => 'header',
-							'class' => 'toggled_header',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .title:color',
-							'id' => 'css_product_title_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .title',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .title:margin',
-							'id' => 'css_product_title_margin',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .title',
-							'style' => 'margin',
-		  				'type' => 'dimensions',
-		  				'version' => 'separated-fields',
-		  				'title' => __('Margin', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-		  			),
-
-
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .title:typography',
-							'id' => 'css_product_title_typography',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .title',
-							'style' => 'typography',
-							'responsive' => true,
-							'type' => 'typography_vb',
-							'label_tools' => true,
-							'class' => 'mfn-toggled toggle_fields',
-							'title' => __('Typography', 'mfn-opts'),
-						),
-
-						array(
-							'title' => __('Price', 'mfn-opts'),
-							'type' => 'header',
-							'class' => 'toggled_header',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .price:color',
-							'id' => 'css_product_price_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .price',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'id' => 'css_product_del_price_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .price del',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Strike price color', 'mfn-opts'),
-						),
-
-						array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .price:margin',
-							'id' => 'css_product_price_margin',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .price',
-							'style' => 'margin',
-		  				'type' => 'dimensions',
-		  				'version' => 'separated-fields',
-		  				'title' => __('Margin', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-		  			),
-
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .price:typography',
-							'id' => 'css_product_price_typography',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .price',
-							'style' => 'typography',
-							'responsive' => true,
-							'type' => 'typography_vb',
-							'label_tools' => true,
-							'class' => 'mfn-toggled toggle_fields',
-							'title' => __('Typography', 'mfn-opts'),
-						),
-
-						array(
-							'title' => __('Desc', 'mfn-opts'),
-							'type' => 'header',
-							'class' => 'toggled_header',
-						),
-
-						array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .excerpt:margin',
-							'id' => 'css_product_excerpt_margin',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .excerpt',
-							'style' => 'margin',
-		  				'type' => 'dimensions',
-		  				'version' => 'separated-fields',
-		  				'title' => __('Margin', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-		  			),
-
-
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .excerpt:typography',
-							'id' => 'css_products_excerpt_typography',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .excerpt',
-							'style' => 'typography',
-							'responsive' => true,
-							'type' => 'typography_vb',
-							'label_tools' => true,
-							'class' => 'mfn-toggled toggle_fields',
-							'title' => __('Typography', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .excerpt:color',
-							'id' => 'css_product_excerpt_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .excerpt',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'main-color mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'type' => 'header',
-							'class' => 'toggled_header',
-   						'title' => __('Attributes', 'mfn-opts'),
-   					),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-variations-wrapper-loop .mfn-vr ul.mfn-vr-options li a:border-color',
-							'id' => 'css_variations-wrapper-loop-vrul-vr-optionslia_border_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-variations-wrapper-loop .mfn-vr ul.mfn-vr-options li a',
-							'style' => 'border-color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Border color', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-variations-wrapper-loop .mfn-vr ul.mfn-vr-options li a|hover:border-color',
-							'id' => 'css_variations-wrapper-loop-vrul-vr-optionsliahover_border_color_hover',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-variations-wrapper-loop .mfn-vr ul.mfn-vr-options li a:hover',
-							'style' => 'border-color',
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Border color on Hover', 'mfn-opts'),
-						),
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-						array(
-							'type' => 'header',
-							'class' => 'toggled_header',
-							'title' => __('Badge', 'mfn-opts'),
-						),
-
-						array(
-							'id' => 'css_product_onsale_padding',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges span.onsale',
-							'style' => 'padding',
-		  				'type' => 'dimensions',
-		  				'version' => 'separated-fields',
-		  				'title' => __('Padding', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-		  			),
-
-		  			array(
-							'id' => 'css_product_onsale_border_style',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges span.onsale',
-							'style' => 'border-style',
-							'attr_id' => 'border_style_badge',
-							'type' => 'select',
-							'class' => 'mfn-toggled',
-							'title' => __('Border style', 'mfn-opts'),
-							'options' => [
-								'none' => __('None', 'mfn-opts'),
-								'solid' => __('Solid', 'mfn-opts'),
-								'dashed' => __('Dashed', 'mfn-opts'),
-								'dotted' => __('Dotted', 'mfn-opts'),
-								'double' => __('Double', 'mfn-opts'),
-							],
-						),
-
-						array(
-							'id' => 'css_product_onsale_border_width',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges span.onsale',
-							'style' => 'border-width',
-		  				'condition' => array( 'id' => 'border_style_badge', 'opt' => 'isnt', 'val' => 'none' ),
-		  				'type' => 'dimensions',
-		  				'title' => __('Border width', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-		  			),
-
-		  			array(
-							'id' => 'css_product_onsale_border_radius',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges span.onsale',
-							'style' => 'border-radius',
-		  				'type' => 'dimensions',
-		  				'title' => __('Border radius', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-		  			),
-
-		  			array(
-   						'id' => 'css_product_onsale_align',
-   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges',
-   						'style' => 'align-items',
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-   						'type' => 'switch',
-   						'title' => __('Alignment', 'mfn-opts'),
-   						'options' => array(
-   							'' => __('Default', 'mfn-opts'),
-   							'flex-start' => __('Left', 'mfn-opts'),
-								'center' => __('Center', 'mfn-opts'),
-   							'flex-end' => __('Right', 'mfn-opts'),
-   						),
-   						'std' => ''
-   					),
-
-   					array(
-							'id' => 'product_badge_onsale_position',
-							'attr_id' => 'product_badge_onsale_position',
-							'type' => 'switch',
-							'class' => 'mfn-toggled archive_badge_onsale_position',
-							'title' => __('Position X', 'mfn-opts'),
-							'options' => array(
-		  					'' => __('Left', 'mfn-opts'),
-		  					'right' => __('Right', 'mfn-opts'),
-		  				),
-		  				'std' => '',
-						),
-
-						array(
-							'id' => 'css_product_onsale_offset_left',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-product-badges-left li.product .mfn-product-badges',
-							'style' => 'left',
-		  				'type' => 'sliderbar',
-		  				'condition' => array( 'id' => 'product_badge_onsale_position', 'opt' => 'is', 'val' => '' ),
-		  				'title' => __('Offset left', 'mfn-opts'),
-							'responsive' => true,
-							'default_unit' => 'px',
-							'class' => 'narrow mfn-toggled',
-							'param' => array(
-								'unit' => 'px',
-								'min' => '-100',
-								'max' => '300',
-								'step' => '1',
-							),
-		  			),
-
-		  			array(
-							'id' => 'css_product_onsale_offset_right',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-product-badges-right li.product .mfn-product-badges',
-							'style' => 'right',
-		  				'type' => 'sliderbar',
-		  				'condition' => array( 'id' => 'product_badge_onsale_position', 'opt' => 'is', 'val' => 'right' ),
-		  				'title' => __('Offset right', 'mfn-opts'),
-							'responsive' => true,
-							'default_unit' => 'px',
-							'class' => 'narrow mfn-toggled',
-							'param' => array(
-								'unit' => 'px',
-								'min' => '-100',
-								'max' => '300',
-								'step' => '1',
-							),
-		  			),
-
-		  			array(
-							'id' => 'css_product_onsale_offset_top',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges',
-							'style' => 'top',
-		  				'type' => 'sliderbar',
-		  				'title' => __('Offset top', 'mfn-opts'),
-							'responsive' => true,
-							'default_unit' => 'px',
-							'class' => 'narrow mfn-toggled',
-							'param' => array(
-								'unit' => 'px',
-								'min' => '-100',
-								'max' => '300',
-								'step' => '1',
-							),
-		  			),
-
-		  			array(
-							'id' => 'css_product_onsale_typography',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges span.onsale',
-							'style' => 'typography',
-							'responsive' => true,
-							'type' => 'typography_vb',
-							'label_tools' => true,
-							'class' => 'mfn-toggled toggle_fields',
-							'title' => __('Typography', 'mfn-opts'),
-						),
-
-		  			array(
-							'type' => 'subheader',
-							'class' => 'mfn-builder-subheader mfn-toggled mfn-onsale-label',
-							'title' => __('Default label (Sale)', 'mfn-opts'),
-						),
-
-		  			array(
-							'id' => 'css_product_onsale_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges span.onsale',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'main-color mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'id' => 'css_product_onsale_background_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges span.onsale',
-							'style' => 'background-color',
-							'type' => 'color',
-							'class' => 'main-color mfn-toggled',
-							'title' => __('Background', 'mfn-opts'),
-						),
-
-						array(
-							'id' => 'css_product_onsale_border_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges span.onsale',
-							'style' => 'border-color',
-							'type' => 'color',
-							'condition' => array( 'id' => 'border_style_badge', 'opt' => 'isnt', 'val' => 'none' ),
-							'class' => 'main-color mfn-toggled',
-							'title' => __('Border color', 'mfn-opts'),
-						),
-
-						array(
-							'type' => 'subheader',
-							'class' => 'mfn-builder-subheader mfn-toggled',
-							'title' => __('Label (New)', 'mfn-opts'),
-						),
-
-		  			array(
-							'id' => 'css_product_onsale_new_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges span.mfn-new-badge.onsale',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'main-color mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'id' => 'css_product_onsale_new_background_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges span.mfn-new-badge.onsale',
-							'style' => 'background-color',
-							'type' => 'color',
-							'class' => 'main-color mfn-toggled',
-							'title' => __('Background', 'mfn-opts'),
-						),
-
-						array(
-							'id' => 'css_product_onsale_new_border_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges span.mfn-new-badge.onsale',
-							'style' => 'border-color',
-							'type' => 'color',
-							'condition' => array( 'id' => 'border_style_badge', 'opt' => 'isnt', 'val' => 'none' ),
-							'class' => 'main-color mfn-toggled',
-							'title' => __('Border color', 'mfn-opts'),
-						),
-
-						array(
-							'type' => 'subheader',
-							'class' => 'mfn-builder-subheader mfn-toggled',
-							'title' => __('Extra label', 'mfn-opts'),
-						),
-
-		  			array(
-							'id' => 'css_product_onsale_extra_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges span.onsale.onsale-extra-label',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'main-color mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'id' => 'css_product_onsale_extra_background_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges span.onsale.onsale-extra-label',
-							'style' => 'background-color',
-							'type' => 'color',
-							'class' => 'main-color mfn-toggled',
-							'title' => __('Background', 'mfn-opts'),
-						),
-
-						array(
-							'id' => 'css_product_onsale_extra_border_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges span.onsale.onsale-extra-label',
-							'style' => 'border-color',
-							'type' => 'color',
-							'condition' => array( 'id' => 'border_style_badge', 'opt' => 'isnt', 'val' => 'none' ),
-							'class' => 'main-color mfn-toggled',
-							'title' => __('Border color', 'mfn-opts'),
-						),
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-						array(
-							'type' => 'header',
-							'class' => 'toggled_header',
-   						'title' => __('Button', 'mfn-opts'),
-   					),
-
-		  			array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button:padding',
-							'id' => 'css_product_button_padding',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button',
-							'style' => 'padding',
-		  				'type' => 'dimensions',
-		  				'version' => 'separated-fields',
-		  				'title' => __('Padding', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-		  			),
-
-
-
-		  			array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button:typography',
-							'id' => 'css_product_button_typography',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button',
-							'style' => 'typography',
-							'responsive' => true,
-							'type' => 'typography_vb',
-							'label_tools' => true,
-							'class' => 'mfn-toggled toggle_fields',
-							'title' => __('Typography', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button:border-style',
-							'id' => 'css_product_button_border_style',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button',
-							'style' => 'border-style',
-							'attr_id' => 'border_style_bsb',
-							'type' => 'select',
-							'class' => 'mfn-toggled',
-							'title' => __('Border style', 'mfn-opts'),
-							'options' => [
-								'none' => __('None', 'mfn-opts'),
-								'solid' => __('Solid', 'mfn-opts'),
-								'dashed' => __('Dashed', 'mfn-opts'),
-								'dotted' => __('Dotted', 'mfn-opts'),
-								'double' => __('Double', 'mfn-opts'),
-							],
-						),
-
-						array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button:border-width',
-							'id' => 'css_product_button_border_width',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button',
-							'style' => 'border-width',
-		  				'condition' => array( 'id' => 'border_style_bsb', 'opt' => 'isnt', 'val' => 'none' ),
-		  				'type' => 'dimensions',
-		  				'title' => __('Border width', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-		  			),
-
-
-						array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button:border-radius',
-							'id' => 'css_product_button_border_radius',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button',
-							'style' => 'border-radius',
-		  				'type' => 'dimensions',
-		  				'title' => __('Border radius', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-		  			),
-
-
-
-   					array(
-							'type' => 'html',
-							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li></ul><div class="mfn-sft mfn-sft-normal">',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button:color',
-							'id' => 'css_product_button_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'main-color mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button:border-color',
-							'id' => 'css_product_button_border_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button',
-							'style' => 'border-color',
-							'condition' => array( 'id' => 'border_style_bsb', 'opt' => 'isnt', 'val' => 'none' ),
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Border color', 'mfn-opts'),
-						),
-
-						array(
-							'id' => 'background_switcher',
-							'attr_id' => 'background_shop_button',
-							'type' => 'switch',
-							'class' => 'mfn-fields-switcher disable-history mfn-disable-reset-value',
-							'title' => __('Background type', 'mfn-opts'),
-							'options' => array(
-		  					'default' => __('Default', 'mfn-opts'),
-		  					'gradient' 	=> __('Gradient', 'mfn-opts'),
-		  				),
-							'visual_options' => array(
-		  					'default' => '',
-		  					'gradient' 	=> '',
-		  				),
-		  				'std' => 'default',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button:background-color',
-							'id' => 'css_product_button_background_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button',
-							'style' => 'background-color',
-							'condition' => array( 'id' => 'background_shop_button', 'opt' => 'is', 'val' => 'default' ),
-							'type' => 'color',
-							'title' => __('Background color', 'mfn-opts'),
-						),
-
-						array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button:gradient',
-							'id' => 'css_product_button_gradient',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button',
-							'style' => 'gradient',
-		  				'condition' => array( 'id' => 'background_shop_button', 'opt' => 'is', 'val' => 'gradient' ),
-		  				'type' => 'gradient',
-		  				'title' => __('Gradient', 'mfn-opts'),
-		  				'class' => 'mfn-toggled',
-		  			),
-
-						array(
-							'type' => 'html',
-							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button|hover:color',
-							'id' => 'css_product_button_color_hover',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button:hover',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'main-color mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button|hover:border-color',
-							'id' => 'css_product_button_border_color_hover',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button:hover',
-							'style' => 'border-color',
-							'condition' => array( 'id' => 'border_style_bsb', 'opt' => 'isnt', 'val' => 'none' ),
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Border color', 'mfn-opts'),
-						),
-
-						array(
-							'id' => 'background_switcher_hover',
-							'attr_id' => 'background_hover_shop_button',
-							'type' => 'switch',
-							'class' => 'mfn-fields-switcher disable-history mfn-disable-reset-value',
-							'title' => __('Background type', 'mfn-opts'),
-							'options' => array(
-		  					'default' => __('Default', 'mfn-opts'),
-		  					'gradient' 	=> __('Gradient', 'mfn-opts'),
-		  				),
-							'visual_options' => array(
-		  					'default' => '',
-		  					'gradient' 	=> '',
-		  				),
-		  				'std' => 'default',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button|hover:background',
-							'id' => 'css_product_button_background_hover',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button:hover, .mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button:before',
-							'style' => 'background',
-							'condition' => array( 'id' => 'background_hover_shop_button', 'opt' => 'is', 'val' => 'default' ),
-							'type' => 'color',
-							'class' => 'main-color mfn-toggled',
-							'title' => __('Background color', 'mfn-opts'),
-						),
-
-						array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button|hover:gradient',
-							'id' => 'css_product_button_gradient_hover',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button:hover',
-							'style' => 'gradient',
-		  				'condition' => array( 'id' => 'background_hover_shop_button', 'opt' => 'is', 'val' => 'gradient' ),
-		  				'type' => 'gradient',
-		  				'title' => __('Gradient', 'mfn-opts'),
-		  				'class' => 'mfn-toggled',
-		  			),
-
-						array(
-							'type' => 'html',
-							'html' => '</div></div>',
-						),
-
-
-						array(
-							'title' => __('List options container', 'mfn-opts'),
-							'type' => 'header',
-							'class' => 'toggled_header',
-						),
-
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters:background-color',
-							'id' => 'css_shop-filters_background_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters',
-							'style' => 'background-color',
-							'type' => 'color',
-							'class' => 'main-color mfn-toggled',
-							'title' => __('Background', 'mfn-opts'),
-						),
-
-						array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters:margin',
-							'id' => 'css_shop-filters_margin',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters',
-							'style' => 'margin',
-		  				'type' => 'dimensions',
-		  				'version' => 'separated-fields',
-		  				'title' => __('Margin', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-		  			),
-
-
-
-						array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters:padding',
-							'id' => 'css_shop-filters_padding',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters',
-							'style' => 'padding',
-		  				'type' => 'dimensions',
-		  				'version' => 'separated-fields',
-		  				'title' => __('Padding', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-		  			),
-
-
-
-		  			array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters:border-style',
-							'id' => 'css_shop-filters_border_style',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters',
-							'style' => 'border-style',
-							'attr_id' => 'border_style_shop_filters',
-							'type' => 'select',
-							'class' => 'mfn-toggled',
-							'title' => __('Border style', 'mfn-opts'),
-							'options' => [
-								'none' => __('None', 'mfn-opts'),
-								'solid' => __('Solid', 'mfn-opts'),
-								'dashed' => __('Dashed', 'mfn-opts'),
-								'dotted' => __('Dotted', 'mfn-opts'),
-								'double' => __('Double', 'mfn-opts'),
-							],
-						),
-
-						array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters:border-width',
-							'id' => 'css_shop-filters_border_width',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters',
-							'style' => 'border-width',
-		  				'condition' => array( 'id' => 'border_style_shop_filters', 'opt' => 'isnt', 'val' => 'none' ),
-		  				'type' => 'dimensions',
-		  				'title' => __('Border width', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-		  			),
-
-
-
-		  			array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters:border-color',
-							'id' => 'css_shop-filters_border_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters',
-							'style' => 'border-color',
-							'condition' => array( 'id' => 'border_style_shop_filters', 'opt' => 'isnt', 'val' => 'none' ),
-							'type' => 'color',
-							'class' => 'main-color mfn-toggled',
-							'title' => __('Border color', 'mfn-opts'),
-						),
-
-						array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters:border-radius',
-							'id' => 'css_shop-filters_border_radius',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters',
-							'style' => 'border-radius',
-		  				'type' => 'dimensions',
-		  				'title' => __('Border radius', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-		  			),
-
-
-						array(
-							'title' => __('Result count', 'mfn-opts'),
-							'type' => 'header',
-							'class' => 'toggled_header',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .woocommerce-result-count:typography',
-							'id' => 'css_woocommerce-result-count_typography',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .woocommerce-result-count',
-							'style' => 'typography',
-							'responsive' => true,
-							'type' => 'typography_vb',
-							'label_tools' => true,
-							'class' => 'mfn-toggled toggle_fields',
-							'title' => __('Typography', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .woocommerce-result-count:color',
-							'id' => 'css_woocommerce-result-count_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .woocommerce-result-count',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'main-color mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'title' => __('Sorting', 'mfn-opts'),
-							'type' => 'header',
-							'class' => 'toggled_header',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select:typography',
-							'id' => 'css_shop-filterswoocommerce-orderingselect_typography',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select',
-							'style' => 'typography',
-							'responsive' => true,
-							'type' => 'typography_vb',
-							'label_tools' => true,
-							'class' => 'mfn-toggled toggle_fields',
-							'title' => __('Typography', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select:color',
-							'id' => 'css_shop-filterswoocommerce-orderingselect_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'main-color mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select:background',
-							'id' => 'css_shop-filterswoocommerce-orderingselect_background',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select',
-							'style' => 'background',
-							'type' => 'color',
-							'class' => 'main-color mfn-toggled',
-							'title' => __('Background', 'mfn-opts'),
-						),
-
-						array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select:padding',
-							'id' => 'css_shop-filterswoocommerce-orderingselect_padding',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select',
-							'style' => 'padding',
-		  				'type' => 'dimensions',
-		  				'version' => 'separated-fields',
-		  				'title' => __('Padding', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-		  			),
-
-
-
-		  			array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select:border-style',
-							'id' => 'css_shop-filterswoocommerce-orderingselect_border_style',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select',
-							'style' => 'border-style',
-							'attr_id' => 'border_style_shop_order',
-							'type' => 'select',
-							'class' => 'mfn-toggled',
-							'title' => __('Border style', 'mfn-opts'),
-							'options' => [
-								'none' => __('None', 'mfn-opts'),
-								'solid' => __('Solid', 'mfn-opts'),
-								'dashed' => __('Dashed', 'mfn-opts'),
-								'dotted' => __('Dotted', 'mfn-opts'),
-								'double' => __('Double', 'mfn-opts'),
-							],
-						),
-
-						array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select:border-width',
-							'id' => 'css_shop-filterswoocommerce-orderingselect_border_width',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select',
-							'style' => 'border-width',
-		  				'condition' => array( 'id' => 'border_style_shop_order', 'opt' => 'isnt', 'val' => 'none' ),
-		  				'type' => 'dimensions',
-		  				'title' => __('Border width', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-		  			),
-
-
-		  			array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select:border-color',
-							'id' => 'css_shop-filterswoocommerce-orderingselect_border_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select',
-							'style' => 'border-color',
-							'condition' => array( 'id' => 'border_style_shop_order', 'opt' => 'isnt', 'val' => 'none' ),
-							'type' => 'color',
-							'class' => 'main-color mfn-toggled',
-							'title' => __('Border color', 'mfn-opts'),
-						),
-
-						array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select:border-radius',
-							'id' => 'css_shop-filterswoocommerce-orderingselect_border_radius',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select',
-							'style' => 'border-radius',
-		  				'type' => 'dimensions',
-		  				'title' => __('Border radius', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'mfn-toggled',
-		  			),
-
-
-
-		  			array(
-							'title' => __('List options', 'mfn-opts'),
-							'type' => 'header',
-							'class' => 'toggled_header',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .mfn-woo-list-options form.mfn-before-products-list-form:typography',
-							'id' => 'css_shop-filters-woo-list-optionsform-before-products-list-form_typography',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .mfn-woo-list-options form.mfn-before-products-list-form',
-							'style' => 'typography',
-							'responsive' => true,
-							'type' => 'typography_vb',
-							'label_tools' => true,
-							'class' => 'mfn-toggled toggle_fields',
-							'title' => __('Typography', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .mfn-woo-list-options form.mfn-before-products-list-form:color',
-							'id' => 'css_shop-filters-woo-list-optionsform-before-products-list-form_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .mfn-woo-list-options form.mfn-before-products-list-form',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'main-color mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'title' => __('Layout options', 'mfn-opts'),
-							'type' => 'header',
-							'class' => 'toggled_header',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .mfn-woo-list-options ul li svg:width',
-							'id' => 'css_shop-filters-woo-list-optionsullisvg_width',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .mfn-woo-list-options ul li svg',
-							'style' => 'width',
-							'type' => 'sliderbar',
-							'default_unit' => 'px',
-							'title' => __('Size', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'narrow mfn-toggled',
-							'param' => array(
-								'unit' => 'px',
-								'min' => '0',
-								'max' => '200',
-								'step' => '1',
-							),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters a.open-filters svg .path, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .mfn-woo-list-options ul li:--mfn-woo-icon-option',
-							'id' => 'css_layout_options_color',
-   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters a.open-filters svg .path, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .mfn-woo-list-options ul li',
-   						'style' => '--mfn-woo-icon-option',
-							'type' => 'color',
-							'class' => 'main-color mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'title' => __('Rating', 'mfn-opts'),
-							'type' => 'header',
-							'class' => 'toggled_header',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .star-rating:display',
-							'id' => 'css_product_star-rating_display',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .star-rating',
-							'style' => 'display',
-							'attr_id' => 'shop-list-rating',
-							'type' => 'switch',
-							'class' => 'mfn-toggled',
-							'title' => __('Visibility', 'mfn-opts'),
-							'options' => [
-								'' => __('Visible', 'mfn-opts'),
-								'none' => __('Hidden', 'mfn-opts'),
-							],
-							'std' => ''
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .star-rating span:color',
-							'id' => 'css_product_star-ratingspan_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .star-rating span',
-							'style' => 'color',
-							'condition' => array( 'id' => 'shop-list-rating', 'opt' => 'isnt', 'val' => 'none' ),
-							'type' => 'color',
-							'class' => 'mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'title' => __('Filters switcher', 'mfn-opts'),
-							'type' => 'header',
-							'class' => 'toggled_header',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters a.open-filters:typography',
-							'id' => 'css_shop-filtersaopen-filters_typography',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters a.open-filters',
-							'style' => 'typography',
-							'responsive' => true,
-							'type' => 'typography_vb',
-							'label_tools' => true,
-							'class' => 'mfn-toggled toggle_fields',
-							'title' => __('Typography', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters a.open-filters:color',
-							'id' => 'css_shop-filtersaopen-filters_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters a.open-filters',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'main-color mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters a.open-filters svg:width',
-							'id' => 'css_shop-filtersaopen-filterssvg_width',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters a.open-filters svg',
-							'style' => 'width',
-							'type' => 'sliderbar',
-							'default_unit' => 'px',
-							'title' => __('Icon size', 'mfn-opts'),
-							'responsive' => true,
-							'class' => 'narrow mfn-toggled',
-							'param' => array(
-								'unit' => 'px',
-								'min' => '0',
-								'max' => '200',
-								'step' => '1',
-							),
-						),
-
-
-						array(
-   						'type' => 'html',
-   						'html' => '</div>',
-   					),
-
-   				),
-   			),
+				
 
    			// Shop Title ----------------------------------------------------
 
@@ -20750,7 +20251,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
    					array(
 							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-product-has-gallery .flex-viewport, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-product-hasnt-gallery .woocommerce-product-gallery__image:background-color',
 							'id' => 'css_image_bg',
-   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-product-has-gallery .flex-viewport, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-product-hasnt-gallery .woocommerce-product-gallery__image',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-product-has-gallery .flex-viewport, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-product-hasnt-gallery .woocommerce-product-gallery__image, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-product-gg-img',
    						'style' => 'background-color',
 							'type' => 'color',
 							'class' => 'mfn-toggled',
@@ -21251,11 +20752,14 @@ if( ! class_exists('Mfn_Builder_Fields') )
 						),
 
 						array(
-							'id' => 'info',
-							'class' => 'mfn-alert',
-   						'type' => 'info',
-   						'title' => __('This element has no attributes. Please check <b>style</b> tab for more customisation options.', 'mfn-opts'),
-   					),
+							'id' => 'css_price_hidden_with_variations',
+							'selector' => '.product-type-variable .mcb-section .mcb-wrap .mcb-item-mfnuidelement',
+							'style' => 'display',
+							'type' => 'switcher',
+							'invert' => true,
+							'title' => __('Price range visibility', 'mfn-opts'),
+							'option' => 'none',
+						),
 
 						array(
 							'type' => 'html',
@@ -21377,6 +20881,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'type' => 'switch',
 							'responsive' => true,
 							'title' => __('Layout', 'mfn-opts'),
+							'desc' => __('Inline works with simple wishlist icon, not button', 'mfn-opts'),
 							'options' => [
 								'' => __('Default', 'mfn-opts'),
 								'inline' => __('Inline', 'mfn-opts'),
@@ -21394,6 +20899,12 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'class' => 'toggled_header',
    						'title' => __('Attributes', 'mfn-opts'),
    					),
+
+   					array(
+							'type' => 'subheader',
+							'class' => 'mfn-builder-subheader mfn-toggled',
+							'title' => __('Label', 'mfn-opts'),
+						),
 
    					array(
 							'id' => 'variations-label',
@@ -21428,7 +20939,22 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'title' => __('Typography', 'mfn-opts'),
 						),
 
+   					array(
+							'type' => 'subheader',
+							'class' => 'mfn-builder-subheader mfn-toggled',
+							'title' => __('Variations', 'mfn-opts'),
+						),
 
+						array(
+							'id' => 'css_woocommerce_variations-wrapper-var-typo',
+							'selector' => '.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-variations-wrapper .mfn-vr',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
 
    					array(
 							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-variations-wrapper .mfn-vr:border-color',
@@ -21439,6 +20965,48 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'class' => 'mfn-toggled',
 							'title' => __('Line separator', 'mfn-opts'),
 						),
+
+
+						array(
+							'id' => 'css_variations_wrapper_vr_gap',
+		  				'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-variations-wrapper .mfn-vr ul.mfn-vr-options',
+							'style' => 'gap',
+							'type' => 'sliderbar',
+							'default_unit' => 'px',
+							'title' => __('Gap', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'unit' => 'px',
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+							),
+							'std' => '4px',
+						),
+
+
+						array(
+							'id' => 'css_variations-wrapper-vr-labels-optionslia_padding',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-variations-wrapper .mfn-vr ul.mfn-vr-labels li a',
+							'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_variations-wrapper-vr-optionslia_border_radius',
+							'selector' => '.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-variations-wrapper .mfn-vr ul.mfn-vr-options li a',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
 
 
    					array(
@@ -21761,11 +21329,36 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'html' => '</div></div>',
 						),
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 						array(
 							'type' => 'header',
 							'class' => 'toggled_header',
    						'title' => __('Quantity', 'mfn-opts'),
    					),
+
+   					array(
+							'type' => 'subheader',
+							'class' => 'mfn-builder-subheader mfn-toggled mfn-onsale-label',
+							'title' => __('Input', 'mfn-opts'),
+						),
 
    					array(
 							'old_id' => 'style:.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .quantity input.qty:background',
@@ -21788,13 +21381,82 @@ if( ! class_exists('Mfn_Builder_Fields') )
 						),
 
 						array(
+							'id' => 'css_woocommerce_quantityinputqty_border_style',
+							'selector' => '.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .quantity input.qty',
+							'style' => 'border-style',
+							'attr_id' => 'border_qty_input',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
 							'old_id' => 'style:.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .quantity input.qty:border-color',
 							'id' => 'css_woocommerce_quantityinputqty_border_color',
 							'selector' => '.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .quantity input.qty',
 							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_qty_input', 'opt' => 'isnt', 'val' => 'none' ),
 							'type' => 'color',
-							'class' => 'main-color mfn-toggled',
+							'class' => 'mfn-toggled',
 							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_woocommerce_quantityinputqty_border_width',
+							'selector' => '.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .quantity input.qty',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_qty_input', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+		  			array(
+							'id' => 'css_woocommerce_quantityinputqty_border_radius',
+							'selector' => '.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .quantity input.qty',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_woocommerce_quantityinputqty_height',
+		  				'selector' => '.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .quantity input.qty',
+							'style' => 'height',
+							'type' => 'sliderbar',
+							'default_unit' => 'px',
+							'title' => __('Height', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'narrow mfn-toggled',
+							'param' => array(
+								'unit' => 'px',
+								'min' => '15',
+								'max' => '100',
+								'step' => '1',
+							),
+							'std' => '52px',
+						),
+
+
+
+
+
+
+						array(
+							'type' => 'subheader',
+							'class' => 'mfn-builder-subheader mfn-toggled mfn-onsale-label',
+							'title' => __('Plus / Minus', 'mfn-opts'),
 						),
 
 						array(
@@ -21808,16 +21470,53 @@ if( ! class_exists('Mfn_Builder_Fields') )
 						),
 
 						array(
-							'type' => 'header',
-							'class' => 'toggled_header',
-   						'title' => __('Variation', 'mfn-opts'),
-   					),
+							'id' => 'css_woocommerce_quantityaquantity-change_bg',
+							'selector' => '.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .quantity a.quantity-change',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Plus/Minus background', 'mfn-opts'),
+						),
+
 
 						array(
-							'type' => 'subheader',
-							'class' => 'mfn-builder-subheader mfn-toggled',
-							'title' => __('Price', 'mfn-opts'),
-						),
+							'id' => 'css_woocommerce_quantityaquantity_border_radius',
+							'selector' => '.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .quantity a.quantity-change',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+						array(
+							'type' => 'header',
+							'class' => 'toggled_header',
+   						'title' => __('Variation price', 'mfn-opts'),
+   					),
 
 						array(
 		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .woocommerce-variation-price:margin',
@@ -21830,8 +21529,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'responsive' => true,
 							'class' => 'mfn-toggled',
 		  			),
-
-
 
 						array(
 							'old_id' => 'style:.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .woocommerce-variation-price .price:color',
@@ -21854,6 +21551,298 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'class' => 'mfn-toggled toggle_fields',
 							'title' => __('Typography', 'mfn-opts'),
 						),
+
+
+
+						array(
+							'type' => 'header',
+							'class' => 'toggled_header',
+   						'title' => __('Wishlist button', 'mfn-opts'),
+   					),
+
+
+						array(
+							'id' => 'css_woocommerce_product_wishlist_button_wrapper_margin',
+							'selector' => 'body.mfn-wishlist-is-button .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-add-to-cart-buttons-wrapper',
+							'style' => 'margin',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Margin', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+						array(
+							'id' => 'css_woocommerce_product_wishlist_button_padding',
+							'selector' => '.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-add-to-cart-buttons-wrapper .mfn-wish-button',
+							'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+		  			array(
+							'id' => 'css_woocommerce_product_wishlist_button_typography',
+							'selector' => '.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-add-to-cart-buttons-wrapper .mfn-wish-button',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_woocommerce_product_wishlist_button_border_style',
+							'selector' => '.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-add-to-cart-buttons-wrapper .mfn-wish-button',
+							'style' => 'border-style',
+							'attr_id' => 'border_style_wishbtn',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+							'id' => 'css_woocommerce_product_wishlist_button_border_width',
+							'selector' => '.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-add-to-cart-buttons-wrapper .mfn-wish-button',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_style_wishbtn', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+						array(
+							'id' => 'css_woocommerce_product_wishlist_button_border_radius',
+							'selector' => '.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-add-to-cart-buttons-wrapper .mfn-wish-button',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+   					array(
+							'type' => 'html',
+							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li></ul><div class="mfn-sft mfn-sft-normal">',
+						),
+
+						array(
+							'id' => 'css_woocommerce_product_wishlist_button_color',
+							'selector' => '.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-add-to-cart-buttons-wrapper .mfn-wish-button',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_woocommerce_product_wishlist_button_icon_svg_color',
+							'selector' => '.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-wish-button svg .path',
+							'style' => 'stroke',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Icon stroke', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_woocommerce_product_wishlist_button_icon_svg_fill',
+							'selector' => '.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-wish-button svg .path',
+							'style' => 'fill',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Icon fill', 'mfn-opts'),
+						),
+
+
+
+						array(
+							'id' => 'css_woocommerce_product_wishlist_button_border_color',
+							'selector' => '.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-add-to-cart-buttons-wrapper .mfn-wish-button',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_wishbtn', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'wishlist_background_switcher',
+							'attr_id' => 'background_shop_button',
+							'type' => 'switch',
+							'class' => 'mfn-fields-switcher disable-history mfn-disable-reset-value',
+							'title' => __('Background type', 'mfn-opts'),
+							'options' => array(
+		  					'default' => __('Default', 'mfn-opts'),
+		  					'gradient' 	=> __('Gradient', 'mfn-opts'),
+		  				),
+							'visual_options' => array(
+		  					'default' => '',
+		  					'gradient' 	=> '',
+		  				),
+		  				'std' => 'default',
+						),
+
+						array(
+							'id' => 'css_woocommerce_product_wishlist_button_background_color',
+							'selector' => '.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-add-to-cart-buttons-wrapper .mfn-wish-button',
+							'style' => 'background-color',
+							'condition' => array( 'id' => 'background_shop_button', 'opt' => 'is', 'val' => 'default' ),
+							'type' => 'color',
+							'title' => __('Background color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_woocommerce_product_wishlist_button_gradient',
+							'selector' => '.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-add-to-cart-buttons-wrapper .mfn-wish-button',
+							'style' => 'gradient',
+		  				'condition' => array( 'id' => 'background_shop_button', 'opt' => 'is', 'val' => 'gradient' ),
+		  				'type' => 'gradient',
+		  				'title' => __('Gradient', 'mfn-opts'),
+		  				'class' => 'mfn-toggled',
+		  			),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
+						),
+
+						array(
+							'id' => 'css_woocommerce_product_wishlist_button_color_hover',
+							'selector' => '.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-add-to-cart-buttons-wrapper .mfn-wish-button:hover, .woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-add-to-cart-buttons-wrapper .mfn-wish-button.loved',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_woocommerce_product_wishlist_button_icon_svg_color_hover',
+							'selector' => '.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-wish-button:hover svg .path, .woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-wish-button.loved svg .path',
+							'style' => 'stroke',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Icon stroke', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_woocommerce_product_wishlist_button_icon_svg_fill_hover',
+							'selector' => '.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-wish-button:hover svg .path, .woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-wish-button.loved svg .path',
+							'style' => 'fill',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Icon fill', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_woocommerce_product_wishlist_button_border_color_hover',
+							'selector' => '.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-add-to-cart-buttons-wrapper .mfn-wish-button:hover, .woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-add-to-cart-buttons-wrapper .mfn-wish-button.loved',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_wishbtn', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'wishlist_background_switcher_hover',
+							'attr_id' => 'background_hover_shop_button',
+							'type' => 'switch',
+							'class' => 'mfn-fields-switcher disable-history mfn-disable-reset-value',
+							'title' => __('Background type', 'mfn-opts'),
+							'options' => array(
+		  					'default' => __('Default', 'mfn-opts'),
+		  					'gradient' 	=> __('Gradient', 'mfn-opts'),
+		  				),
+							'visual_options' => array(
+		  					'default' => '',
+		  					'gradient' 	=> '',
+		  				),
+		  				'std' => 'default',
+						),
+
+						array(
+							'id' => 'css_woocommerce_product_wishlist_button_background_hover',
+							'selector' => '.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-add-to-cart-buttons-wrapper .mfn-wish-button:hover, .woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-add-to-cart-buttons-wrapper .mfn-wish-button:before, .woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-add-to-cart-buttons-wrapper .mfn-wish-button.loved, .woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-add-to-cart-buttons-wrapper .mfn-wish-button.loved:before',
+							'style' => 'background',
+							'condition' => array( 'id' => 'background_hover_shop_button', 'opt' => 'is', 'val' => 'default' ),
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Background color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_woocommerce_product_wishlist_button_gradient_hover',
+							'selector' => '.woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-add-to-cart-buttons-wrapper .mfn-wish-button:hover, .woocommerce #Content .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-add-to-cart-buttons-wrapper .mfn-wish-button.loved',
+							'style' => 'gradient',
+		  				'condition' => array( 'id' => 'background_hover_shop_button', 'opt' => 'is', 'val' => 'gradient' ),
+		  				'type' => 'gradient',
+		  				'title' => __('Gradient', 'mfn-opts'),
+		  				'class' => 'mfn-toggled',
+		  			),
+
+						array(
+							'type' => 'html',
+							'html' => '</div></div>',
+						),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 						array(
 							'type' => 'html',
@@ -21998,6 +21987,398 @@ if( ! class_exists('Mfn_Builder_Fields') )
 
    				),
    			),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+				'product_brands' => array(
+   				'type' => 'product_brands',
+   				'title' => __('Brands', 'mfn-opts'),
+   				'size' => '1/1',
+   				'tablet_size' => '1/1',
+   				'mobile_size' => '1/1',
+   				'tablet_resized' => '0',
+   				'cat' => 'single-product',
+   				'attr' => array(
+   				//'fields' => array(
+
+						array(
+							'type' => 'html',
+							'html' => '<div class="modalbox-card modalbox-re_render modalbox-card-content">',
+						),
+
+						array(
+							'type' => 'header',
+							'title' => __('Display', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'logo',
+							'attr_id' => 'logo',
+							'type' => 'switcher',
+							're_render' => true,
+							'title' => __('Logo', 'mfn-opts'),
+							'option' => '1',
+							'std' => '1',
+						),
+
+						array(
+							'id' => 'title',
+							'attr_id' => 'title',
+							'type' => 'switcher',
+							're_render' => true,
+							'title' => __('Title', 'mfn-opts'),
+							'option' => '1',
+							'std' => '1',
+						),
+
+						array(
+							'id' => 'desc',
+							'attr_id' => 'desc',
+							'type' => 'switcher',
+							're_render' => true,
+							'title' => __('Description', 'mfn-opts'),
+							'option' => '1',
+							'std' => '1',
+						),
+
+						array(
+							'id' => 'logo_pos',
+							'attr_id' => 'logo_pos',
+							'type' => 'switch',
+							'title' => __('Logo position', 'mfn-opts'),
+							'condition' => array( 'AND', array('id' => 'logo', 'opt' => 'is', 'val' => '1'), array('id' => 'title', 'opt' => 'is', 'val' => '1') ),
+							'options' => [
+								'' => __('Left', 'mfn-opts'),
+								'top' => __('Top', 'mfn-opts'),
+							],
+							'std' => '',
+						),
+
+						array(
+							'type' => 'header',
+							'title' => __('Multiple brands', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'layout',
+							'attr_id' => 'layout',
+							'type' => 'switch',
+							'title' => __('Layout', 'mfn-opts'),
+							'options' => [
+								'' => __('Horizontal', 'mfn-opts'),
+								'vertical' => __('Vertical', 'mfn-opts'),
+							],
+							'std' => '',
+						),
+
+						array(
+							'id' => 'column_switcher',
+							'attr_id' => 'column_switcher',
+							'type' => 'switch',
+							'condition' => array( 'AND', array('id' => 'logo', 'opt' => 'is', 'val' => '1'), array('id' => 'layout', 'opt' => 'is', 'val' => '') ),
+							'title' => __('Columns', 'mfn-opts'),
+							'options' => [
+								'' => __('Auto', 'mfn-opts'),
+								'custom' => __('Custom', 'mfn-opts'),
+							],
+							'std' => '',
+						),
+
+						array(
+		  				'id' => 'css_brands_grid_columns',
+		  				'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-product-brands-horizontal.mfn-product-brands-horizontal-custom-cols',
+							'style' => 'grid-template-columns',
+		  				'attr_id' => 'grid_columns',
+		  				'responsive' => true,
+		  				'condition' => array( 'AND', array('id' => 'logo', 'opt' => 'is', 'val' => '1'), array('id' => 'layout', 'opt' => 'is', 'val' => ''), array('id' => 'column_switcher', 'opt' => 'is', 'val' => 'custom') ),
+		  				'class' => 'hidden-header-builder mfn-grid-columns-switcher',
+		  				'type' => 'switch',
+		  				'title' => __('Custom columns', 'mfn-opts'),
+		  				'options' => array(
+		  					'1fr' => __('1', 'mfn-opts'),
+		  					'repeat(2, 1fr)' => __('2', 'mfn-opts'),
+		  					'repeat(3, 1fr)' => __('3', 'mfn-opts'),
+		  					'repeat(4, 1fr)' => __('4', 'mfn-opts'),
+		  					'repeat(5, 1fr)' => __('5', 'mfn-opts'),
+		  				),
+		  				'std' => 'repeat(2, 1fr)'
+		  			),
+
+						array(
+							'id' => 'css_brands_gap',
+		  				'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-product-brands',
+							'style' => 'gap',
+							'type' => 'sliderbar',
+							'default_unit' => 'px',
+							'title' => __('Gap', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'narrow',
+							'param' => array(
+								'unit' => 'px',
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+							),
+							'std' => '10px',
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="modalbox-card modalbox-card-style modalbox-re_render">',
+						),
+
+						array(
+							'title' => __('Container', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header',
+						),
+
+
+						array(
+							'id' => 'css_brands_logo_top_item_align',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-product-brands-logo-top.mfn-product-brands li a',
+							'style' => 'align-items',
+							'type' => 'switch',
+							'condition' => array( 'id' => 'logo_pos', 'opt' => 'is', 'val' => 'top'),
+							'title' => __('Align', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+							'responsive' => true,
+							'options' => [
+								'' => __('Default', 'mfn-opts'),
+								'flex-start' => __('Left', 'mfn-opts'),
+								'center' => __('Center', 'mfn-opts'),
+								'flex-end' => __('Right', 'mfn-opts'),
+							],
+							'std' => '',
+						),
+
+   					array(
+							'id' => 'css_brands_item_gap',
+		  				'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-product-brands li a',
+							'style' => 'gap',
+							'type' => 'sliderbar',
+							'default_unit' => 'px',
+							'title' => __('Gap', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'narrow mfn-toggled',
+							'param' => array(
+								'unit' => 'px',
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+							),
+							'std' => '10px',
+						),
+
+
+   					array(
+							'id' => 'css_brands_item_padding',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-product-brands li a',
+							'style' => 'padding',
+							'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_brands_item_background',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-product-brands li a',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_brands_item_border_style',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-product-brands li a',
+							'style' => 'border-style',
+							'attr_id' => 'border_brands_li',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+							'id' => 'css_brands_item_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-product-brands li a',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_brands_li', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_brands_item_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-product-brands li a',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_brands_li', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+		  			array(
+							'id' => 'css_brands_item_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-product-brands li a',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+						array(
+							'title' => __('Logo', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header',
+						),
+
+
+						array(
+							'id' => 'css_brands_item_img_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-product-brands li a img',
+							'style' => 'width',
+							'type' => 'text',
+							'default_unit' => 'px',
+							'title' => __('Width', 'mfn-opts'),
+							'responsive' => true,
+							'std' => '100px',
+							'class' => 'mfn-toggled narrow',
+						),
+
+
+						array(
+							'title' => __('Title', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header',
+						),
+
+						array(
+							'id' => 'css_brands_item_title_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-product-brands li .mfn-brand-name',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_brands_item_title_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-product-brands li .mfn-brand-name',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'title' => __('Desc', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header',
+						),
+
+						array(
+							'id' => 'css_brands_item_desc_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-product-brands li .mfn-brand-desc-content',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_brands_item_desc_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-product-brands li .mfn-brand-desc-content',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div>',
+						),
+
+   				),
+   			),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
    			// Product reviews ----------------------------------------------------
 
@@ -22474,98 +22855,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
    				),
    			),
 
-   			// Product rating ----------------------------------------------------
-
-   			'product_rating' => array(
-   				'type' => 'product_rating',
-   				'title' => __('Product rating', 'mfn-opts'),
-   				'size' => '1/1',
-   				'tablet_size' => '1/1',
-   				'mobile_size' => '1/1',
-   				'tablet_resized' => '0',
-   				'cat' => 'single-product',
-   				'attr' => array(
-   				//'fields' => array(
-
-						array(
-							'type' => 'html',
-							'html' => '<div class="modalbox-card modalbox-re_render modalbox-card-content">',
-						),
-
-						array(
-							'id' => 'info',
-							'class' => 'mfn-alert',
-   						'type' => 'info',
-   						'title' => __('This element has no attributes. Please check <b>style</b> tab for more customisation options.', 'mfn-opts'),
-   					),
-
-   					array(
-							'type' => 'html',
-							'html' => '</div><div class="modalbox-card modalbox-card-style modalbox-re_render">',
-						),
-
-						array(
-							'title' => __('Rating', 'mfn-opts'),
-							'type' => 'header',
-							'class' => 'toggled_header',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .woocommerce-review-link:color',
-							'id' => 'css_woocommerce-review-link_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .woocommerce-review-link',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'main-color mfn-toggled',
-							'title' => __('Color', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .star-rating span:color',
-							'id' => 'css_star-ratingspan_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .star-rating span',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'main-color mfn-toggled',
-							'title' => __('Active stars color', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .star-rating|before:color',
-							'id' => 'css_star-ratingbefore_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .star-rating:before',
-							'style' => 'color',
-							'type' => 'color',
-							'class' => 'main-color mfn-toggled',
-							'title' => __('Inactive stars color', 'mfn-opts'),
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .woocommerce-product-rating:text-align',
-							'id' => 'css_woocommerce-product-rating_text_align',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .woocommerce-product-rating',
-							'style' => 'text-align',
-							'class' => 'mfn-toggled',
-							'responsive' => true,
-							'type' => 'switch',
-							'title' => __('Text align', 'mfn-opts'),
-							'options' => [
-								'' => __('Default', 'mfn-opts'),
-								'left' => __('Left', 'mfn-opts'),
-								'center' => __('Center', 'mfn-opts'),
-								'right' => __('Right', 'mfn-opts'),
-							],
-							'std' => '',
-						),
-
-						array(
-   						'type' => 'html',
-   						'html' => '</div>',
-   					),
-
-   				),
-   			),
-
 
    			// Product stock ----------------------------------------------------
 
@@ -22700,6 +22989,54 @@ if( ! class_exists('Mfn_Builder_Fields') )
 						),
 
 						array(
+							'id' => 'hide_category',
+							'type' => 'switcher',
+							're_render' => true,
+							'invert' => true,
+							'title' => __('Category', 'mfn-opts'),
+							'option' => '1',
+							'std' => '1',
+						),
+
+						array(
+							'id' => 'hide_tags',
+							'type' => 'switcher',
+							're_render' => true,
+							'invert' => true,
+							'title' => __('Tags', 'mfn-opts'),
+							'option' => '1',
+							'std' => '1',
+						),
+
+						array(
+							'id' => 'hide_brand',
+							'type' => 'switcher',
+							're_render' => true,
+							'title' => __('Brand', 'mfn-opts'),
+							'option' => '1',
+							'std' => '1',
+						),
+
+						array(
+							'id' => 'hide_sku',
+							'type' => 'switcher',
+							're_render' => true,
+							'invert' => true,
+							'title' => __('SKU', 'mfn-opts'),
+							'option' => '1',
+							'std' => '1',
+						),
+
+						array(
+							'id' => 'hide_gtin',
+							'type' => 'switcher',
+							're_render' => true,
+							'title' => __('GTIN, UPC, EAN, or ISBN', 'mfn-opts'),
+							'option' => '1',
+							'std' => '1',
+						),
+
+						array(
 							'type' => 'html',
 							'html' => '</div><div class="modalbox-card modalbox-card-style modalbox-re_render">',
 						),
@@ -22731,11 +23068,84 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .product_meta .stacked-meta li:border-color',
 							'id' => 'css_product_metastacked-metali_border_color',
 							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .product_meta .stacked-meta li',
+							'condition' => array('id' => 'prod_meta_layout', 'opt' => 'is', 'val' => 'stacked'),
 							'style' => 'border-color',
 							'type' => 'color',
 							'class' => 'main-color mfn-toggled',
-							'title' => __('Stacked line color', 'mfn-opts'),
+							'title' => __('Stacked border color', 'mfn-opts'),
 						),
+
+						array(
+							'id' => 'css_stacked_grid_item_background',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .product_meta .stacked-meta li',
+							'condition' => array('id' => 'prod_meta_layout', 'opt' => 'is', 'val' => 'stacked'),
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Stacked background color', 'mfn-opts'),
+						),
+
+						array(
+		  				'id' => 'css_stacked_grid_columns',
+		  				'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .product_meta .stacked-meta',
+							'style' => 'grid-template-columns',
+		  				'attr_id' => 'grid_columns',
+		  				'responsive' => true,
+		  				'required' => true,
+		  				'condition' => array('id' => 'prod_meta_layout', 'opt' => 'is', 'val' => 'stacked'),
+		  				'class' => 'hidden-header-builder mfn-grid-columns-switcher',
+		  				'type' => 'switch',
+		  				'title' => __('Columns', 'mfn-opts'),
+		  				'options' => array(
+		  					'1fr' => __('1', 'mfn-opts'),
+		  					'repeat(2, 1fr)' => __('2', 'mfn-opts'),
+		  					'repeat(3, 1fr)' => __('3', 'mfn-opts'),
+		  					'repeat(4, 1fr)' => __('4', 'mfn-opts'),
+		  					'repeat(5, 1fr)' => __('5', 'mfn-opts'),
+		  				),
+		  				'std' => 'repeat(3, 1fr)'
+		  			),
+
+
+						array(
+							'id' => 'css_stacked_grid_gap',
+		  				'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .product_meta .stacked-meta',
+							'style' => 'gap',
+							'type' => 'sliderbar',
+							'default_unit' => 'px',
+							'title' => __('Gap', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'narrow mfn-toggled',
+							'param' => array(
+								'unit' => 'px',
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+							),
+							'std' => '10px',
+						),
+
+						array(
+							'id' => 'css_stacked_grid_item_padding',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .product_meta .stacked-meta li',
+							'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_stacked_grid_item_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .product_meta .stacked-meta li',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
 
 						array(
 							'title' => __('Label', 'mfn-opts'),
@@ -22811,7 +23221,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 						),
 
 						array(
-							'title' => __('SKU', 'mfn-opts'),
+							'title' => __('SKU / GTIN', 'mfn-opts'),
 							'condition' => array( 'id' => 'prod_meta_layout', 'opt' => 'isnt', 'val' => 'table' ),
 							'type' => 'header',
 							'class' => 'toggled_header',
@@ -23391,6 +23801,36 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'class' => 'mfn-toggled',
 		  			),
 
+		  			array(
+							'type' => 'header',
+							'class' => 'toggled_header',
+							'title' => __('Reviews', 'mfn-opts'),
+						),
+
+		  			array(
+							'id' => 'css_woocommerce_products_tabs_reviews_margin',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-woocommerce-tabs-content .woocommerce-Reviews',
+							'style' => 'width',
+							'type' => 'text',
+		  				'title' => __('Width', 'mfn-opts'),
+		  				'default_unit' => 'px',
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'std' => '700px'
+		  			),
+
+
+		  			array(
+							'id' => 'css_woocommerce_products_tabs_reviews_heading_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .woocommerce-Reviews-title',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Heading typography', 'mfn-opts'),
+						),
+
 						array(
 							'type' => 'html',
 							'html' => '</div>',
@@ -23642,6 +24082,15 @@ if( ! class_exists('Mfn_Builder_Fields') )
 						),
 
    				),
+   			),
+
+
+				// ALIAS: Product related -------------------------------------------------
+
+   			'shop_products_related' => array(
+   				'type' => 'shop_products',
+   				'title' => __('Product related', 'mfn-opts'),
+   				'cat' => 'single-product',
    			),
 
    			// Product related ----------------------------------------------------
@@ -24705,6 +25154,54 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'title' => __('Color', 'mfn-opts'),
 						),
 
+						array(
+							'id' => 'product_star_rating_stats',
+							'attr_id' => 'product_star_rating_stats',
+							're_render' => true,
+							'condition' => array( 'id' => 'shop-list-rating', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' 	=> 'switcher',
+							'class' => 'mfn-toggled',
+							'title' => __('Rating Average', 'mfn-opts'),
+							'option' => 'visible-rate',
+						),
+
+						/*array(
+							'id' => 'product_star_rating_stats',
+							'attr_id' => 'product_star_rating_stats',
+							'type' => 'switch',
+							'class' => 'mfn-toggled',
+							'condition' => array( 'id' => 'shop-list-rating', 'opt' => 'isnt', 'val' => 'none' ),
+							'title' => __('Rate stats', 'mfn-opts'),
+							'options' => [
+								'' => __('Hidden', 'mfn-opts'),
+								'visible-rate' => __('Visible', 'mfn-opts'),
+							],
+							'std' => ''
+						),*/
+
+
+						array(
+							'id' => 'css_product_star_rating_stats_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .wc-rating-with-text .wc-rating-text',
+							'style' => 'color',
+							'condition' => array( 'AND', array('id' => 'shop-list-rating', 'opt' => 'isnt', 'val' => 'none'), array('id' => 'product_star_rating_stats', 'opt' => 'is', 'val' => 'visible-rate')  ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_product_star_rating_stats_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .wc-rating-with-text .wc-rating-text',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'condition' => array( 'AND', array('id' => 'shop-list-rating', 'opt' => 'isnt', 'val' => 'none'), array('id' => 'product_star_rating_stats', 'opt' => 'is', 'val' => 'visible-rate')  ),
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
    					// HTML end: style
 
 						array(
@@ -24713,6 +25210,14 @@ if( ! class_exists('Mfn_Builder_Fields') )
    					),
 
    				),
+   			),
+
+				// ALIAS: Product related -------------------------------------------------
+
+   			'shop_products_upsells' => array(
+   				'type' => 'shop_products',
+   				'title' => __('Product upsells', 'mfn-opts'),
+   				'cat' => 'single-product',
    			),
 
    			// Product upsells ----------------------------------------------------
@@ -25747,6 +26252,54 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'title' => __('Color', 'mfn-opts'),
 						),
 
+						array(
+							'id' => 'product_star_rating_stats',
+							'attr_id' => 'product_star_rating_stats',
+							're_render' => true,
+							'condition' => array( 'id' => 'shop-list-rating', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' 	=> 'switcher',
+							'class' => 'mfn-toggled',
+							'title' => __('Rating Average', 'mfn-opts'),
+							'option' => 'visible-rate',
+						),
+
+						/*array(
+							'id' => 'product_star_rating_stats',
+							'attr_id' => 'product_star_rating_stats',
+							'type' => 'switch',
+							'class' => 'mfn-toggled',
+							'condition' => array( 'id' => 'shop-list-rating', 'opt' => 'isnt', 'val' => 'none' ),
+							'title' => __('Rate stats', 'mfn-opts'),
+							'options' => [
+								'' => __('Hidden', 'mfn-opts'),
+								'visible-rate' => __('Visible', 'mfn-opts'),
+							],
+							'std' => ''
+						),
+*/
+
+						array(
+							'id' => 'css_product_star_rating_stats_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .wc-rating-with-text .wc-rating-text',
+							'style' => 'color',
+							'condition' => array( 'AND', array('id' => 'shop-list-rating', 'opt' => 'isnt', 'val' => 'none'), array('id' => 'product_star_rating_stats', 'opt' => 'is', 'val' => 'visible-rate')  ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_product_star_rating_stats_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .wc-rating-with-text .wc-rating-text',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'condition' => array( 'AND', array('id' => 'shop-list-rating', 'opt' => 'isnt', 'val' => 'none'), array('id' => 'product_star_rating_stats', 'opt' => 'is', 'val' => 'visible-rate')  ),
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
    					// HTML end: style
 
 						array(
@@ -26427,6 +26980,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
    				'mobile_size' => '1/1',
    				'tablet_resized' => '0',
    				'cat' => 'blocks',
+   				'tags' => 'toggle',
    				'attr' => array(
 
    					array(
@@ -27542,6 +28096,8 @@ if( ! class_exists('Mfn_Builder_Fields') )
    							'zoom-in' => __('Zoom In', 'mfn-opts'),
    							'zoom-out' => __('Zoom Out', 'mfn-opts'),
    							'blur' => __('Blur', 'mfn-opts'),
+   							'grayscale-10' => __('Grayscale to Color', 'mfn-opts'),
+   							'grayscale-01' => __('Color to Grayscale', 'mfn-opts'),
    						),
    						'std' => '',
    					),
@@ -27882,19 +28438,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 								'unit' => 's',
 							)
 						),
-
-
-
-
-
-
-
-
-
-
-
-
-
+		  			
 		  			array(
 							'type' => 'html',
 							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li></ul><div class="mfn-sft mfn-sft-normal">',
@@ -27958,6 +28502,19 @@ if( ! class_exists('Mfn_Builder_Fields') )
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 						array(
 							'type' => 'header',
 							'class' => 'toggled_header',
@@ -27967,14 +28524,14 @@ if( ! class_exists('Mfn_Builder_Fields') )
    					array(
 							'id' => 'image_height',
 							'attr_id' => 'image_height',
-							'type' => 'select',
-							'class' => 'mfn-toggled',
-							'title' => __('Height', 'mfn-opts'),
-							'options' => [
-								'' => __('Auto', 'mfn-opts'),
-								'1' => __('Custom', 'mfn-opts'),
-							],
-							'std' => ''
+							'type' => 'switch',
+   						'class' => 'mfn-toggled',
+   						'title' => __('Height', 'mfn-opts'),
+   						'options' => array(
+   							'' => __('Default', 'mfn-opts'),
+   							'1' => __('Custom', 'mfn-opts'),
+   						),
+   						'std' => ''
 						),
 
    					array(
@@ -27990,6 +28547,50 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'title' => __('Height', 'mfn-opts'),
 							'desc' => __('Use px, %, vw, vh or auto to set content width', 'mfn-opts'),
 						),
+
+						array(
+							'id' => 'css_image_cover_origin',
+              'alias' => 'css_image_cover_origin',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-banner-box.mfn-banner-box-height .banner-image img',
+   						'style' => 'object-position',
+							'condition' => array( 'id' => 'image_height', 'opt' => 'is', 'val' => '1' ),
+							'type' => 'radio_img',
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'title' => __('Image position', 'mfn-opts'),
+							'desc' => __('Object-position for object-fit: cover', 'mfn-opts'),
+							'options' => array(
+	  						'top left' => __('Top Left', 'mfn-opts'),
+	  						'top center' => __('Top Center', 'mfn-opts'),
+	  						'top right' => __('Top Right', 'mfn-opts'),
+	  						'center left' => __('Center Left', 'mfn-opts'),
+	  						'' => __('Center', 'mfn-opts'),
+	  						'center right' => __('Center Right', 'mfn-opts'),
+	  						'bottom left' => __('Bottom Left', 'mfn-opts'),
+	  						'bottom center' => __('Bottom Center', 'mfn-opts'),
+	  						'bottom right' => __('Bottom Right', 'mfn-opts'),
+	  					),
+	  					'std' => ''
+						),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 						array(
 							'type' => 'header',
@@ -28283,8 +28884,14 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'class' => 'mfn-toggled',
 		  			),
 
-
-
+						array(
+							'id' => 'css_banner-box_title_text_shadow',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-banner-box .banner-wrapper .title',
+							'style' => 'text-shadow',
+							'type' => 'text_shadow',
+							'class' => 'mfn-toggled',
+							'title' => __('Text shadow', 'mfn-opts'),
+						),
 
 		  			array(
 							'type' => 'html',
@@ -28354,7 +28961,14 @@ if( ! class_exists('Mfn_Builder_Fields') )
 
 
 
-
+						array(
+							'id' => 'css_banner-box_subtitle_text_shadow',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-banner-box .banner-wrapper .subtitle',
+							'style' => 'text-shadow',
+							'type' => 'text_shadow',
+							'class' => 'mfn-toggled',
+							'title' => __('Text shadow', 'mfn-opts'),
+						),
 
 
 
@@ -28434,7 +29048,14 @@ if( ! class_exists('Mfn_Builder_Fields') )
 
 
 
-
+						array(
+							'id' => 'css_banner-box_excerpt_text_shadow',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-banner-box .banner-wrapper .excerpt',
+							'style' => 'text-shadow',
+							'type' => 'text_shadow',
+							'class' => 'mfn-toggled',
+							'title' => __('Text shadow', 'mfn-opts'),
+						),
 
 
 
@@ -28579,7 +29200,14 @@ if( ! class_exists('Mfn_Builder_Fields') )
 
 
 
-
+		  			array(
+							'id' => 'css_banner-box_cta-text_text_shadow',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-banner-box .banner-wrapper .cta-text',
+							'style' => 'text-shadow',
+							'type' => 'text_shadow',
+							'class' => 'mfn-toggled',
+							'title' => __('Text shadow', 'mfn-opts'),
+						),
 
 
 
@@ -29356,6 +29984,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
    				'mobile_size' => '1/1',
    				'tablet_resized' => '0',
    				'cat' => 'boxes',
+   				'tags' => 'image',
    				'attr' => array(
 
    					array(
@@ -30100,6 +30729,19 @@ if( ! class_exists('Mfn_Builder_Fields') )
    						),
    						'std' => '0'
    					),
+
+            array(
+              'id' => 'isotope',
+              'type' => 'switch',
+              'title' => __('jQuery filtering', 'mfn-opts'),
+              'condition' => array( 'id' => 'filters', 'opt' => 'isnt', 'val' => '0' ),
+              'desc' => __('Disable if pagination is enabled', 'mfn-opts'),
+              'options' => array(
+                'disable' => __('Disabled', 'mfn-opts'),
+                '' => __('Enabled', 'mfn-opts'),
+              ),
+              'std' => '',
+            ),
 
 						array(
    						'id' => 'excerpt',
@@ -31812,9 +32454,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'responsive' => true,
 							'class' => 'mfn-toggled',
 		  			),
-
-
-
+		  			
 						array(
 		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .Latest_news li .photo:border-radius',
 							'id' => 'css_latest_newsliphoto_border_radius',
@@ -31826,8 +32466,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'class' => 'mfn-toggled',
 		  			),
 
-
-
 		  			array(
 							'type' => 'header',
 							'class' => 'toggled_header',
@@ -31835,9 +32473,9 @@ if( ! class_exists('Mfn_Builder_Fields') )
    					),
 
    					array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .Latest_news.featured .desc h4 a:color',
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .Latest_news.featured .desc .mfn-featured-post-title a:color',
 							'id' => 'css_latest_newsfeatureddesch4a_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .Latest_news.featured .desc h4 a',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .Latest_news.featured .desc .mfn-featured-post-title a',
 							'style' => 'color',
 							'type' => 'color',
 							'class' => 'main-color mfn-toggled',
@@ -31845,9 +32483,9 @@ if( ! class_exists('Mfn_Builder_Fields') )
 						),
 
 						array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .Latest_news.featured .desc h4:margin',
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .Latest_news.featured .desc .mfn-featured-post-title:margin',
 							'id' => 'css_latest_newsfeatureddesch4_margin',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .Latest_news.featured .desc h4',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .Latest_news.featured .desc .mfn-featured-post-title',
 							'style' => 'margin',
 		  				'type' => 'dimensions',
 		  				'version' => 'separated-fields',
@@ -31856,11 +32494,10 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'class' => 'mfn-toggled',
 		  			),
 
-
 		  			array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .Latest_news.featured .desc h4 a:typography',
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .Latest_news.featured .desc .mfn-featured-post-title a:typography',
 							'id' => 'css_latest_news_featured_desc_title_4_typography',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .Latest_news.featured .desc h4 a',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .Latest_news.featured .desc .mfn-featured-post-title a',
 							'style' => 'typography',
 							'responsive' => true,
 							'type' => 'typography_vb',
@@ -31876,9 +32513,9 @@ if( ! class_exists('Mfn_Builder_Fields') )
    					),
 
    					array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .Latest_news .desc h5 a:color',
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .Latest_news .desc .mfn-post-title a:color',
 							'id' => 'css_latest_newsdesch5a_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .Latest_news .desc h5 a',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .Latest_news .desc .mfn-post-title a',
 							'style' => 'color',
 							'type' => 'color',
 							'class' => 'main-color mfn-toggled',
@@ -31886,9 +32523,9 @@ if( ! class_exists('Mfn_Builder_Fields') )
 						),
 
 						array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .Latest_news .desc h5:margin',
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .Latest_news .desc .mfn-post-title:margin',
 							'id' => 'css_latest_newsdesch5_margin',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .Latest_news .desc h5',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .Latest_news .desc .mfn-post-title',
 							'style' => 'margin',
 		  				'type' => 'dimensions',
 		  				'version' => 'separated-fields',
@@ -31897,12 +32534,10 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'class' => 'mfn-toggled',
 		  			),
 
-
-
 		  			array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .Latest_news .desc h5 a:typography',
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .Latest_news .desc .mfn-post-title a:typography',
 							'id' => 'css_latest_news_featured_desc_title_5_typography',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .Latest_news .desc h5 a',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .Latest_news .desc .mfn-post-title a',
 							'style' => 'typography',
 							'responsive' => true,
 							'type' => 'typography_vb',
@@ -32125,6 +32760,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
    				'mobile_size' => '1/1',
    				'tablet_resized' => '0',
    				'cat' => 'loops',
+   				'tags' => 'slider scroller swiper slick',
    				'attr' => array(
 
    					array(
@@ -32301,7 +32937,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 
    					array(
    						'id' => 'navigation',
-   						'condition' => array( 'id' => 'blog_slider_style', 'opt' => 'is', 'val' => '' ),
    						'type' => 'switch',
    						're_render' => true,
    						'title' => __('Navigation', 'mfn-opts'),
@@ -32852,7 +33487,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 						array(
 							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .blog_slider .blog_slider_header .button, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .blog_slider .blog_slider_header .button .button_icon i:color',
 							'id' => 'css_arrows_color',
-   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .blog_slider .blog_slider_header .button, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .blog_slider .blog_slider_header .button .button_icon i',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .blog_slider .blog_slider_header .button, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .blog_slider .blog_slider_header .button i',
    						'style' => 'color',
 							'type' => 'color',
 							'class' => 'main-color mfn-toggled',
@@ -33190,7 +33825,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
    						'type' => 'text',
    						'edit_tag' => '.blog-teaser | .title',
    						'edit_position' => 'prepend',
-						'dynamic_data' => 'title',
+							'dynamic_data' => 'title',
    						'title' => __('Heading', 'mfn-opts'),
 							'std' => __('This is the title', 'mfn-opts'),
 							'preview' => 'title',
@@ -33227,7 +33862,25 @@ if( ! class_exists('Mfn_Builder_Fields') )
    						'type' => 'switch',
    						're_render' => true,
    						'title' => __('Title tag', 'mfn-opts'),
-   						'desc' => __('Title tag for 1st item, others use a smaller one', 'mfn-opts'),
+   						'options' => array(
+                'h1' => 'h1',
+                'h2' => 'h2',
+                'h3' => 'h3',
+                'h4' => 'h4',
+                'h5' => 'h5',
+                'h6' => 'h6',
+                'p' => 'p',
+                'p.lead' => 'p.lead',
+                'span' => 'span',
+   						),
+   						'std' => 'h4'
+   					),
+
+   					array(
+   						'id' => 'featured_title_tag',
+   						'type' => 'switch',
+   						're_render' => true,
+   						'title' => __('Featured title tag', 'mfn-opts'),
    						'options' => array(
                 'h1' => 'h1',
                 'h2' => 'h2',
@@ -33366,8 +34019,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'class' => 'mfn-toggled',
 		  			),
 
-
-
 		  			array(
 							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .blog-teaser .title:typography',
 							'id' => 'css_blog-teasertitle_typography',
@@ -33427,8 +34078,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'class' => 'mfn-toggled',
 		  			),
 
-
-
 						array(
 		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .teaser-wrapper li:border-radius',
 							'id' => 'css_teaser-wrapperli_border_radius',
@@ -33439,8 +34088,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'responsive' => true,
 							'class' => 'mfn-toggled',
 		  			),
-
-
 
 		  			array(
 							'type' => 'header',
@@ -33462,6 +34109,32 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .blog-teaser .teaser-wrapper li .desc .post-title a:typography',
 							'id' => 'css_blog-teaser-wrapperlidescpost-titlea_typography',
 							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .blog-teaser .teaser-wrapper li .desc .post-title a',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'header',
+							'class' => 'toggled_header',
+   						'title' => __('Featured title', 'mfn-opts'),
+   					),
+
+		  			array(
+							'id' => 'css_blog_teaser_featured_title_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .blog-teaser .teaser-wrapper li .desc .post-title .featured-title a',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+		  			array(
+							'id' => 'css_blog_teaser_featured_title_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .blog-teaser .teaser-wrapper li .desc .post-title .featured-title a',
 							'style' => 'typography',
 							'responsive' => true,
 							'type' => 'typography_vb',
@@ -33508,8 +34181,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'class' => 'mfn-toggled',
 		  			),
 
-
-
 						array(
 		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .blog-teaser .teaser-wrapper li .desc .post-meta:padding',
 							'id' => 'css_blog-teaserteaser-wrapperlidescpost-meta_padding',
@@ -33521,8 +34192,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'responsive' => true,
 							'class' => 'mfn-toggled',
 		  			),
-
-
 
 		  			array(
 							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .blog-teaser .teaser-wrapper li .desc .post-meta:border-style',
@@ -34005,11 +34674,22 @@ if( ! class_exists('Mfn_Builder_Fields') )
    							'' => __('None', 'mfn-opts'),
    							'exit-mfn-popup' => __('Close popup', 'mfn-opts'),
    							'open-mfn-popup' => __('Open popup', 'mfn-opts'),
+   							'mfn-open-sidebar' => __('Open sidebar', 'mfn-opts'),
    							'mfn-go-to' => __('Go to Section', 'mfn-opts'),
    							'mfn-read-more' => __('Read more', 'mfn-opts'),
    							'mfn-copy-to-clipboard' => __('Copy to clipboard', 'mfn-opts'),
    						),
    						'std' => '',
+   					),
+
+
+   					array(
+   						'id' => 'sidebar_type',
+   						'attr_id' => 'sidebar_type',
+   						'type' => 'select',
+   						'condition' => array( 'id' => 'button_function', 'opt' => 'is', 'val' => 'mfn-open-sidebar' ),
+   						'title' => __('Choose sidebar', 'mfn-opts'),
+							'js_options' => 'sidemenus',
    					),
 
    					array(
@@ -35077,13 +35757,10 @@ if( ! class_exists('Mfn_Builder_Fields') )
    						'js_options' => 'cf7',
    					),
 
-
-
 						array(
 							'type' => 'html',
 							'html' => '</div><div class="modalbox-card modalbox-card-style modalbox-re_render">',
 						),
-
 
 						array(
 							'type' => 'header',
@@ -35112,8 +35789,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'responsive' => true,
 							'class' => 'mfn-toggled',
 		  			),
-
-
 
 						array(
 							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement form,.mcb-section .mcb-wrap .mcb-item-mfnuidelement form label:typography',
@@ -35145,13 +35820,11 @@ if( ! class_exists('Mfn_Builder_Fields') )
    						),
    					),
 
-
    					array(
 							'type' => 'header',
 							'class' => 'toggled_header',
    						'title' => __('Inputs', 'mfn-opts'),
    					),
-
 
    					array(
 							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement form input|not(.wpcf7-submit),.mcb-section .mcb-wrap .mcb-item-mfnuidelement form select, .mcb-section .mcb-wrap .mcb-item-mfnuidelement form textarea:typography',
@@ -35885,7 +36558,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'html' => '<div class="modalbox-card modalbox-re_render modalbox-card-content">',
 						),
 
-   					array(
+   					/*array(
    						'id' => 'in_row',
    						'type' => 'text',
    						're_render' => true,
@@ -35896,7 +36569,25 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'class' => 'narrow',
    						'std' => 6,
    						'preview' => 'number',
-   					),
+   					),*/
+
+   					array(
+		  				'id' => 'css_clients_columns',
+		  				'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .clients_ul',
+							'style' => 'grid-template-columns',
+		  				'responsive' => true,
+		  				'type' => 'switch',
+		  				'title' => __('Columns', 'mfn-opts'),
+		  				'options' => array(
+		  					'1fr' => __('1', 'mfn-opts'),
+		  					'repeat(2, 1fr)' => __('2', 'mfn-opts'),
+		  					'repeat(3, 1fr)' => __('3', 'mfn-opts'),
+		  					'repeat(4, 1fr)' => __('4', 'mfn-opts'),
+		  					'repeat(5, 1fr)' => __('5', 'mfn-opts'),
+		  					'repeat(6, 1fr)' => __('6', 'mfn-opts'),
+		  				),
+		  				'std' => 'repeat(6, 1fr)'
+		  			),
 
 						array(
    						'id' => 'style',
@@ -36015,6 +36706,23 @@ if( ! class_exists('Mfn_Builder_Fields') )
    						'title' => __('Container', 'mfn-opts'),
    					),
 
+   					array(
+							'id' => 'css_clients_items_gap',
+              'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .clients_ul',
+							'style' => 'gap',
+							'type' => 'sliderbar',
+							'title' => __('Gap', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							),
+              'std' => '20px',
+						),
+
 						array(
 							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.clients li .client_wrapper:height',
 							'id' => 'css_ulclientsliclient_wrapper_height',
@@ -36022,6 +36730,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'style' => 'height',
 							'type' => 'text',
 							'default_unit' => 'px',
+							'std' => '75px',
 							'class' => 'mfn-toggled',
 							'title' => __('Height', 'mfn-opts'),
 						),
@@ -36037,8 +36746,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'version' => 'separated-fields',
 							'class' => 'mfn-toggled',
 		  			),
-
-
 
 		  			array(
 							'type' => 'html',
@@ -36130,6 +36837,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
    				'mobile_size' => '1/1',
    				'tablet_resized' => '0',
    				'cat' => 'loops',
+   				'tags' => 'slider scroller swiper slick',
    				'attr' => array(
 
    					array(
@@ -36461,7 +37169,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 						array(
 							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .clients_slider .button .button_icon i:color',
 							'id' => 'css_clients_sliderbuttonbutton_iconi_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .clients_slider .button .button_icon i',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .clients_slider .button i',
 							'style' => 'color',
 							'type' => 'color',
 							'class' => 'main-color mfn-toggled',
@@ -36473,7 +37181,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'id' => 'css_clients_sliderbutton_border_color',
 							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .clients_slider .button',
 							'style' => 'border-color',
-							'condition' => array( 'id' => 'border_style', 'opt' => 'isnt', 'val' => 'none' ),
+							'condition' => array( 'id' => 'border_style_csb', 'opt' => 'isnt', 'val' => 'none' ),
 							'type' => 'color',
 							'class' => 'mfn-toggled',
 							'title' => __('Border color', 'mfn-opts'),
@@ -36525,7 +37233,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 						array(
 							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .clients_slider .button|hover .button_icon i:color',
 							'id' => 'css_clients_sliderbuttonbutton_iconi_color_hover',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .clients_slider .button:hover .button_icon i',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .clients_slider .button:hover i',
 							'style' => 'color',
 							'type' => 'color',
 							'class' => 'main-color mfn-toggled',
@@ -36537,7 +37245,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'id' => 'css_clients_sliderbutton_border_color_hover',
 							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .clients_slider .button:hover',
 							'style' => 'border-color',
-							'condition' => array( 'id' => 'border_style', 'opt' => 'isnt', 'val' => 'none' ),
+							'condition' => array( 'id' => 'border_style_csb', 'opt' => 'isnt', 'val' => 'none' ),
 							'type' => 'color',
 							'class' => 'mfn-toggled',
 							'title' => __('Border color', 'mfn-opts'),
@@ -38142,9 +38850,10 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							're_render' => true,
 							'title' => __('Thousands separator', 'mfn-opts'),
 							'options' => array(
-								'' => __('Disable', 'mfn-opts'),
-								'comma' => __('Comma', 'mfn-opts'),
-								'space' => __('Space', 'mfn-opts'),
+                '' => __('Disable', 'mfn-opts'),
+                'comma' => __('Comma', 'mfn-opts'),
+                'dot' => __('Dot', 'mfn-opts'),
+                'space' => __('Space', 'mfn-opts'),
 							),
 							'std' => '',
 						),
@@ -38964,6 +39673,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
    				'mobile_size' => '1/1',
    				'tablet_resized' => '0',
    				'cat' => 'blocks',
+   				'tags' => 'toggle',
    				'attr' => array(
 
    					array(
@@ -40010,6 +40720,2465 @@ if( ! class_exists('Mfn_Builder_Fields') )
    				),
    			),
 
+
+
+				// Filters -------------------------------------------------------
+
+   			'active_filters' => array(
+   				'type' => 'active_filters',
+   				'title' => __('Filters <span class="mfn-item-label">Active</span>', 'mfn-opts'),
+   				'size' => '1/1',
+   				'tablet_size' => '1/1',
+   				'mobile_size' => '1/1',
+   				'tablet_resized' => '0',
+   				'cat' => 'boxes',
+   				'admin' => 'disabled',
+   				'attr' => array(
+
+   					array(
+							'type' => 'html',
+							'html' => '<div class="modalbox-card modalbox-re_render modalbox-card-content">',
+						),
+
+   					array(
+							'type' => 'header',
+   						'title' => __('General', 'mfn-opts'),
+   					),
+
+   					array(
+							'id' => 'reset_filters',
+							'attr_id' => 'reset_filters',
+							're_render' => true,
+							'type' 	=> 'switcher',
+							'title' => __('Reset filters button', 'mfn-opts'),
+							'desc' => __('Append reset filters', 'mfn-opts'),
+							'option' => '1',
+						),
+
+
+
+
+						array(
+							'id' => 'total_results',
+							'attr_id' => 'total_results',
+							're_render' => true,
+							'type' 	=> 'switcher',
+							'title' => __('Total results', 'mfn-opts'),
+							'option' => '1',
+						),
+
+
+
+						array(
+							'id' => 'sorting',
+							'attr_id' => 'sorting',
+							're_render' => true,
+							'type' 	=> 'switcher',
+							'title' => __('Sorting', 'mfn-opts'),
+							'option' => '1',
+						),
+
+
+						array(
+							'id' => 'reset_filters_label',
+							'condition' => array( 'id' => 'reset_filters', 'opt' => 'isnt', 'val' => '' ),
+							'type' => 'text',
+							're_render' => true,
+							'title' => __('Reset filters label', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'total_results_label',
+							'condition' => array( 'id' => 'total_results', 'opt' => 'isnt', 'val' => '' ),
+							'type' => 'text',
+							're_render' => true,
+							'title' => __('Total results label', 'mfn-opts'),
+							'desc' => __('Format: X results found', 'mfn-opts'),
+						),
+
+
+   					array(
+							'type' => 'html',
+							'html' => '</div><div class="modalbox-card modalbox-card-style modalbox-re_render">',
+						),
+
+   					array(
+							'type' => 'header',
+							'class' => 'toggled_header',
+							'title' => __('Filters list', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_gap',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-active-filters',
+							'style' => 'gap',
+							'type' => 'sliderbar',
+							'title' => __('Gap', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							),
+						),
+
+						array(
+							'id' => 'css_filters_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-active-filters label',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_padding',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-active-filters label',
+							'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_filters_border_style',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-active-filters label',
+							'style' => 'border-style',
+							'attr_id' => 'border_style_form_row',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+							'id' => 'css_filters_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-active-filters label',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_style_form_row', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_filters_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-active-filters label',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_form_row', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-active-filters label',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+						array(
+							'id' => 'css_filters_background',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-active-filters label',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background color', 'mfn-opts'),
+						),
+
+
+						array(
+							'id' => 'css_filters_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-active-filters label',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+
+						array(
+							'id' => 'css_filters_x_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-active-filters label span',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('X Color', 'mfn-opts'),
+						),
+
+
+						array(
+							'type' => 'header',
+							'class' => 'toggled_header',
+							'title' => __('Reset', 'mfn-opts'),
+							'condition' => array( 'id' => 'reset_filters', 'opt' => 'is', 'val' => '1' ),
+						),
+
+
+						array(
+							'id' => 'css_filters_reset_background',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-active-filters label.mfn-reset-filters',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background color', 'mfn-opts'),
+						),
+
+
+						array(
+							'id' => 'css_filters_reset_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-active-filters label.mfn-reset-filters',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_reset_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-active-filters label.mfn-reset-filters',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_form_row', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+
+
+
+						array(
+							'type' => 'header',
+							'class' => 'toggled_header',
+							'condition' => array( 'id' => 'reset_filters', 'opt' => 'isnt', 'val' => '' ),
+							'title' => __('Results count', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_results_count_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-active-filters-results-count',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+
+						array(
+							'id' => 'css_filters_results_count_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-active-filters-results-count',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+
+						array(
+							'type' => 'header',
+							'class' => 'toggled_header',
+							'condition' => array( 'id' => 'sorting', 'opt' => 'isnt', 'val' => '' ),
+							'title' => __('Sorting', 'mfn-opts'),
+						),
+
+
+						array(
+							'id' => 'css_filters_sorting_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-archive-orderby-select',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_sorting_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-archive-orderby-select',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_sorting_background',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-archive-orderby-select',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Background', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_sorting_padding',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-archive-orderby-select',
+							'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+		  			array(
+							'id' => 'css_filters_sorting_border_style',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-archive-orderby-select',
+							'style' => 'border-style',
+							'attr_id' => 'border_style_arch_order',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+							'id' => 'css_filters_sorting_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-archive-orderby-select',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_style_arch_order', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+		  			array(
+							'id' => 'css_filters_sorting_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-archive-orderby-select',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_arch_order', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_sorting_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-archive-orderby-select',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+
+						array(
+							'type' => 'html',
+							'html' => '</div>',
+						),
+
+					),
+   			),
+
+
+
+
+
+
+
+				// Filters -------------------------------------------------------
+
+   			'filters' => array(
+   				'type' => 'filters',
+   				'title' => __('Filters <span class="mfn-item-label">Form</span>', 'mfn-opts'),
+   				'size' => '1/1',
+   				'tablet_size' => '1/1',
+   				'mobile_size' => '1/1',
+   				'tablet_resized' => '0',
+   				'cat' => 'boxes',
+          'admin' => 'disabled',
+   				'attr' => array(
+
+   					array(
+							'type' => 'html',
+							'html' => '<div class="modalbox-card modalbox-re_render modalbox-card-content">',
+						),
+
+						array(
+							'type' => 'header',
+   						'title' => __('General', 'mfn-opts'),
+   					),
+
+   					array(
+   						'id' => 'post_type',
+   						'attr_id' => 'post_type',
+   						'type' => 'select',
+   						'title' => __('Filter post type', 'mfn-opts'),
+   						'mfn_post_types' => 'publicly_queryable',
+   						'mfn_options' => 'post_types',
+   					),
+
+   					array(
+   						'id' => 'form_layout',
+   						'attr_id' => 'form_layout',
+   						'type' => 'switch',
+   						'title' => __('Layout', 'mfn-opts'),
+   						'options' => array(
+   							'' => __('Vertical', 'mfn-opts'),
+   							'horizontal' => __('Horizontal', 'mfn-opts')
+   						),
+   					),
+
+   					array(
+		  				'id' => 'css_form_layout_columns',
+		  				'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters-horizontal',
+							'style' => 'grid-template-columns',
+		  				'responsive' => true,
+		  				'required' => true,
+		  				'condition' => array('id' => 'form_layout', 'opt' => 'is', 'val' => 'horizontal'),
+		  				'type' => 'switch',
+		  				'title' => __('Columns', 'mfn-opts'),
+		  				'options' => array(
+		  					'1fr' => __('1', 'mfn-opts'),
+		  					'repeat(2, 1fr)' => __('2', 'mfn-opts'),
+		  					'repeat(3, 1fr)' => __('3', 'mfn-opts'),
+		  					'repeat(4, 1fr)' => __('4', 'mfn-opts'),
+		  					'repeat(5, 1fr)' => __('5', 'mfn-opts'),
+		  					'repeat(6, 1fr)' => __('6', 'mfn-opts'),
+		  				),
+		  				'std' => 'repeat(3, 1fr)'
+		  			),
+
+   					array(
+							'id' => 'form_submit',
+							'attr_id' => 'form_submit',
+							'type' 	=> 'switch',
+							'title' => __('Submit option', 'mfn-opts'),
+							'desc' => __('When Hide is enabled, the form is submitted after each change', 'mfn-opts'),
+							'options' => array(
+                '' => __('Default', 'mfn-opts'),
+                'ajax-submit' => __('Ajax submit', 'mfn-opts'),
+                'auto-submit' => __('Ajax on input change', 'mfn-opts'),
+							),
+							'std' => '',
+						),
+
+						array(
+							'id' => 'form_submit_label',
+							'condition' => array( 'id' => 'form_submit', 'opt' => 'isnt', 'val' => 'auto-submit' ),
+							'type' => 'text',
+							're_render' => true,
+							'title' => __('Submit button label', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'label_visibility',
+							'attr_id' => 'label_visibility',
+							'type' 	=> 'switcher',
+							'title' => __('Labels', 'mfn-opts'),
+							'option' => 'hidden',
+							'invert' => true,
+							'std' => '',
+						),
+
+						array(
+							'id' => 'label_tag',
+							'type' 	=> 'switch',
+							'condition' => array( 'id' => 'label_visibility', 'opt' => 'isnt', 'val' => 'hidden' ),
+							're_render' => true,
+							'title' => __('Label tag', 'mfn-opts'),
+							'options' => array(
+                'h1' => 'h1',
+                'h2' => 'h2',
+                'h3' => 'h3',
+                'h4' => 'h4',
+                'h5' => 'h5',
+                'h6' => 'h6',
+                'p' => 'p',
+                'p.lead' => 'p.lead',
+                'span' => 'span',
+							),
+							'std' => 'h4',
+						),
+
+						array(
+							'id' => 'field_visibility',
+							'attr_id' => 'field_visibility',
+							'type' 	=> 'switcher',
+							're_render' => true,
+							'title' => __('Toggleable fields', 'mfn-opts'),
+							'option' => 'accordion',
+							'std' => '',
+						),
+
+						array(
+							'id' => 'field_visibility_start',
+							'attr_id' => 'field_visibility_start',
+							'type' 	=> 'switcher',
+							'condition' => array( 'id' => 'field_visibility', 'opt' => 'is', 'val' => 'accordion' ),
+							're_render' => true,
+							'title' => __('Fields visibility by default', 'mfn-opts'),
+							'option' => 'opened',
+							'std' => '',
+						),
+
+
+						array(
+							'id' => 'reset_filters',
+							'attr_id' => 'reset_filters',
+							're_render' => true,
+							'type' 	=> 'switcher',
+							'title' => __('Reset filters button', 'mfn-opts'),
+							'option' => '1',
+						),
+
+						array(
+							'id' => 'reset_filters_label',
+							'condition' => array( 'id' => 'reset_filters', 'opt' => 'is', 'val' => '1' ),
+							'type' => 'text',
+							're_render' => true,
+							'title' => __('Reset filters label', 'mfn-opts'),
+						),
+
+						/*array(
+							'id' => 'info',
+							'class' => 'mfn-alert',
+   						'type' => 'info',
+   						'title' => __('To display active filters in different location, use Active filters element.', 'mfn-opts'),
+   					),*/
+
+
+   					array(
+							'id' => 'active_filters',
+							'attr_id' => 'active_filters',
+							'type' 	=> 'switcher',
+							'title' => __('Active filters', 'mfn-opts'),
+							'desc' => __('With this option, active filters will be displayed above the filters form. If you want to display the active filters in a different location, you can do it using the “Active filters” item.', 'mfn-opts'),
+							're_render' => true,
+							'option' => '1',
+							'std' => '',
+						),
+
+
+						array(
+							'id' => 'exclude_tax_parent',
+							'attr_id' => 'exclude_tax_parent',
+							'type' 	=> 'switcher',
+							'title' => __('Exclude parent taxonomy terms', 'mfn-opts'),
+							'desc' => __('By default, child terms include their parent terms. You can disable this option.', 'mfn-opts'),
+							're_render' => true,
+							'option' => '1',
+							'std' => '',
+						),
+
+						/*array(
+   						'id' => 'form_logic',
+   						'type' => 'switch',
+   						'title' => __('Logic', 'mfn-opts'),
+   						'options' => array(
+   							'' => __('AND', 'mfn-opts'),
+   							'OR' => __('OR', 'mfn-opts')
+   						),
+   						'std' => '',
+   					),*/
+
+						array(
+							'type' => 'header',
+   						'title' => __('Form fields', 'mfn-opts'),
+   					),
+
+						array(
+							'id' => 'filters_fields',
+							'type' => 'filters',
+							'title' => __('Filters', 'mfn-opts'),
+						),
+
+   					array(
+							'type' => 'html',
+							'html' => '</div><div class="modalbox-card modalbox-card-style modalbox-re_render">',
+						),
+
+						array(
+							'type' => 'header',
+							'class' => 'toggled_header',
+							'title' => __('Form row', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_gap',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters',
+							'style' => 'gap',
+							'type' => 'sliderbar',
+							'title' => __('Gap', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							),
+						),
+
+						array(
+							'id' => 'css_filters_row_padding',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-form-row',
+							'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_filters_row_border_style',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-form-row',
+							'style' => 'border-style',
+							'attr_id' => 'border_style_form_row',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+							'id' => 'css_filters_row_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-form-row',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_form_row', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_row_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-form-row',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_style_form_row', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+						array(
+							'id' => 'css_filters_row_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-form-row',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+						array(
+							'id' => 'css_filters_row_background',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-form-row',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_inputs_active',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters',
+							'style' => '--mfn-button-theme-bg',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Input active color', 'mfn-opts'),
+						),
+
+
+		  			array(
+							'type' => 'header',
+							'class' => 'toggled_header',
+							'condition' => array('AND', array( 'id' => 'form_layout', 'opt' => 'is', 'val' => 'horizontal' ), array( 'id' => 'field_visibility', 'opt' => 'is', 'val' => 'accordion' ), array( 'id' => 'field_visibility_start', 'opt' => 'isnt', 'val' => 'opened' )),
+							'title' => __('Fields wrapper', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_row_fields_wrapper_margin',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters.mfn-advanced-filters-absolute-filters .mfn-form-row .mfn-form-row-wrapper',
+							'style' => 'margin',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Margin', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_filters_row_fields_wrapper_padding',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters.mfn-advanced-filters-absolute-filters .mfn-form-row .mfn-form-row-wrapper',
+							'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+						array(
+							'id' => 'css_filters_row_fields_wrapper_background',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters.mfn-advanced-filters-absolute-filters .mfn-form-row .mfn-form-row-wrapper',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background color', 'mfn-opts'),
+						),
+
+
+
+
+
+						array(
+							'id' => 'css_filters_row_fields_wrapper_border_style',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters.mfn-advanced-filters-absolute-filters .mfn-form-row .mfn-form-row-wrapper',
+							'style' => 'border-style',
+							'attr_id' => 'border_style_fw_form_row',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+							'id' => 'css_filters_row_fields_wrapper_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters.mfn-advanced-filters-absolute-filters .mfn-form-row .mfn-form-row-wrapper',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_fw_form_row', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_row_fields_wrapper_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters.mfn-advanced-filters-absolute-filters .mfn-form-row .mfn-form-row-wrapper',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_style_fw_form_row', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+						array(
+							'id' => 'css_filters_row_fields_wrapper_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters.mfn-advanced-filters-absolute-filters .mfn-form-row .mfn-form-row-wrapper',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+
+
+
+						array(
+							'type' => 'header',
+							'class' => 'toggled_header',
+							'title' => __('Title', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_title_margin',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-group-label',
+							'style' => 'margin',
+		  				'type' => 'dimensions',
+		  				'title' => __('Margin', 'mfn-opts'),
+		  				'version' => 'separated-fields',
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_filters_title_padding',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-group-label',
+							'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'title' => __('Padding', 'mfn-opts'),
+		  				'version' => 'separated-fields',
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+
+
+		  			array(
+							'id' => 'css_filters_title_border_style',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-group-label',
+							'style' => 'border-style',
+							'attr_id' => 'border_style_filters_title',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+							'id' => 'css_filters_title_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-group-label',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_filters_title', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_title_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-group-label',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_style_filters_title', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+						array(
+							'id' => 'css_filters_title_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-group-label',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+
+
+						array(
+							'id' => 'css_filters_title_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-group-label .mfn-advanced-filters-label-name',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_title_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-group-label .mfn-advanced-filters-label-name',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+
+						array(
+							'id' => 'css_filters_title_arrow_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-group-label .mfn-advanced-filters-field-switcher',
+							'style' => 'color',
+							'condition' => array( 'id' => 'field_visibility', 'opt' => 'isnt', 'val' => '' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Arrow color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_title_arrow_size',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-field-switcher',
+							'style' => 'font-size',
+							'type' => 'sliderbar',
+							'condition' => array( 'id' => 'field_visibility', 'opt' => 'isnt', 'val' => '' ),
+							'title' => __('Arrow size', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							)
+						),
+
+
+
+
+						array(
+							'type' => 'header',
+							'class' => 'toggled_header',
+							'title' => __('Title desc', 'mfn-opts'),
+						),
+
+
+						array(
+							'id' => 'css_filters_title_desc_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-group-label .mfn-advanced-filters-group-label-desc',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_title_desc_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-group-label .mfn-advanced-filters-group-label-desc',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+						array(
+							'type' => 'header',
+							'class' => 'toggled_header',
+							'title' => __('Checkbox / Radio', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_checkbox_gap',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-checkbox-radio',
+							'style' => 'gap',
+							'type' => 'sliderbar',
+							'title' => __('Gap', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							),
+						),
+
+						array(
+							'type' => 'subheader',
+							'class' => 'mfn-builder-subheader mfn-toggled',
+							'title' => __('Label', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_checkbox_label_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-checkbox-radio li label',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_checkbox_label_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-checkbox-radio li label',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+
+						array(
+							'type' => 'subheader',
+							'class' => 'mfn-builder-subheader mfn-toggled',
+							'title' => __('Input', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_checkbox_input_gap',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-checkbox-radio li',
+							'style' => 'gap',
+							'type' => 'sliderbar',
+							'title' => __('Offset', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							),
+						),
+
+						array(
+							'id' => 'css_filters_checkbox_input_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-checkbox li input[type=checkbox]',
+							'style' => 'border-radius',
+							'type' => 'sliderbar',
+							'title' => __('Checkbox border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							),
+						),
+
+
+						array(
+							'type' => 'html',
+							'html' => '<div class="mfn-form-row mfn-toggled mfn-sidebar-fields-tabs mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li><li><a href="#active" data-tab="active">Active</a></li></ul><div class="mfn-sft mfn-sft-normal">',
+						),
+
+						array(
+							'id' => 'css_filters_checkbox_background',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-checkbox-radio li input',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_checkbox_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-checkbox-radio li input:after',
+							'style' => 'border-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_checkbox_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-checkbox-radio li input',
+							'style' => 'border-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
+						),
+
+						array(
+							'id' => 'css_filters_checkbox_background_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-checkbox-radio li:hover input',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_checkbox_border_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-checkbox-radio li:hover input',
+							'style' => 'border-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-active">',
+						),
+
+						array(
+							'id' => 'css_filters_checkbox_background_active',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-checkbox-radio li input:checked',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_checkbox_color_active',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-checkbox-radio li input:checked:after',
+							'style' => 'border-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_checkbox_border_color_active',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-checkbox-radio li input:checked',
+							'style' => 'border-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div></div>',
+						),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+						array(
+							'type' => 'header',
+							'class' => 'toggled_header',
+							'title' => __('Switch', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_switch_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-switch label',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+
+						array(
+							'id' => 'css_filters_switch_gap',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-switch',
+							'style' => 'gap',
+							'type' => 'sliderbar',
+							'title' => __('Gap', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							),
+						),
+
+		  			array(
+							'id' => 'css_filters_switch_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-switch li',
+							'style' => 'width',
+		  				'type' => 'switch',
+		  				'title' => __('Width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'options' => array(
+   							'' => __('Inline', 'mfn-opts'),
+   							'100%' => __('Full width', 'mfn-opts'),
+   						),
+		  			),
+
+		  			array(
+		  				'id' => 'css_filters_switch_padding',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-switch li label',
+   						'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+		  			array(
+							'id' => 'css_filters_switch_border_style',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-switch label',
+							'style' => 'border-style',
+							'attr_id' => 'border_style_switchli_border',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+							'id' => 'css_filters_switch_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-switch label',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_style_switchli_border', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_filters_switch_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-switch label',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+						array(
+							'type' => 'html',
+							'html' => '<div class="mfn-form-row mfn-toggled mfn-sidebar-fields-tabs mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li><li><a href="#active" data-tab="active">Active</a></li></ul><div class="mfn-sft mfn-sft-normal">',
+						),
+
+						array(
+							'id' => 'css_filters_switch_background',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-switch label',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_switch_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-switch label',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_switch_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-switch label',
+							'style' => 'border-color',
+							'type' => 'color',
+							'condition' => array( 'id' => 'border_style_switchli_border', 'opt' => 'isnt', 'val' => 'none' ),
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
+						),
+
+						array(
+							'id' => 'css_filters_switch_background_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-switch label:hover',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'std' => '#f1f1f1',
+							'title' => __('Background Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_switch_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-switch label:hover',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_switch_border_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-switch label:hover',
+							'style' => 'border-color',
+							'type' => 'color',
+							'condition' => array( 'id' => 'border_style_switchli_border', 'opt' => 'isnt', 'val' => 'none' ),
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-active">',
+						),
+
+						array(
+							'id' => 'css_filters_switch_background_active',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-switch input:checked ~ label',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_switch_color_active',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-switch input:checked ~ label',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_switch_border_color_active',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-switch input:checked ~ label',
+							'style' => 'border-color',
+							'type' => 'color',
+							'condition' => array( 'id' => 'border_style_switchli_border', 'opt' => 'isnt', 'val' => 'none' ),
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div></div>',
+						),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+						array(
+							'type' => 'header',
+							'class' => 'toggled_header',
+							'title' => __('Image', 'mfn-opts'),
+						),
+
+						array(
+		  				'id' => 'css_filters_image_padding',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-image .mfn-advanced-filters-li-img',
+   						'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+						array(
+							'id' => 'css_filters_image_gap',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-image',
+							'style' => 'gap',
+							'type' => 'sliderbar',
+							'title' => __('Gap', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							),
+						),
+
+						array(
+							'id' => 'css_filters_image_size',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-image label',
+							'style' => '--mfn-advanced-filters-image-size',
+							'type' => 'sliderbar',
+							'title' => __('Max width', 'mfn-opts'),
+							'desc' => __('Width is auto by default', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'std' => '80px',
+							'param' => array(
+								'min' => '0',
+								'max' => '500',
+								'step' => '1',
+								'unit' => 'px',
+							),
+						),
+
+						array(
+							'id' => 'css_filters_image_height',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-image label',
+							'style' => '--mfn-advanced-filters-image-height',
+							'type' => 'sliderbar',
+							'title' => __('Max height', 'mfn-opts'),
+							'desc' => __('Height is auto by default', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'std' => '25px',
+							'param' => array(
+								'min' => '0',
+								'max' => '500',
+								'step' => '1',
+								'unit' => 'px',
+							),
+						),
+
+						array(
+							'id' => 'css_filters_image_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-image label',
+							'style' => 'border-width',
+							'type' => 'sliderbar',
+							'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'std' => 1,
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							),
+						),
+
+						array(
+							'id' => 'css_filters_image_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-image label',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+						array(
+							'type' => 'html',
+							'html' => '<div class="mfn-form-row mfn-toggled mfn-sidebar-fields-tabs mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li><li><a href="#active" data-tab="active">Active</a></li></ul><div class="mfn-sft mfn-sft-normal">',
+						),
+
+						array(
+							'id' => 'css_filters_image_background_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-image label',
+							'style' => 'background-color',
+							'type' => 'color',
+							'std' => '#f1f1f1',
+							'class' => 'mfn-toggled',
+							'title' => __('Background color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_image_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-image label',
+							'style' => 'border-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
+						),
+
+						array(
+							'id' => 'css_filters_image_background_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-image label:hover',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_image_border_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-image label:hover',
+							'style' => 'border-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-active">',
+						),
+
+						array(
+							'id' => 'css_filters_image_background_color_active',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-image input:checked ~ label',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_image_border_color_active',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-image input:checked ~ label',
+							'style' => 'border-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div></div>',
+						),
+
+
+
+
+
+
+
+
+						array(
+							'type' => 'header',
+							'class' => 'toggled_header',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+
+						array(
+							'id' => 'css_filters_color_gap',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-color',
+							'style' => 'gap',
+							'type' => 'sliderbar',
+							'title' => __('Gap', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							),
+						),
+
+						array(
+							'id' => 'css_filters_color_size',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-color label',
+							'style' => '--mfn-advanced-filters-color-width',
+							'type' => 'sliderbar',
+							'title' => __('Size', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'std' => '25px',
+							'param' => array(
+								'min' => '0',
+								'max' => '500',
+								'step' => '1',
+								'unit' => 'px',
+							),
+						),
+
+						array(
+							'id' => 'css_filters_color_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-color label',
+							'style' => 'outline-width',
+							'type' => 'sliderbar',
+							'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'std' => 1,
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							),
+						),
+
+						array(
+							'id' => 'css_filters_color_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-color label',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+						array(
+							'type' => 'html',
+							'html' => '<div class="mfn-form-row mfn-toggled mfn-sidebar-fields-tabs mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li><li><a href="#active" data-tab="active">Active</a></li></ul><div class="mfn-sft mfn-sft-normal">',
+						),
+
+						array(
+							'id' => 'css_filters_color_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-color label',
+							'style' => 'outline-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
+						),
+
+						array(
+							'id' => 'css_filters_color_border_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-color label:hover',
+							'style' => 'outline-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-active">',
+						),
+
+						array(
+							'id' => 'css_filters_color_border_color_active',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-color input:checked ~ label',
+							'style' => 'outline-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div></div>',
+						),
+
+
+
+
+
+
+
+						array(
+							'type' => 'header',
+							'class' => 'toggled_header',
+   						'title' => __('Inputs', 'mfn-opts'),
+   					),
+
+
+   					array(
+							'id' => 'css_filters_input_typography',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-form-control',
+   						'style' => 'typography',
+   						'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_input_text_align',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-form-control',
+   						'style' => 'text-align',
+							'responsive' => true,
+   						'type' => 'switch',
+   						'class' => 'mfn-toggled',
+   						'title' => __('Text align', 'mfn-opts'),
+   						'options' => array(
+   							'' => __('Default', 'mfn-opts'),
+   							'left' => __('Left', 'mfn-opts'),
+								'center' => __('Center', 'mfn-opts'),
+   							'right' => __('Right', 'mfn-opts'),
+   							'justify' => __('Justify', 'mfn-opts'),
+   						),
+   					),
+
+
+
+						array(
+		  				'id' => 'css_filters_input_padding',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-form-control',
+   						'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+						array(
+							'id' => 'css_filters_input_border_style',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-form-control',
+   						'style' => 'border-style',
+							'attr_id' => 'border_style_filters_inputs',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+		  				'id' => 'css_filters_input_border_width',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-form-control',
+   						'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_style_filters_inputs', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+						array(
+		  				'id' => 'css_filters_input_border_radius',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-form-control',
+   						'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+   					array(
+							'type' => 'html',
+							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Focus</a></li></ul><div class="mfn-sft mfn-sft-normal">',
+						),
+
+						array(
+							'id' => 'css_filters_input_color',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-form-control',
+   						'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_input_placeholder_color',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-form-control::placeholder',
+   						'style' => 'color',
+   						'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Placeholder color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_input_bg',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-form-control, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-floating-placeholder .mfn-input-wrapper:before',
+   						'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Background', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_input_border_color',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-form-control',
+   						'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_filters_inputs', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
+						),
+
+						array(
+							'id' => 'css_filters_input_color_focus',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-form-control:focus',
+   						'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_input_placeholder_color_focus',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-form-control:focus::placeholder',
+   						'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Placeholder color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_input_bg_focus',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-form-control:focus, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-floating-placeholder .mfn-input-wrapper.mfn-input-wrapper:has(input:focus):before',
+   						'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Background', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_input_border_color_focus',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-form-control:focus',
+   						'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_filters_inputs', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div></div>',
+						),
+
+
+
+
+						array(
+							'type' => 'header',
+							'class' => 'toggled_header',
+   						'title' => __('Slider', 'mfn-opts'),
+   					),
+
+   					array(
+							'id' => 'css_filters_slider_margin',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-ui-slider-wrapper',
+							'style' => 'margin',
+		  				'type' => 'dimensions',
+		  				'title' => __('Margin', 'mfn-opts'),
+		  				'version' => 'separated-fields',
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+		  			array(
+							'id' => 'css_filters_slider_inputs_margin',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-input-wrapper',
+							'style' => 'margin',
+		  				'type' => 'dimensions',
+		  				'title' => __('Inputs margin', 'mfn-opts'),
+		  				'version' => 'separated-fields',
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+						array(
+							'id' => 'css_filters_slider_line_height',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-ui-slider-wrapper',
+							'style' => '--range-slider-height',
+							'type' => 'sliderbar',
+							'title' => __('Line height', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							),
+						),
+
+						array(
+							'id' => 'css_filters_slider_handle_size',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-ui-slider-wrapper',
+							'style' => '--range-slider-handle-size',
+							'type' => 'sliderbar',
+							'title' => __('Handler size', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							),
+						),
+
+
+						array(
+							'id' => 'css_filters_slider_line_bg',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-ui-slider-wrapper',
+							'style' => '--range-slider-background',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Inactive color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_slider_line_bg_active',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-ui-slider-wrapper',
+							'style' => '--range-slider-handle-background',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Active color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_slider_line_bg_handle_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-ui-slider-wrapper',
+							'style' => '--range-slider-handle-hover-background',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Handle color on hover', 'mfn-opts'),
+						),
+
+
+
+
+
+						array(
+							'type' => 'header',
+							'class' => 'toggled_header',
+   						'title' => __('Button', 'mfn-opts'),
+   					),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+						array(
+							'id' => 'css_filters_button_padding',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters button.mfn-btn',
+							'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+		  			array(
+							'id' => 'css_filters_button_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters button.mfn-btn',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_button_border_style',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters button.mfn-btn',
+							'style' => 'border-style',
+							'attr_id' => 'border_style_osf_border',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+							'id' => 'css_filters_button_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters button.mfn-btn',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_style_osf_border', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+						array(
+							'id' => 'css_filters_button_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters button.mfn-btn',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+   					array(
+							'type' => 'html',
+							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li></ul><div class="mfn-sft mfn-sft-normal">',
+						),
+
+						array(
+							'id' => 'css_filters_button_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters button.mfn-btn',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_button_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters button.mfn-btn',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_osf_border', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'filters_button_background_switcher',
+							'attr_id' => 'background_switcher_osf',
+							'type' => 'switch',
+							'class' => 'mfn-fields-switcher disable-history mfn-disable-reset-value',
+							'title' => __('Background type', 'mfn-opts'),
+							'options' => array(
+		  					'default' => __('Default', 'mfn-opts'),
+		  					'gradient' 	=> __('Gradient', 'mfn-opts'),
+		  				),
+							'visual_options' => array(
+		  					'default' => '',
+		  					'gradient' 	=> '',
+		  				),
+		  				'std' => 'default',
+						),
+
+						array(
+							'id' => 'css_filters_button_background_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters button.mfn-btn',
+							'style' => 'background-color',
+							'condition' => array( 'id' => 'background_switcher_osf', 'opt' => 'is', 'val' => 'default' ),
+							'type' => 'color',
+							'title' => __('Background color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_button_gradient',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters button.mfn-btn',
+							'style' => 'gradient',
+		  				'condition' => array( 'id' => 'background_switcher_osf', 'opt' => 'is', 'val' => 'gradient' ),
+		  				'type' => 'gradient',
+		  				'title' => __('Gradient', 'mfn-opts'),
+		  				'class' => 'mfn-toggled',
+		  			),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
+						),
+
+						array(
+							'id' => 'css_filters_button_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters button.mfn-btn:hover',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_button_border_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters button.mfn-btn:hover',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_osf_border', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'filters_button_background_switcher',
+							'attr_id' => 'background_switcher_hover_osf',
+							'type' => 'switch',
+							'class' => 'mfn-fields-switcher disable-history mfn-disable-reset-value',
+							'title' => __('Background type', 'mfn-opts'),
+							'options' => array(
+		  					'default' => __('Default', 'mfn-opts'),
+		  					'gradient' 	=> __('Gradient', 'mfn-opts'),
+		  				),
+							'visual_options' => array(
+		  					'default' => '',
+		  					'gradient' 	=> '',
+		  				),
+		  				'std' => 'default',
+						),
+
+						array(
+							'id' => 'css_filters_button_background_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters button.mfn-btn:hover, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters button.mfn-btn:before',
+							'style' => 'background',
+							'condition' => array( 'id' => 'background_switcher_hover_osf', 'opt' => 'is', 'val' => 'default' ),
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Background color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_button_gradient_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters button.mfn-btn:hover',
+							'style' => 'gradient',
+		  				'condition' => array( 'id' => 'background_switcher_hover_osf', 'opt' => 'is', 'val' => 'gradient' ),
+		  				'type' => 'gradient',
+		  				'title' => __('Gradient', 'mfn-opts'),
+		  				'class' => 'mfn-toggled',
+		  			),
+
+						array(
+							'type' => 'html',
+							'html' => '</div></div>',
+						),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+						array(
+							'type' => 'header',
+							'class' => 'toggled_header',
+							'condition' => array( 'id' => 'active_filters', 'opt' => 'is', 'val' => '1' ),
+							'title' => __('Active filters', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_active_filters_gap',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-active-filters',
+							'style' => 'gap',
+							'type' => 'sliderbar',
+							'title' => __('Gap', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							),
+						),
+
+						array(
+							'id' => 'css_active_filters_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-active-filters label',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_active_filters_padding',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-active-filters label',
+							'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_active_filters_border_style',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-active-filters label',
+							'style' => 'border-style',
+							'attr_id' => 'border_style_activefilters_row',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+							'id' => 'css_active_filters_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-active-filters label',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_style_activefilters_row', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_active_filters_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-active-filters label',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_activefilters_row', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_active_filters_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-active-filters label',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+						array(
+							'id' => 'css_active_filters_background',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-active-filters label',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background color', 'mfn-opts'),
+						),
+
+
+						array(
+							'id' => 'css_active_filters_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-active-filters label',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+
+						array(
+							'id' => 'css_active_filters_x_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-active-filters label span',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('X Color', 'mfn-opts'),
+						),
+
+
+						array(
+							'type' => 'subheader',
+							'class' => 'mfn-builder-subheader mfn-toggled',
+							'title' => __('Reset', 'mfn-opts'),
+						),
+
+
+						array(
+							'id' => 'css_active_filters_reset_background',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-active-filters label.mfn-reset-filters',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background color', 'mfn-opts'),
+						),
+
+
+						array(
+							'id' => 'css_active_filters_reset_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-active-filters label.mfn-reset-filters',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_active_filters_reset_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-active-filters label.mfn-reset-filters',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_activefilters_row', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+
+
+						array(
+							'type' => 'header',
+							'class' => 'toggled_header',
+							'condition' => array( 'id' => 'reset_filters', 'opt' => 'is', 'val' => '1' ),
+							'title' => __('Reset filters', 'mfn-opts'),
+						),
+
+
+						array(
+							'id' => 'css_filters_reset_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-reset-filters',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+
+						array(
+							'id' => 'css_filters_reset_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-reset-filters',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+
+
+						array(
+							'id' => 'css_filters_reset_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-reset-filters:hover',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Hover color', 'mfn-opts'),
+						),
+
+
+						array(
+							'type' => 'header',
+							'class' => 'toggled_header',
+							'condition' => array( 'id' => 'post_type', 'opt' => 'is', 'val' => 'product' ),
+							'title' => __('Rate filter', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_filters_rate_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-rate li',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+
+
+						array(
+							'id' => 'css_filters_rate_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-rate li:hover, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-advanced-filters .mfn-advanced-filters-rate li.active',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Hover color', 'mfn-opts'),
+						),
+
+
+
+						array(
+							'type' => 'html',
+							'html' => '</div>',
+						),
+
+					),
+   			),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
    			// Flat Box -------------------------------------------------------
 
    			'flat_box' => array(
@@ -40362,6 +43531,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
    				'tablet_resized' => '0',
    				'preview' => true, // instant preview
    				'cat' => 'typography',
+   				'tags' => 'title text header',
    				'attr' => array(
    				//'fields' => array(
 
@@ -40379,6 +43549,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 
    					array(
    						'id' => 'title',
+   						'attr_id' => 'title',
    						'type' => 'textarea',
 							'dynamic_data' => 'title',
    						'edit_tag' => '.mcb-item-heading-inner | .title',
@@ -40417,7 +43588,29 @@ if( ! class_exists('Mfn_Builder_Fields') )
    					),
 
    					array(
+   						'id' => 'link_type',
+   						'attr_id' => 'link_type',
+   						'type' => 'select',
+							'title' => __('On click action', 'mfn-opts'),
+   						'options' => array(
+								'' => __('Default', 'mfn-opts'),
+								'mfn-open-sidebar' => __('Open sidebar', 'mfn-opts'),
+							),
+							'std' => '',
+   					),
+
+						array(
+   						'id' => 'sidebar_type',
+   						'attr_id' => 'sidebar_type',
+   						'type' => 'select',
+   						'condition' => array( 'id' => 'link_type', 'opt' => 'is', 'val' => 'mfn-open-sidebar' ),
+   						'title' => __('Choose sidebar', 'mfn-opts'),
+							'js_options' => 'sidemenus',
+   					),
+
+   					array(
    						'id' => 'link',
+   						'condition' => array( 'id' => 'link_type', 'opt' => 'is', 'val' => '' ),
    						'dynamic_data' => 'permalink',
    						'type' => 'text',
    						'title' => __('Link', 'mfn-opts'),
@@ -40426,6 +43619,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
    					array(
    						'id' => 'target',
    						'type' => 'select',
+   						'condition' => array( 'id' => 'link_type', 'opt' => 'is', 'val' => '' ),
    						'title' => __('Target', 'mfn-opts'),
    						'options' => array(
    							0 => __('Default | _self', 'mfn-opts'),
@@ -40591,15 +43785,9 @@ if( ! class_exists('Mfn_Builder_Fields') )
   						'id' => 'css_stroke_width',
    						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .title',
    						'style' => '-webkit-text-stroke-width',
-  						'type' => 'select',
+  						'type' => 'text',
   						'class' => 'mfn-toggled',
   						'title' => __('Text stroke width', 'mfn-opts'),
-  						'options' => [
-  							'initial' => __('Default', 'mfn-opts'),
-  							'thin' => __('Thin', 'mfn-opts'),
-  							'medium' => __('Medium', 'mfn-opts'),
-  							'thick' => __('Thick', 'mfn-opts'),
-  						],
   					),
 
   					array(
@@ -40612,6 +43800,63 @@ if( ! class_exists('Mfn_Builder_Fields') )
   						'title' => __('Text stroke color', 'mfn-opts'),
   						'std' => '',
   					),
+
+
+
+
+
+
+  					array(
+							'type' => 'header',
+							'class' => 'toggled_header',
+							'condition' => array( 'id' => 'title', 'opt' => 'is', 'val' => '{title:attributes}' ),
+   						'title' => __('Attributes', 'mfn-opts'),
+   					),
+
+   					array(
+							'id' => 'css_heading_variationser_margin',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-variations-wrapper-loop',
+							'style' => 'margin',
+		  				'type' => 'dimensions',
+		  				'title' => __('Margin', 'mfn-opts'),
+		  				'version' => 'separated-fields',
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+						array(
+							'id' => 'css_heading_variationser_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-vr ul.mfn-vr-options li a',
+							'style' => 'border-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_heading_variations_border_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-vr ul.mfn-vr-options li a:hover',
+							'style' => 'border-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color on Hover', 'mfn-opts'),
+						),
+
+
+						array(
+							'type' => 'subheader',
+							'class' => 'mfn-builder-subheader mfn-toggled',
+							'title' => __('Tooltip', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'heading_variations_tooltip_first_pos',
+		  				'type' => 'switcher',
+		  				'title' => __('Set tooltip position to left', 'mfn-opts'),
+		  				'desc' => __('For first element', 'mfn-opts'),
+		  				'option' => 'top-left',
+							'class' => 'mfn-toggled',
+		  			),
 
 
 						// HTML end: settings
@@ -41880,6 +45125,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
    				'mobile_size' => '1/1',
    				'tablet_resized' => '0',
    				'cat' => 'elements',
+   				'tags' => 'image',
    				'attr' => array(
 
    					array(
@@ -42521,8 +45767,18 @@ if( ! class_exists('Mfn_Builder_Fields') )
    						'options' => array(
 								'' => __('Default', 'mfn-opts'),
 								'1' => __('Open popup', 'mfn-opts'),
+								'mfn-open-sidebar' => __('Open sidebar', 'mfn-opts'),
 							),
 							'std' => '',
+   					),
+
+   					array(
+   						'id' => 'sidebar_type',
+   						'attr_id' => 'sidebar_type',
+   						'type' => 'select',
+   						'condition' => array( 'id' => 'link_type', 'opt' => 'is', 'val' => 'mfn-open-sidebar' ),
+   						'title' => __('Choose sidebar', 'mfn-opts'),
+							'js_options' => 'sidemenus',
    					),
 
    					array(
@@ -42956,9 +46212,19 @@ if( ! class_exists('Mfn_Builder_Fields') )
    						'options' => array(
 								'' => __('Default', 'mfn-opts'),
 								'1' => __('Open popup', 'mfn-opts'),
+								'mfn-open-sidebar' => __('Open sidebar', 'mfn-opts'),
 								'mfn-read-more' => __('Read more', 'mfn-opts'),
 							),
 							'std' => '',
+   					),
+
+						array(
+   						'id' => 'sidebar_type',
+   						'attr_id' => 'sidebar_type',
+   						'type' => 'select',
+   						'condition' => array( 'id' => 'link_type', 'opt' => 'is', 'val' => 'mfn-open-sidebar' ),
+   						'title' => __('Choose sidebar', 'mfn-opts'),
+							'js_options' => 'sidemenus',
    					),
 
    					array(
@@ -43221,7 +46487,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'condition' => array( 'id' => 'ib2-label', 'opt' => 'isnt', 'val' => '' ),
 							'type' => 'typography_vb',
 							'label_tools' => true,
-							'class' => 'mfn-toggled toggle_fields',
+							'class' => 'mfn-toggled toggle_fields mfn-class-editor-form-row-visible',
 							'title' => __('Typography', 'mfn-opts'),
 						),
 
@@ -43255,6 +46521,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'class' => 'mfn-toggled narrow mfn-class-editor-form-row-visible',
 							'title' => __('Image width', 'mfn-opts'),
 						),
+						
 						array(
 							'type' => 'html',
 							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li></ul><div class="mfn-sft mfn-sft-normal">',
@@ -44248,6 +47515,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
    					array(
    						'id' => 'alt',
    						'type' => 'text',
+   						'dynamic_data' => 'title',
    						'title' => __('Alternate text', 'mfn-opts'),
    					),
 
@@ -44562,6 +47830,32 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'class' => 'mfn-toggled mfn-slider-input',
 							'title' => __('Height value', 'mfn-opts'),
 							'desc' => __('Use px, %, vw, vh or auto to set image height', 'mfn-opts'),
+						),
+
+
+						array(
+							'id' => 'css_image_cover_origin',
+              'alias' => 'css_image_cover_origin',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .image_frame.mfn-coverimg .image_wrapper img',
+   						'style' => 'object-position',
+							'condition' => array( 'id' => 'image_height', 'opt' => 'is', 'val' => 'custom' ),
+							'type' => 'radio_img',
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'title' => __('Image position', 'mfn-opts'),
+							'desc' => __('Object-position for object-fit: cover', 'mfn-opts'),
+							'options' => array(
+	  						'top left' => __('Top Left', 'mfn-opts'),
+	  						'top center' => __('Top Center', 'mfn-opts'),
+	  						'top right' => __('Top Right', 'mfn-opts'),
+	  						'center left' => __('Center Left', 'mfn-opts'),
+	  						'' => __('Center', 'mfn-opts'),
+	  						'center right' => __('Center Right', 'mfn-opts'),
+	  						'bottom left' => __('Bottom Left', 'mfn-opts'),
+	  						'bottom center' => __('Bottom Center', 'mfn-opts'),
+	  						'bottom right' => __('Bottom Right', 'mfn-opts'),
+	  					),
+	  					'std' => ''
 						),
 
 
@@ -45477,6 +48771,1510 @@ if( ! class_exists('Mfn_Builder_Fields') )
    				),
    			),
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+				
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+				// Image Scroller  ---------------------------------------------------------
+
+   			'media_carousel' => array(
+   				'type' => 'media_carousel',
+   				'title' => __('Media Carousel', 'mfn-opts'),
+   				'size' => '1/1',
+   				'tablet_size' => '1/1',
+   				'mobile_size' => '1/1',
+   				'tablet_resized' => '0',
+   				'cat' => 'loops',
+   				'tags' => 'slider scroller swiper slick gallery',
+   				'attr' => array(
+
+   					array(
+							'type' => 'html',
+							'html' => '<div class="modalbox-card modalbox-re_render mfn-class-editor-card-visible modalbox-card-content">',
+						),
+
+
+   					array(
+   						'id' => 'media_carousel_ids',
+   						'type' => 'upload_multi',
+   						'title' => __('Bulk add media', 'mfn-opts'),
+   						'preview' => 'images',
+   					),
+
+
+
+   					array(
+   						'id' => 'tabs',
+   						'type' => 'tabs',
+   						'title' => __('Items', 'mfn-opts'),
+							'options' => [
+
+								'image' => [
+									'image',
+									__('Media (Image or Video)', 'mfn-opts'),
+									'',
+								],
+
+								'link' => [
+									'input',
+									__('Link', 'mfn-opts'),
+									'',
+								],
+
+								'title' => [
+									'input',
+									__('Title', 'mfn-opts'),
+									'',
+								],
+
+								'content' => [
+									'textarea',
+									__('Content', 'mfn-opts'),
+									'',
+								],
+						
+							],
+							'preview' => 'tabs',
+							'primary' => 'image',
+   					),
+
+
+   					array(
+							'id' => 'box_type',
+							'attr_id' => 'box_type',
+							'type' 	=> 'switch',
+							're_render' => true,
+							'title' => __('Box style', 'mfn-opts'),
+							'desc' => __('When title or content is added', 'mfn-opts'),
+							'options' => array(
+                '' => 'Vertical',
+                'horizontal' => 'Horizontal',
+                'overlay' => 'Overlay',
+							),
+							'std' => '',
+						),
+
+						array(
+							'id' => 'css_box_desc_position_y',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item.mfn-grid-item-overlay .mfn-grid-item-desc',
+							'style' => 'justify-content',
+							'type' 	=> 'switch',
+							'responsive' => true,
+							'title' => __('Desc position', 'mfn-opts'),
+							'condition' => array( 'id' => 'box_type', 'opt' => 'is', 'val' => 'overlay' ),
+							'options' => array(
+                '' => 'Default',
+                'flex-start' => 'Top',
+                'center' => 'Center',
+                'flex-end' => 'Bottom',
+							),
+							'std' => '',
+						),
+
+						array(
+							'id' => 'css_grid_item_img_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item.mfn-grid-item-horizontal .mfn-grid-item-image',
+							'style' => 'width',
+							'type' => 'sliderbar',
+							'responsive' => true,
+							'title' => __('Image width', 'mfn-opts'),
+							'condition' => array( 'id' => 'box_type', 'opt' => 'is', 'val' => 'horizontal' ),
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'std' => '40',
+								'step' => '1',
+								'unit' => '%',
+							),
+							'std' => array('desktop' => '40%', 'mobile' => '100%')
+						),
+
+						array(
+							'id' => 'css_grid_item_flex_wrap',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item.mfn-grid-item-horizontal',
+							'style' => 'flex-wrap',
+							'type' 	=> 'switcher',
+							'responsive' => true,
+							'invert' => true,
+							'class' => 'mfn-visible-on-mobile-preview',
+							'condition' => array( 'id' => 'box_type', 'opt' => 'is', 'val' => 'horizontal' ),
+							'title' => __('Desc under image', 'mfn-opts'),
+							'option' => 'nowrap',
+						),
+
+
+						array(
+							'id' => 'title_tag',
+							'type' 	=> 'switch',
+							're_render' => true,
+							'title' => __('Title tag', 'mfn-opts'),
+							'options' => array(
+                'h1' => 'h1',
+                'h2' => 'h2',
+                'h3' => 'h3',
+                'h4' => 'h4',
+                'h5' => 'h5',
+                'h6' => 'h6',
+                'p' => 'p',
+                'p.lead' => 'p.lead',
+                'span' => 'span',
+							),
+							'std' => 'h4',
+						),
+
+   					array(
+   						'id' => 'columns',
+   						're_render' => true,
+   						'responsive' => true,
+   						'type' => 'switch',
+   						'title' => __('Columns', 'mfn-opts'),
+   						'options' => array(
+   							1	=> 1,
+   							2	=> 2,
+   							3	=> 3,
+   							4	=> 4,
+   							5	=> 5,
+   							6	=> 6,
+   						),
+   						'std' => 3
+   					),
+
+   					array(
+		  				'id' => 'space_between',
+							'type' => 'text',
+							'responsive' => true,
+							're_render' => true,
+							'title' => __('Space between', 'mfn-opts'),
+							'param' => 'number',
+   						'class' => 'narrow',
+   						'after' => 'px',
+		  			),
+
+   					array(
+							'id' => 'loop',
+							'attr_id' => 'loop',
+							're_render' => true,
+							'type' 	=> 'switcher',
+							'title' => __('Infinite loop', 'mfn-opts'),
+							'option' => '1',
+						),
+
+						array(
+		  				'id' => 'autoplay',
+							'type' => 'sliderbar',
+							're_render' => true,
+							'default_unit' => '',
+							'title' => __('Autoplay speed', 'mfn-opts'),
+							'desc' => __('Time in ms. Leave empty to disallow autoplay', 'mfn-opts'),
+							'param' => array(
+								'min' => '0',
+								'max' => '15000',
+								'step' => '100',
+								'unit' => '',
+							)
+		  			),
+
+		  			array(
+		  				'id' => 'speed',
+							'type' => 'sliderbar',
+							're_render' => true,
+							'default_unit' => '',
+							'title' => __('Animation speed', 'mfn-opts'),
+							'desc' => __('Time in ms.', 'mfn-opts'),
+							'param' => array(
+								'min' => '0',
+								'max' => '15000',
+								'step' => '10',
+								'unit' => '',
+							)
+		  			),
+
+		  			array(
+							'id' => 'pagination',
+							'attr_id' => 'pagination',
+							're_render' => true,
+							'type' 	=> 'switcher',
+							'title' => __('Pagination', 'mfn-opts'),
+							'option' => '1',
+						),
+
+
+						array(
+		  				'id' => 'pagination_style',
+		  				'attr_id' => 'pagination_style',
+		  				'condition' => array( 'id' => 'pagination', 'opt' => 'is', 'val' => '1' ),
+		  				'type' => 'switch',
+		  				're_render' => true,
+		  				'title' => __('Pagination style', 'mfn-opts'),
+		  				'options' => array(
+		  					'' => __('Standard', 'mfn-opts'),
+		  					'overlay' => __('Overlay', 'mfn-opts')
+		  				),
+		  				'std' => ''
+		  			),
+
+		  			array(
+		  				'id' => 'pagination_count',
+		  				'condition' => array( 'id' => 'pagination', 'opt' => 'is', 'val' => '1' ),
+		  				'type' => 'switch',
+		  				're_render' => true,
+		  				'title' => __('Pagination count', 'mfn-opts'),
+		  				'options' => array(
+		  					'' => __('Standard', 'mfn-opts'),
+		  					'dynamic' => __('Dynamic', 'mfn-opts'),
+		  				),
+		  				'std' => ''
+		  			),
+
+		  			array(
+		  				'id' => 'pagination_visibility',
+		  				'iconinfo' => 'https://support.muffingroup.com/video-tutorials/section-responsive-visibility/',
+		  				'condition' => array( 'id' => 'pagination', 'opt' => 'is', 'val' => '1' ),
+		  				'type' => 'switch',
+		  				'invert' => true,
+		  				'version' => 'multiple',
+		  				'title' => __('Pagination visibility', 'mfn-opts'),
+		  				'active_tooltip' => array(
+		  					'dots-hide-desktop' => __('Show on Desktop', 'mfn-opts'),
+		  					'dots-hide-laptop' => __('Show on Laptop', 'mfn-opts'),
+		  					'dots-hide-tablet' => __('Show on Tablet', 'mfn-opts'),
+		  					'dots-hide-mobile' => __('Show on Mobile', 'mfn-opts'),
+		  				),
+		  				'options' => array(
+		  					'dots-hide-desktop' => __('Hide on Desktop', 'mfn-opts'),			// 960 +
+		  					'dots-hide-laptop' => __('Hide on Laptop', 'mfn-opts'),
+		  					'dots-hide-tablet' => __('Hide on Tablet', 'mfn-opts'),		// 768 - 959
+		  					'dots-hide-mobile' => __('Hide on Mobile', 'mfn-opts'),			// - 768
+		  				),
+		  				'visual_options' => array(
+		  					'dots-hide-desktop' => '<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22"><defs><style>.cls-1{fill:none;stroke:#304050;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}.cls-2{fill:#304050;}</style></defs><path class="cls-1" d="M4.94,5H17.06a.93.93,0,0,1,.94.91v7.18a.93.93,0,0,1-.94.91H4.94A.93.93,0,0,1,4,13.09V5.91A.93.93,0,0,1,4.94,5Z"/><path class="cls-1" d="M7,17h8"/><path class="cls-2" d="M13,15.51a1.58,1.58,0,0,0,.7,1.26L14,17H8l.3-.23A1.58,1.58,0,0,0,9,15.51V14h4Z"/></svg>',			// 960 +
+		  					'dots-hide-laptop' => '<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"viewBox="0 0 22 22" style="enable-background:new 0 0 22 22;" xml:space="preserve"> <style type="text/css"> .st0{fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;} </style> <path class="st0" d="M5,15V6.9C5,6.4,5.4,5.9,5.9,6h10.1c0.5,0,0.9,0.4,0.9,0.9V15"/> <path class="st0" d="M4,17h14"/> </svg>',		// 768 - 959
+		  					'dots-hide-tablet' => '<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22"><defs><style>.cls-1{fill:none;stroke:#304050;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style></defs><path class="cls-1" d="M7,15.83V7.17A1.21,1.21,0,0,1,8.25,6h5.5A1.21,1.21,0,0,1,15,7.17v8.66A1.21,1.21,0,0,1,13.75,17H8.25A1.21,1.21,0,0,1,7,15.83Z"/></svg>',		// 768 - 959
+		  					'dots-hide-mobile' => '<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22"><defs><style>.cls-1{fill:none;stroke:#304050;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}.cls-2{fill:#304050;}</style></defs><path class="cls-1" d="M8,15.82V8.18A1.08,1.08,0,0,1,8.94,7h4.12A1.08,1.08,0,0,1,14,8.18v7.64A1.08,1.08,0,0,1,13.06,17H8.94A1.08,1.08,0,0,1,8,15.82Z"/><circle class="cls-2" cx="11" cy="14" r="1"/></svg>',			// - 768
+		  				),
+		  			),
+
+
+
+		  			array(
+							'id' => 'arrows',
+							'attr_id' => 'arrows',
+							're_render' => true,
+							'type' 	=> 'switcher',
+							'title' => __('Navigation', 'mfn-opts'),
+							'option' => '1',
+						),
+
+
+		  			array(
+		  				'id' => 'arrows_style',
+		  				'attr_id' => 'arrows_style',
+		  				'condition' => array( 'id' => 'arrows', 'opt' => 'is', 'val' => '1' ),
+		  				'type' => 'switch',
+		  				're_render' => true,
+		  				'title' => __('Navigation style', 'mfn-opts'),
+		  				'options' => array(
+		  					'' => __('Standard', 'mfn-opts'),
+		  					'overlay' => __('Overlay', 'mfn-opts'),
+		  					'custom' => __('Custom', 'mfn-opts')
+		  				),
+		  				'std' => ''
+		  			),
+
+		  			array(
+		  				'id' => 'arrows_visibility',
+		  				'iconinfo' => 'https://support.muffingroup.com/video-tutorials/section-responsive-visibility/',
+		  				'condition' => array( 'id' => 'arrows', 'opt' => 'is', 'val' => '1' ),
+		  				'type' => 'switch',
+		  				'invert' => true,
+		  				'version' => 'multiple',
+		  				'title' => __('Navigation visibility', 'mfn-opts'),
+		  				'active_tooltip' => array(
+		  					'arrows-hide-desktop' => __('Show on Desktop', 'mfn-opts'),
+		  					'arrows-hide-laptop' => __('Show on Laptop', 'mfn-opts'),
+		  					'arrows-hide-tablet' => __('Show on Tablet', 'mfn-opts'),
+		  					'arrows-hide-mobile' => __('Show on Mobile', 'mfn-opts'),
+		  				),
+		  				'options' => array(
+		  					'arrows-hide-desktop' => __('Hide on Desktop', 'mfn-opts'),			// 960 +
+		  					'arrows-hide-laptop' => __('Hide on Laptop', 'mfn-opts'),
+		  					'arrows-hide-tablet' => __('Hide on Tablet', 'mfn-opts'),		// 768 - 959
+		  					'arrows-hide-mobile' => __('Hide on Mobile', 'mfn-opts'),			// - 768
+		  				),
+		  				'visual_options' => array(
+		  					'arrows-hide-desktop' => '<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22"><defs><style>.cls-1{fill:none;stroke:#304050;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}.cls-2{fill:#304050;}</style></defs><path class="cls-1" d="M4.94,5H17.06a.93.93,0,0,1,.94.91v7.18a.93.93,0,0,1-.94.91H4.94A.93.93,0,0,1,4,13.09V5.91A.93.93,0,0,1,4.94,5Z"/><path class="cls-1" d="M7,17h8"/><path class="cls-2" d="M13,15.51a1.58,1.58,0,0,0,.7,1.26L14,17H8l.3-.23A1.58,1.58,0,0,0,9,15.51V14h4Z"/></svg>',			// 960 +
+		  					'arrows-hide-laptop' => '<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"viewBox="0 0 22 22" style="enable-background:new 0 0 22 22;" xml:space="preserve"> <style type="text/css"> .st0{fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;} </style> <path class="st0" d="M5,15V6.9C5,6.4,5.4,5.9,5.9,6h10.1c0.5,0,0.9,0.4,0.9,0.9V15"/> <path class="st0" d="M4,17h14"/> </svg>',		// 768 - 959
+		  					'arrows-hide-tablet' => '<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22"><defs><style>.cls-1{fill:none;stroke:#304050;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}</style></defs><path class="cls-1" d="M7,15.83V7.17A1.21,1.21,0,0,1,8.25,6h5.5A1.21,1.21,0,0,1,15,7.17v8.66A1.21,1.21,0,0,1,13.75,17H8.25A1.21,1.21,0,0,1,7,15.83Z"/></svg>',		// 768 - 959
+		  					'arrows-hide-mobile' => '<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22"><defs><style>.cls-1{fill:none;stroke:#304050;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px;}.cls-2{fill:#304050;}</style></defs><path class="cls-1" d="M8,15.82V8.18A1.08,1.08,0,0,1,8.94,7h4.12A1.08,1.08,0,0,1,14,8.18v7.64A1.08,1.08,0,0,1,13.06,17H8.94A1.08,1.08,0,0,1,8,15.82Z"/><circle class="cls-2" cx="11" cy="14" r="1"/></svg>',			// - 768
+		  				),
+		  			),
+
+
+
+
+
+
+
+
+
+		  			array(
+   						'id' => 'html5_parameters',
+   						're_render' => true,
+   						'type' => 'select',
+   						'title' => __('HTML5 video parameters', 'mfn-opts'),
+   						'desc' => __('WebKit browsers and iOS do not support autoplay', 'mfn-opts'),
+   						'options' => array(
+   							'' => __('autoplay controls loop muted', 'mfn-opts'),
+   							'a;c;l;m;i' => __('autoplay controls loop muted playsinline', 'mfn-opts'),
+   							'a;c;l;' => __('autoplay controls loop', 'mfn-opts'),
+   							'a;c;l;;i' => __('autoplay controls loop playsinline', 'mfn-opts'),
+   							'a;c;;m' => __('autoplay controls muted', 'mfn-opts'),
+   							'a;c;;m;i' => __('autoplay controls muted playsinline', 'mfn-opts'),
+   							'a;;l;m' => __('autoplay loop muted', 'mfn-opts'),
+   							'a;;l;m;i' => __('autoplay loop muted playsinline', 'mfn-opts'),
+   							'a;c;;' => __('autoplay controls', 'mfn-opts'),
+   							'a;c;;;i' => __('autoplay controls playsinline', 'mfn-opts'),
+   							'a;;l;' => __('autoplay loop', 'mfn-opts'),
+   							'a;;l;;i' => __('autoplay loop playsinline', 'mfn-opts'),
+   							'a;;;m' => __('autoplay muted', 'mfn-opts'),
+   							'a;;;m;p' => __('autoplay muted playsinline', 'mfn-opts'),
+   							'a;;;' => __('autoplay', 'mfn-opts'),
+   							'a;;;;p' => __('autoplay playsinline', 'mfn-opts'),
+   							';c;l;m' => __('controls loop muted', 'mfn-opts'),
+   							';c;l;m;p' => __('controls loop muted playsinline', 'mfn-opts'),
+   							';c;l;' => __('controls loop', 'mfn-opts'),
+   							';c;l;;p' => __('controls loop playsinline', 'mfn-opts'),
+   							';c;;m' => __('controls muted', 'mfn-opts'),
+   							';c;;m;p' => __('controls muted playsinline', 'mfn-opts'),
+   							';c;;' => __('controls', 'mfn-opts'),
+   							';c;;;p' => __('controls playsinline', 'mfn-opts'),
+							';;l;m' => __('loop muted (require custom JS to play)', 'mfn-opts'),
+   						),
+   					),
+
+
+
+
+
+
+   					
+
+   					array(
+							'type' => 'html',
+							'html' => '</div><div class="modalbox-card modalbox-card-style modalbox-re_render">',
+						),
+
+   					
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   					array(
+							'title' => __('Box', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Box',
+						),
+
+						
+						array(
+							'id' => 'css_grid_item_gap',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item',
+							'style' => 'gap',
+							'type' => 'sliderbar',
+							'responsive' => true,
+							'title' => __('Gap', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							)
+						),
+
+						array(
+							'id' => 'css_grid_item_padding',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item',
+							'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_grid_item_background',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_grid_item_border_style',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item',
+							'style' => 'border-style',
+							'attr_id' => 'border_grid_item',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+							'id' => 'css_grid_item_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_grid_item', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'css_attr' => 'border-width',
+		  			),
+
+		  			array(
+							'id' => 'css_grid_item_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item',
+							'style' => 'border-color',
+							'type' => 'color',
+							'condition' => array( 'id' => 'border_grid_item', 'opt' => 'isnt', 'val' => 'none' ),
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_grid_item_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'css_attr' => 'border-radius',
+		  			),
+
+		  			array(
+							'title' => __('Hover', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Box',
+						),
+
+						array(
+							'id' => 'css_grid_item_transition',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item.mfn-grid-item-overlay .mfn-grid-item-desc, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-desc .mfn-grid-item-title, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-desc .mfn-grid-item-excerpt, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item',
+   						'style' => 'transition',
+							'type' => 'sliderbar',
+							'class' => 'mfn-toggled',
+							'title' => __('Transition duration', 'mfn-opts'),
+							'param' => array(
+								'min' => '0',
+								'max' => '3',
+								'step' => '0.1',
+								'unit' => 's',
+							)
+						),
+
+		  			array(
+							'id' => 'css_grid_item_background_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item:hover, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item.mfn-grid-item-overlay:hover .mfn-grid-item-desc',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background color on hover', 'mfn-opts'),
+						),
+
+
+						array(
+							'id' => 'css_grid_item_desc_title_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item:hover .mfn-grid-item-title',
+							'style' => 'color',
+		  				'type' => 'color',
+		  				'title' => __('Title color on hover', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_grid_item_desc_excerpt_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item:hover .mfn-grid-item-excerpt',
+							'style' => 'color',
+		  				'type' => 'color',
+		  				'title' => __('Desc color on hover', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+
+
+
+
+
+		  			array(
+							'title' => __('Media', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Box',
+						),
+
+
+
+
+		  			array(
+							'id' => 'css_grid_item_img_height',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-image img, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-image video, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-iframe-custom-height .mfn-grid-item .mfn-grid-item-image .mfn-video-embed iframe',
+							'style' => 'height',
+							'type' => 'sliderbar',
+							'default_unit' => 'px',
+							'responsive' => true,
+							'class' => 'mfn-toggled narrow sliderbar-units',
+							'title' => __('Height', 'mfn-opts'),
+							'units' => array(
+								'px' 	=> array('min' => 0, 'max' => 1000, 'step' => 1),
+								'em' 	=> array('min' => 0, 'max' => 10, 'step' => 0.1),
+								'rem' => array('min' => 0, 'max' => 10, 'step' => 0.1),
+								'vw' 	=> array('min' => 0, 'max' => 100, 'step' => 1),
+							),
+						),
+
+		  			array(
+							'id' => 'iframe_custom_height',
+							'type' 	=> 'switcher',
+							'class' => 'mfn-toggled',
+							'title' => __('Include YouTube & Vimeo heights', 'mfn-opts'),
+							'option' => '1',
+						),
+
+
+            array(
+							'id' => 'css_image_cover_origin',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-image img',
+   						'style' => 'object-position',
+							'type' => 'radio_img',
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'title' => __('Image position', 'mfn-opts'),
+							'options' => array(
+	  						'top left' => __('Top Left', 'mfn-opts'),
+	  						'top center' => __('Top Center', 'mfn-opts'),
+	  						'top right' => __('Top Right', 'mfn-opts'),
+	  						'center left' => __('Center Left', 'mfn-opts'),
+	  						'' => __('Center', 'mfn-opts'),
+	  						'center right' => __('Center Right', 'mfn-opts'),
+	  						'bottom left' => __('Bottom Left', 'mfn-opts'),
+	  						'bottom center' => __('Bottom Center', 'mfn-opts'),
+	  						'bottom right' => __('Bottom Right', 'mfn-opts'),
+	  					),
+	  					'std' => ''
+						),
+
+
+
+		  			array(
+							'title' => __('Desc wrapper', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Box',
+						),
+
+						array(
+							'id' => 'css_grid_item_desc_text_align',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-desc',
+							'style' => 'text-align',
+							'responsive' => true,
+   						'type' => 'switch',
+   						'class' => 'mfn-toggled',
+   						'title' => __('Text align', 'mfn-opts'),
+   						'options' => array(
+   							'' => __('Default', 'mfn-opts'),
+   							'left' => __('Left', 'mfn-opts'),
+								'center' => __('Center', 'mfn-opts'),
+   							'right' => __('Right', 'mfn-opts'),
+   							'justify' => __('Justify', 'mfn-opts'),
+   						),
+							'std' => '',
+   					),
+
+
+						array(
+							'id' => 'css_grid_item_desc_gap',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-desc',
+							'style' => 'gap',
+							'type' => 'sliderbar',
+							'responsive' => true,
+							'title' => __('Gap', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							)
+						),
+
+						array(
+							'id' => 'css_grid_item_desc_text_shadow',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item-desc .mfn-grid-item-title, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item-desc .mfn-grid-item-excerpt',
+							'style' => 'text-shadow',
+							'type' => 'text_shadow',
+							'class' => 'mfn-toggled',
+							'title' => __('Text shadow', 'mfn-opts'),
+						),
+
+		  			array(
+							'id' => 'css_grid_item_desc_padding',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-desc',
+							'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_grid_item_desc_background',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-desc',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_grid_item_desc_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-desc',
+							'style' => 'border-radius',
+							'type' => 'sliderbar',
+							'class' => 'mfn-toggled',
+							'title' => __('Border radius', 'mfn-opts'),
+							'after' => 'px',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							)
+						),
+
+						array(
+							'title' => __('Title', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Box',
+						),
+
+		  			array(
+							'id' => 'css_grid_item_desc_title_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-title',
+							'style' => 'color',
+		  				'type' => 'color',
+		  				'title' => __('Color', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_grid_item_desc_title_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-title',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+
+						array(
+							'title' => __('Desc', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Box',
+						),
+
+		  			array(
+							'id' => 'css_grid_item_desc_excerpt_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-excerpt',
+							'style' => 'color',
+		  				'type' => 'color',
+		  				'title' => __('Color', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_grid_item_desc_excerpt_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item .mfn-grid-item-excerpt',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+
+
+
+
+
+
+
+
+
+
+		  			array(
+							'title' => __('Pagination', 'mfn-opts'),
+							'type' => 'header',
+							'condition' => array( 'id' => 'pagination', 'opt' => 'is', 'val' => '1' ),
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Carousel',
+						),
+
+		  			array(
+							'id' => 'css_pagination_offset_bottom',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-dots-overlay .swiper-pagination',
+							'condition' => array( 'AND', array( 'id' => 'pagination', 'opt' => 'is', 'val' => '1' ), array( 'id' => 'pagination_style', 'opt' => 'is', 'val' => 'overlay' ) ),
+							'style' => 'margin-bottom',
+							'type' => 'sliderbar',
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'title' => __('Offset bottom', 'mfn-opts'),
+							'after' => 'px',
+							'param' => array(
+								'min' => '0',
+								'max' => '300',
+								'step' => '1',
+								'unit' => 'px',
+							)
+						),
+
+		  			array(
+							'id' => 'css_pagination_offset_top',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-dots-standard .swiper-pagination',
+							'condition' => array( 'AND', array( 'id' => 'pagination', 'opt' => 'is', 'val' => '1' ), array( 'id' => 'pagination_style', 'opt' => 'is', 'val' => '' ) ),
+							'style' => 'margin-top',
+							'type' => 'sliderbar',
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'title' => __('Offset top', 'mfn-opts'),
+							'after' => 'px',
+							'param' => array(
+								'min' => '0',
+								'max' => '300',
+								'step' => '1',
+								'unit' => 'px',
+							)
+						),
+
+
+		  			array(
+							'id' => 'css_pagination_spacing',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .swiper-pagination .swiper-pagination-bullet',
+							'style' => '--swiper-pagination-bullet-horizontal-gap',
+							'type' => 'sliderbar',
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'title' => __('Gap', 'mfn-opts'),
+							'desc' => __('Works with Standard and Overlay pagination mode', 'mfn-opts'),
+							'after' => 'px',
+							'param' => array(
+								'min' => '0',
+								'max' => '300',
+								'step' => '1',
+								'unit' => 'px',
+							)
+						),
+
+
+
+						array(
+							'id' => 'css_pagination_bullet_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .swiper-pagination .swiper-pagination-bullet',
+							'style' => '--mfn-swiper-pagination-bullet-width',
+							'type' => 'sliderbar',
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'title' => __('Width', 'mfn-opts'),
+							'after' => 'px',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							)
+						),
+
+						array(
+							'id' => 'css_pagination_bullet_height',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .swiper-pagination .swiper-pagination-bullet',
+							'style' => '--mfn-swiper-pagination-bullet-height',
+
+							'type' => 'sliderbar',
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'title' => __('Height', 'mfn-opts'),
+							'after' => 'px',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							)
+						),
+
+						array(
+							'id' => 'css_pagination_bullet_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .swiper-pagination .swiper-pagination-bullet',
+							'style' => 'border-radius',
+							'type' => 'sliderbar',
+							'class' => 'mfn-toggled',
+							'title' => __('Border radius', 'mfn-opts'),
+							'after' => 'px',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							)
+						),
+
+						array(
+							'id' => 'css_pagination_bullet_opacity',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .swiper-pagination .swiper-pagination-bullet',
+							'style' => 'opacity',
+							'type' => 'sliderbar',
+							'class' => 'mfn-toggled',
+							'title' => __('Opacity', 'mfn-opts'),
+							'param' => array(
+								'min' => '0',
+								'max' => '1',
+								'step' => '0.01',
+							),
+							'std' => '0',
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Active</a></li></ul><div class="mfn-sft mfn-sft-normal">',
+						),
+
+						array(
+							'id' => 'css_pagination_bullet_inactive_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .swiper-pagination .swiper-pagination-bullet',
+							'style' => '--swiper-pagination-bullet-inactive-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
+						),
+
+						array(
+							'id' => 'css_pagination_bullet_active_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .swiper-pagination .swiper-pagination-bullet-active',
+							'style' => '--mfn-swiper-pagination-bullet-active-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Active color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div></div>',
+						),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+						array(
+							'title' => __('Navigation', 'mfn-opts'),
+							'type' => 'header',
+							'condition' => array( 'id' => 'arrows', 'opt' => 'is', 'val' => '1' ),
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Carousel',
+						),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+						array(
+							'type' => 'subheader',
+		  				'condition' => array('AND', array( 'id' => 'arrows_style', 'opt' => 'is', 'val' => 'custom' ), array( 'id' => 'arrows', 'opt' => 'is', 'val' => '1' )),
+							'class' => 'mfn-builder-subheader mfn-toggled',
+							'title' => __('Prev arrow custom style', 'mfn-opts'),
+						),
+
+		  			array(
+							'id' => 'css_queryloop_slider_arrow_prev_top',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-arrows-custom .swiper-button-prev.mfn-swiper-arrow',
+							'style' => 'top',
+							'type' => 'text',
+							'default_unit' => 'px',
+							'condition' => array('AND', array( 'id' => 'arrows_style', 'opt' => 'is', 'val' => 'custom' ), array( 'id' => 'arrows', 'opt' => 'is', 'val' => '1' )),
+							'title' => __('Top', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled arrows-custom-style',
+						),
+
+						array(
+							'id' => 'css_queryloop_slider_arrow_prev_bottom',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-arrows-custom .swiper-button-prev.mfn-swiper-arrow',
+							'style' => 'bottom',
+							'type' => 'text',
+							'default_unit' => 'px',
+							'condition' => array('AND', array( 'id' => 'arrows_style', 'opt' => 'is', 'val' => 'custom' ), array( 'id' => 'arrows', 'opt' => 'is', 'val' => '1' )),
+							'title' => __('Bottom', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled arrows-custom-style',
+						),
+
+						array(
+							'id' => 'css_queryloop_slider_arrow_prev_left',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-arrows-custom .swiper-button-prev.mfn-swiper-arrow',
+							'style' => 'left',
+							'type' => 'text',
+							'default_unit' => 'px',
+							'condition' => array('AND', array( 'id' => 'arrows_style', 'opt' => 'is', 'val' => 'custom' ), array( 'id' => 'arrows', 'opt' => 'is', 'val' => '1' )),
+							'title' => __('Left', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled arrows-custom-style',
+						),
+
+						array(
+							'id' => 'css_queryloop_slider_arrow_prev_right',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-arrows-custom .swiper-button-prev.mfn-swiper-arrow',
+							'style' => 'right',
+							'type' => 'text',
+							'default_unit' => 'px',
+							'condition' => array('AND', array( 'id' => 'arrows_style', 'opt' => 'is', 'val' => 'custom' ), array( 'id' => 'arrows', 'opt' => 'is', 'val' => '1' )),
+							'title' => __('Right', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled arrows-custom-style',
+						),
+
+						array(
+							'type' => 'subheader',
+		  				'condition' => array('AND', array( 'id' => 'arrows_style', 'opt' => 'is', 'val' => 'custom' ), array( 'id' => 'arrows', 'opt' => 'is', 'val' => '1' )),
+							'class' => 'mfn-builder-subheader mfn-toggled',
+							'title' => __('Next arrow custom style', 'mfn-opts'),
+						),
+
+		  			array(
+							'id' => 'css_queryloop_slider_arrow_next_top',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-arrows-custom .swiper-button-next.mfn-swiper-arrow',
+							'style' => 'top',
+							'type' => 'text',
+							'default_unit' => 'px',
+							'condition' => array('AND', array( 'id' => 'arrows_style', 'opt' => 'is', 'val' => 'custom' ), array( 'id' => 'arrows', 'opt' => 'is', 'val' => '1' )),
+							'title' => __('Top', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled arrows-custom-style',
+						),
+
+						array(
+							'id' => 'css_queryloop_slider_arrow_next_bottom',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-arrows-custom .swiper-button-next.mfn-swiper-arrow',
+							'style' => 'bottom',
+							'type' => 'text',
+							'default_unit' => 'px',
+							'condition' => array('AND', array( 'id' => 'arrows_style', 'opt' => 'is', 'val' => 'custom' ), array( 'id' => 'arrows', 'opt' => 'is', 'val' => '1' )),
+							'title' => __('Bottom', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled arrows-custom-style',
+						),
+
+						array(
+							'id' => 'css_queryloop_slider_arrow_next_left',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-arrows-custom .swiper-button-next.mfn-swiper-arrow',
+							'style' => 'left',
+							'type' => 'text',
+							'default_unit' => 'px',
+							'condition' => array('AND', array( 'id' => 'arrows_style', 'opt' => 'is', 'val' => 'custom' ), array( 'id' => 'arrows', 'opt' => 'is', 'val' => '1' )),
+							'title' => __('Left', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled arrows-custom-style',
+						),
+
+						array(
+							'id' => 'css_queryloop_slider_arrow_next_right',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-arrows-custom .swiper-button-next.mfn-swiper-arrow',
+							'style' => 'right',
+							'type' => 'text',
+							'default_unit' => 'px',
+							'condition' => array('AND', array( 'id' => 'arrows_style', 'opt' => 'is', 'val' => 'custom' ), array( 'id' => 'arrows', 'opt' => 'is', 'val' => '1' )),
+							'title' => __('Right', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled arrows-custom-style',
+						),
+
+						array(
+							'id' => 'css_queryloop_slider_arrow_transformtranslatey',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-arrows-custom .mfn-swiper-arrow',
+							'style' => 'transformtranslatey',
+							'condition' => array('AND', array( 'id' => 'arrows_style', 'opt' => 'is', 'val' => 'custom' ), array( 'id' => 'arrows', 'opt' => 'is', 'val' => '1' )),
+							'type' => 'sliderbar',
+							'class' => 'mfn-toggled',
+							'title' => __('Translate(Y)', 'mfn-opts'),
+							'desc' => __('Moves navigation arrows along the Y-axis by the percent height', 'mfn-opts'),
+							'default_unit' => '%',
+							'after' => '%',
+							'param' => array(
+								'min' => '-100',
+								'max' => '100',
+								'step' => '1',
+								'unit' => '%',
+							)
+						),
+
+
+
+
+
+
+
+
+
+						array(
+							'type' => 'subheader',
+							'class' => 'mfn-builder-subheader mfn-toggled',
+							'title' => __('Custom arrows', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'custom_arrow_prev',
+							'type' => 'icon',
+							'class' => 'mfn-toggled',
+							'title' => __('Prev arrow', 'mfn-opts'),
+							'preview' => 'icon',
+							'std' => 'icon-left-open-big'
+						),
+
+						array(
+							'id' => 'custom_arrow_next',
+							'type' => 'icon',
+							'class' => 'mfn-toggled',
+							'title' => __('Next arrow', 'mfn-opts'),
+							'preview' => 'icon',
+							'std' => 'icon-right-open-big'
+						),
+
+
+
+
+
+
+						array(
+							'type' => 'subheader',
+							'class' => 'mfn-builder-subheader mfn-toggled',
+							'title' => __('Size', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_navigation_arrow_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-swiper-arrow',
+							'style' => '--mfn-swiper-arrow-width',
+							'type' => 'sliderbar',
+							'responsive' => true,
+							'after' => 'px',
+							'class' => 'mfn-toggled',
+							'title' => __('Width', 'mfn-opts'),
+							'param' => array(
+								'min' => '0',
+								'max' => '300',
+								'step' => '1',
+								'unit' => 'px',
+							)
+						),
+
+						array(
+							'id' => 'css_navigation_arrow_height',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-swiper-arrow',
+							'style' => '--mfn-swiper-arrow-height',
+							'type' => 'sliderbar',
+							'responsive' => true,
+							'after' => 'px',
+							'class' => 'mfn-toggled',
+							'title' => __('Height', 'mfn-opts'),
+							'param' => array(
+								'min' => '0',
+								'max' => '300',
+								'step' => '1',
+								'unit' => 'px',
+							)
+						),
+
+						array(
+							'id' => 'css_navigation_arrow_icon_size',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-swiper-arrow i',
+							'style' => '--mfn-swiper-arrow-size',
+							'type' => 'sliderbar',
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'title' => __('Size', 'mfn-opts'),
+							'after' => 'px',
+							'param' => array(
+								'min' => '0',
+								'max' => '300',
+								'step' => '1',
+								'unit' => 'px',
+							)
+						),
+
+						array(
+							'id' => 'css_navigation_arrow_spacing',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-swiper-arrow',
+							'style' => '--mfn-swiper-arrow-spacing',
+							'type' => 'sliderbar',
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'title' => __('Offset', 'mfn-opts'),
+							'after' => 'px',
+							'param' => array(
+								'min' => '-300',
+								'max' => '300',
+								'step' => '1',
+								'unit' => 'px',
+							)
+						),
+
+						array(
+							'type' => 'subheader',
+							'class' => 'mfn-builder-subheader mfn-toggled',
+							'title' => __('Border', 'mfn-opts'),
+						),
+
+		  			array(
+							'id' => 'css_navigation_arrow_border_style',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-swiper-arrow',
+							'style' => 'border-style',
+							'attr_id' => 'border_style_qlarr',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+							'id' => 'css_navigation_arrow_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-swiper-arrow',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_style_qlarr', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+						array(
+							'id' => 'css_navigation_arrow_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-swiper-arrow',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+		  			array(
+							'id' => 'css_navigation_arrowbox_shadow',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-swiper-arrow',
+							'style' => 'box-shadow',
+		  				'type' => 'box_shadow',
+		  				'title' => __('Box shadow', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+		  			),
+
+						array(
+							'type' => 'subheader',
+							'class' => 'mfn-builder-subheader mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+
+						array(
+							'type' => 'html',
+							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li></ul><div class="mfn-sft mfn-sft-normal">',
+						),
+
+						array(
+							'id' => 'css_navigation_arrow_navigation_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-swiper-arrow',
+							'style' => '--swiper-navigation-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_navigation_arrow_bg_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-swiper-arrow',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_navigation_arrow_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-swiper-arrow',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_qlarr', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
+						),
+
+						array(
+							'id' => 'css_navigation_arrow_navigation_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-swiper-arrow:hover',
+							'style' => '--swiper-navigation-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_navigation_arrow_background_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-swiper-arrow:hover',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_navigation_arrow_border_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-swiper-arrow:hover',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_qlarr', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div></div>',
+						),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   					array(
+							'type' => 'html',
+							'html' => '</div>',
+						),
+
+   				),
+   			),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
    			// Info box -------------------------------------------------------
 
    			'info_box' => array(
@@ -45487,6 +50285,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
    				'mobile_size' => '1/1',
    				'tablet_resized' => '0',
    				'cat' => 'elements',
+   				'tags' => 'list',
    				'attr' => array(
 
    					array(
@@ -46526,6 +51325,317 @@ if( ! class_exists('Mfn_Builder_Fields') )
    				),
    			),
 
+				// Marquee text  -----------------------------------------------------------
+
+				'marquee_text' => array(
+
+					'type' => 'marquee_text',
+					'title' => __('Marquee text', 'mfn-opts'),
+					'desc' => __('Display search form and browse your item live', 'mfn-opts'),
+					'size' => '1/3',
+					'cat' => '',
+
+					'attr' => array(
+
+						array(
+							'type' => 'html',
+							'html' => '<div class="modalbox-card modalbox-re_render modalbox-card-content">',
+						),
+
+
+						array(
+   						'id' => 'tabs',
+   						'type' => 'tabs',
+   						'title' => __('Items', 'mfn-opts'),
+							'options' => [
+								'title' => [
+									'input',
+									__('Label', 'mfn-opts'),
+									''
+								],
+								'link' => [
+									'input',
+									__('Link', 'mfn-opts'),
+									''
+								],
+							],
+							'std' => [
+								0 => [
+									'title' => 'Excepteur sint occaecat cupidatat non proident',
+									'link' => '',
+								],
+								1 => [
+									'title' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
+									'link' => '',
+								],
+								2 => [
+									'title' => 'Ut enim ad minim veniam, quis nostrud',
+									'link' => '',
+								],
+								3 => [
+									'title' => 'Duis aute irure dolor in reprehenderit',
+									'link' => '',
+								],
+							],
+							'primary' => 'title',
+   					),
+
+   					array(
+							'id' => 'css_marquee_pause_on_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-marquee-text-wrapper:hover .mfn-marquee-text',
+							'style' => 'animation-play-state',
+							'type' 	=> 'switcher',
+							'title' => __('Pause on hover', 'mfn-opts'),
+							'option' => 'paused',
+						),
+
+
+						array(
+							'id' => 'css_marquee_direction',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-marquee-text',
+							'style' => 'animation-name',
+							'type' => 'switch',
+							'title' => __('Direction', 'mfn-opts'),
+							'options' => array(
+								'' => __('Left', 'mfn-opts'),
+								'marquee-right' => __('Right', 'mfn-opts'),
+							),
+							'std' => '',
+						),
+
+						array(
+							'id' => 'css_marque_speed',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-marquee-text',
+							'style' => 'animation-duration',
+							'type' => 'sliderbar',
+							'responsive' => true,
+							'title' => __('Time', 'mfn-opts'),
+							'desc' => __('Time in seconds per loop', 'mfn-opts'),
+							'param' => array(
+								'min' => '0',
+								'max' => '500',
+								'step' => '1',
+								'unit' => 's',
+							),
+							'std' => '15s'
+						),
+
+
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="modalbox-card modalbox-card-style modalbox-re_render">',
+						),
+
+
+
+						array(
+							'type' => 'header',
+							'class' => 'toggled_header',
+   						'title' => __('Items', 'mfn-opts'),
+   					),
+
+   					array(
+							'id' => 'css_marquee_item_padding',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-marquee-text .mfn-marquee-item .mfn-marquee-item-label',
+							'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_marque_item_gap',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-marquee-text .mfn-marquee-item .mfn-marquee-item-label',
+							'style' => 'margin-right',
+							'type' => 'sliderbar',
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'title' => __('Gap', 'mfn-opts'),
+							'units' => array(
+								'px' 	=> array('min' => 1, 		'max' => 300, 'step' => 1),
+								'em' 	=> array('min' => 0.1, 	'max' => 10, 	'step' => 0.1),
+								'rem' => array('min' => 0.1, 	'max' => 10, 	'step' => 0.1),
+								'vw' 	=> array('min' => 1, 		'max' => 100, 'step' => 1),
+							),
+							'std' => '40px'
+						),
+
+
+
+		  			array(
+							'id' => 'css_marquee_item_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-marquee-text .mfn-marquee-item',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+
+
+
+
+
+
+
+
+
+
+
+
+   					array(
+							'id' => 'css_marque_item_border_style',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-marquee-text .mfn-marquee-item .mfn-marquee-item-label',
+							'style' => 'border-style',
+							'attr_id' => 'border_style_marque',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+							'id' => 'css_marque_item_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-marquee-text .mfn-marquee-item .mfn-marquee-item-label',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_style_marque', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+		  			array(
+							'id' => 'css_marque_item_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-marquee-text .mfn-marquee-item .mfn-marquee-item-label',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+		  			array(
+							'type' => 'html',
+							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li></ul><div class="mfn-sft mfn-sft-normal">',
+						),
+
+						array(
+							'id' => 'css_marque_item_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-marquee-text .mfn-marquee-item .mfn-marquee-item-label',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_marque_item_background_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-marquee-text .mfn-marquee-item .mfn-marquee-item-label',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_marque_item_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-marquee-text .mfn-marquee-item .mfn-marquee-item-label',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_marque', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
+						),
+
+						array(
+							'id' => 'css_marque_item_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-marquee-text .mfn-marquee-item .mfn-marquee-item-label:hover',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_marque_item_background_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-marquee-text .mfn-marquee-item .mfn-marquee-item-label:hover',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_marque_item_border_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-marquee-text .mfn-marquee-item .mfn-marquee-item-label:hover',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_marque', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+
+
+						array(
+							'type' => 'html',
+							'html' => '</div></div>',
+						),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+						array(
+							'type' => 'html',
+							'html' => '</div>',
+						),
+					)
+
+				),
+
 				// Live search -----------------------------------------------------------
 
 				'livesearch' => array(
@@ -46604,6 +51714,1115 @@ if( ! class_exists('Mfn_Builder_Fields') )
 						)
 					),
 				),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+				// Mega menu Menu ----------------------------------------------------
+
+   			'megamenu_menu' => array(
+   				'type' => 'megamenu_menu',
+   				'title' => __('Menu', 'mfn-opts'),
+   				'size' => '1/1',
+   				'tablet_size' => '1/1',
+   				'mobile_size' => '1/1',
+   				'tablet_resized' => '0',
+   				'cat' => 'elements',
+   				'attr' => array(
+   				//'fields' => array(
+
+						/*array(
+							'type' => 'html',
+							'html' => $this->itemtabs,
+						),*/
+
+   					array(
+							'type' => 'html',
+							'html' => '<div class="modalbox-card modalbox-re_render modalbox-card-content">',
+						),
+
+						array(
+							'type' => 'header',
+							'title' => __('Menu', 'mfn-opts'),
+						),
+
+						array(
+   						'id' => 'menu_display',
+   						'type' => 'select',
+   						're_render' => true,
+   						'title' => __('Menu to display', 'mfn-opts'),
+							//'options' => mfna_menu(),
+							'js_options' => 'menus',
+   					),
+
+   					array(
+   						'id' => 'menu_style',
+   						'attr_id' => 'menu_style',
+   						'type' => 'select',
+   						're_render' => true,
+   						'title' => __('Style', 'mfn-opts'),
+							'options' => array(
+								'vertical' => __('Vertical', 'mfn-opts'),
+								'horizontal' => __('Horizontal', 'mfn-opts'),
+							),
+							'std' => 'vertical'
+   					),
+
+   					array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu.mfn-mm-menu-horizontal:justify-content',
+							'id' => 'css_megamenu-menu-mm-menu-horizontal_justify_content',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu.mfn-mm-menu-horizontal',
+							'style' => 'justify-content',
+							'attr_id' => 'menu-items-alignment',
+							'condition' => array( 'id' => 'menu_style', 'opt' => 'is', 'val' => 'horizontal' ),
+							'type' => 'select',
+							'responsive' => true,
+
+							'title' => __('Alignment', 'mfn-opts'),
+							'options' => array(
+								'flex-start' => 'Left',
+								'center' => 'Center',
+								'flex-end' => 'Right',
+								'space-between' => 'Space between',
+								'space-around' => 'Space around',
+								'space-evenly' => 'Space evenly',
+							),
+							'std' => 'flex-start',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu.mfn-mm-menu-horizontal > li:flex-grow',
+							'id' => 'css_megamenu-menu-mm-menu-horizontalli_flex_grow',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu.mfn-mm-menu-horizontal > li',
+							'style' => 'flex-grow',
+							'condition' => array( 'id' => 'menu_style', 'opt' => 'is', 'val' => 'horizontal' ),
+							'type' => 'select',
+							'responsive' => true,
+
+							'title' => __('Fit container', 'mfn-opts'),
+							'options' => [
+								'unset' => __('Default', 'mfn-opts'),
+								'1' => __('Fit', 'mfn-opts'),
+							],
+						),
+						array(
+							'id' => 'submenu_on',
+							'attr_id' => 'submenu_on',
+							're_render' => true,
+							'condition' => array( 'id' => 'menu_style', 'opt' => 'is', 'val' => 'vertical' ),
+							'type' => 'switch',
+							'title' => __('Submenu visibility', 'mfn-opts'),
+							'options' => array(
+								'visible' => 'Visible',
+								'toggled' => 'Toggled',
+							),
+							'std' => 'visible',
+						),
+
+						array(
+							'id' => 'submenu_hori_on',
+							're_render' => true,
+							'condition' => array( 'id' => 'menu_style', 'opt' => 'is', 'val' => 'horizontal' ),
+							'type' => 'switch',
+							'title' => __('Submenu visibility', 'mfn-opts'),
+							'options' => array(
+								'hover' => 'on Hover',
+								'click' => 'on Click',
+							),
+							'std' => 'hover',
+						),
+
+   					array(
+   						'type' => 'header',
+							'title' => __('Icon', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a .menu-icon:display',
+							'id' => 'css_megamenu-icon_display',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a .menu-icon',
+							'style' => 'display',
+							'attr_id' => 'icon_mm_visibility',
+							'type' => 'switch',
+							'title' => __('Icon visibility', 'mfn-opts'),
+							'options' => array(
+								'block' => 'Show',
+								'none' 	=> 'Hide',
+							),
+							'std' => 'block',
+						),
+
+						array(
+   						'id' => 'icon_align',
+   						//'condition' => array( 'id' => 'icon_mm_visibility', 'opt' => 'is', 'val' => 'block' ),
+   						'type' => 'switch',
+   						'title' => __('Icon align', 'mfn-opts'),
+							'options' => array(
+								'left' => 'Left',
+								'top' => 'Top',
+								'right' => 'Right'
+							),
+							'std' => 'left'
+   					),
+
+						array(
+   						'id' => 'icon_animation',
+   						//'condition' => array( 'id' => 'icon_mm_visibility', 'opt' => 'is', 'val' => 'block' ),
+   						'type' => 'select',
+   						'title' => __('Icon animation', 'mfn-opts'),
+							'options' => array(
+								'' => __('None', 'mfn-opts'),
+								'rotate' => 'Rotate',
+								'zoom' => 'Zoom'
+							),
+   					),
+
+   					array(
+   						'type' => 'header',
+							'title' => __('Submenu', 'mfn-opts'),
+						),
+
+   					array(
+							'id' => 'submenu',
+							'attr_id' => 'submenu',
+							're_render' => true,
+							'type' => 'switch',
+							'title' => __('Submenu', 'mfn-opts'),
+							'options' => array(
+								'on' => 'Show',
+								'off' => 'Hide',
+							),
+							'std' => 'on',
+						),
+
+						array(
+   						'id' => 'submenu_animation',
+   						'condition' => array( 'id' => 'submenu', 'opt' => 'is', 'val' => 'on' ),
+   						'type' => 'select',
+   						'title' => __('Submenu Animation', 'mfn-opts'),
+							'options' => array(
+								'' => __('None', 'mfn-opts'),
+								'fade-in' => 'Fade In',
+								'fade-up' => 'Fade In Up'
+							),
+   					),
+
+						array(
+							'id' => 'submenu_icon',
+							'condition' => array( 'id' => 'submenu', 'opt' => 'is', 'val' => 'on' ),
+							'type' => 'icon',
+							'title' => __('Submenu icon', 'mfn-opts'),
+							'preview' => 'icon',
+							'std' => 'fas fa-arrow-down'
+						),
+
+						array(
+   						'id' => 'submenu_icon_animation',
+   						'type' => 'select',
+   						'condition' => array( 'id' => 'submenu', 'opt' => 'is', 'val' => 'on' ),
+   						'title' => __('Icon Animation', 'mfn-opts'),
+							'options' => array(
+								'' => __('None', 'mfn-opts'),
+								'rotate' => 'Rotate',
+								'zoom' => 'Zoom'
+							),
+   					),
+
+   					array(
+   						'type' => 'header',
+							'title' => __('Desc', 'mfn-opts'),
+						),
+
+   					array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a .menu-desc:display',
+							'id' => 'css_megamenu-desc_display',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a .menu-desc',
+							'style' => 'display',
+							'type' => 'switch',
+							'title' => __('Desc visibility', 'mfn-opts'),
+							'options' => array(
+								'block' => 'Show',
+								'none' 	=> 'Hide',
+							),
+							'std' => 'block',
+						),
+
+						array(
+							'type' => 'header',
+							'title' => __('Decoration icon', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'decoration_icon',
+							'type' => 'icon',
+							'title' => __('Decoration icon', 'mfn-opts'),
+							'preview' => 'icon',
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="modalbox-card modalbox-card-style modalbox-re_render">',
+						),
+
+						array(
+							'type' => 'header',
+							'class' => 'toggled_header',
+   						'title' => __('Menu', 'mfn-opts'),
+   					),
+
+   					array(
+   						'type' => 'subheader',
+							'class' => 'mfn-builder-subheader mfn-toggled',
+							'title' => __('Items', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a:typography',
+							'id' => 'css_megamenu-menua_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+						array(
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a:padding',
+							'id' => 'css_megamenu-menua_padding',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a',
+							'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+						array(
+							'id' => 'css_megamenu-menu_li_gap',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu',
+							'style' => 'gap',
+							'type' => 'sliderbar',
+							//'condition' => array( 'id' => 'icon_visibility', 'opt' => 'is', 'val' => 'block' ),
+							'responsive' => true,
+							'title' => __('Gap', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							)
+						),
+
+		  			array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a:border-style',
+							'id' => 'css_megamenu-menulia_border_style',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a',
+							'style' => 'border-style',
+							'attr_id' => 'border_style_header_mm_menu_link',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a:border-width',
+							'id' => 'css_megamenu-menulia_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_style_header_mm_menu_link', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+		  			array(
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a:border-radius',
+							'id' => 'css_megamenu-menulia_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+		  			array(
+							'type' => 'html',
+							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li><li><a href="#active" data-tab="active">Active</a></li></ul><div class="mfn-sft mfn-sft-normal">',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a:color',
+							'id' => 'css_megamenu-menua_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a:background-color',
+							'id' => 'css_megamenu-menua_background_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a:border-color',
+							'id' => 'css_megamenu-menulia_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_header_mm_menu_link', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a|hover:color',
+							'id' => 'css_megamenu-menua_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.mfn-megamenu-menu li a:hover',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a|hover:background-color',
+							'id' => 'css_megamenu-menua_background_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a:hover',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a|hover:border-color',
+							'id' => 'css_megamenu-menulia_border_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a:hover',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_header_mm_menu_link', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-active">',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu .current-menu-item > a:color',
+							'id' => 'css_megamenu-menucurrent-menu-itema_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu .current-menu-item > a,.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu .current-menu-ancestor > a,.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu .current-product_cat-ancestor > a',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu .current-menu-item > a:background-color',
+							'id' => 'css_megamenu-menucurrent-menu-itema_background_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu .current-menu-item > a,.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu .current-menu-ancestor > a,.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu .current-product_cat-ancestor > a',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu .current-menu-item > li > a:border-color',
+							'id' => 'css_megamenu-menucurrent-menu-itemlia_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu .current-menu-item > a,.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu .current-menu-ancestor > a,.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu .current-product_cat-ancestor > a',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_header_mm_menu_link', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div></div>',
+						),
+
+						array(
+							'type' => 'subheader',
+							'class' => 'mfn-builder-subheader mfn-toggled',
+							'title' => __('Icon', 'mfn-opts'),
+						),
+
+   					array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li:--mfn-megamenu-menu-icon-gap',
+							'id' => 'css_megamenu-menuli_menu_icon_gap',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li',
+							'style' => '--mfn-megamenu-menu-icon-gap',
+							'type' => 'sliderbar',
+							//'condition' => array( 'id' => 'icon_visibility', 'opt' => 'is', 'val' => 'block' ),
+							'responsive' => true,
+							'title' => __('Gap', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							)
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li:--mfn-megamenu-menu-icon-size',
+							'id' => 'css_megamenu-menuli_menu_icon_size',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li',
+							'style' => '--mfn-megamenu-menu-icon-size',
+							'type' => 'sliderbar',
+							'responsive' => true,
+							'title' => __('Icon size', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							)
+						),
+
+
+						array(
+							'type' => 'html',
+							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li><li><a href="#active" data-tab="active">Active</a></li></ul><div class="mfn-sft mfn-sft-normal">',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu .menu-icon > i:color',
+							'id' => 'css_megamenu-menumenu-iconi_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu .menu-icon > i',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a|hover > .menu-icon > i:color',
+							'id' => 'css_megamenu-menuamenu-iconi_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu a:hover > .menu-icon > i',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-active">',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li.current-menu-item > a > .menu-icon i:color',
+							'id' => 'css_megamenu-menulicurrent-menu-itemamenu-iconi_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li.current-menu-item > a > .menu-icon i',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div></div>',
+						),
+
+						array(
+							'type' => 'subheader',
+							'class' => 'mfn-builder-subheader mfn-toggled',
+							'title' => __('Submenu icon', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li:--mfn-megamenu-menu-submenu-icon-gap',
+							'id' => 'css_megamenu-menuli_menu_submenu_icon_gap',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li',
+							'style' => '--mfn-megamenu-menu-submenu-icon-gap',
+							'type' => 'sliderbar',
+							'responsive' => true,
+							'title' => __('Gap', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							)
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li .menu-sub i:--mfn-megamenu-submenu-icon-size',
+							'id' => 'css_megamenu-menulimenu-subi_megamenu_submenu_icon_size',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li .menu-sub i',
+							'style' => '--mfn-megamenu-submenu-icon-size',
+							'type' => 'sliderbar',
+							'responsive' => true,
+							'title' => __('Icon size', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							)
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li><li><a href="#active" data-tab="active">Active</a></li></ul><div class="mfn-sft mfn-sft-normal">',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a .menu-sub i:color',
+							'id' => 'css_megamenu-menuliamenu-subi_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a .menu-sub i',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a|hover .menu-sub i:color',
+							'id' => 'css_megamenu-menuliamenu-subi_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a:hover .menu-sub i',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-active">',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li.current-menu-item > a .menu-sub i:color',
+							'id' => 'css_megamenu-menulicurrent-menu-itemamenu-subi_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li.current-menu-item > a .menu-sub i',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div></div>',
+						),
+
+						array(
+							'type' => 'header',
+							'class' => 'toggled_header',
+							'condition' => array( 'id' => 'submenu', 'opt' => 'is', 'val' => 'on' ),
+   						'title' => __('Submenu', 'mfn-opts'),
+   					),
+
+   					array(
+   						'type' => 'subheader',
+							'class' => 'mfn-builder-subheader mfn-toggled',
+							'title' => __('Container', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li > ul:background-color',
+							'id' => 'css_megamenu-menuliul_background_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li > ul',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li > ul:border-style',
+							'id' => 'css_megamenu-menuliul_border_style',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li > ul',
+							'style' => 'border-style',
+							'attr_id' => 'border_style_header_submenu',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul:border-width',
+							'id' => 'css_megamenu-menuliul_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_style_header_submenu', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+		  			array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul:border-color',
+							'id' => 'css_megamenu-menuliul_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_header_submenu', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+		  			array(
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul:box-shadow',
+							'id' => 'css_megamenu-menuliul_box_shadow',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul',
+							'style' => 'box-shadow',
+		  				'type' => 'box_shadow',
+		  				'title' => __('Box shadow', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul:--mfn-megamenu-submenu-border-radius',
+							'id' => 'css_megamenu-menuliul_megamenu_submenu_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul',
+							'style' => '--mfn-megamenu-submenu-border-radius',
+							'type' => 'dimensions',
+							'title' => __('Border radius', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+							'version' => 'separated-fields',
+						),
+
+   					array(
+   						'type' => 'subheader',
+							'class' => 'mfn-builder-subheader mfn-toggled',
+							'title' => __('Items', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul a:typography',
+							'id' => 'css_megamenu-menuliula_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul a',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+						array(
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul li a:padding',
+							'id' => 'css_megamenu-menuliullia_padding',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul li a',
+							'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'type' => 'html',
+							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li><li><a href="#active" data-tab="active">Active</a></li></ul><div class="mfn-sft mfn-sft-normal">',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul a:color',
+							'id' => 'css_megamenu-menuliula_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul a',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul li a:background-color',
+							'id' => 'css_megamenu-menuliullia_background_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul li a',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul a|hover:color',
+							'id' => 'css_megamenu-menuliula_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul a:hover',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-active">',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul .current-menu-item > a:color',
+							'id' => 'css_megamenu-menuliulcurrent-menu-itema_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul .current-menu-item > a',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div></div>',
+						),
+
+						array(
+							'type' => 'subheader',
+							'class' => 'mfn-builder-subheader mfn-toggled',
+							'title' => __('Icon', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li:--mfn-megamenu-submenu-subicon-gap',
+							'id' => 'css_megamenu-menuli_submenu_subicon_gap',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li',
+							'style' => '--mfn-megamenu-submenu-subicon-gap',
+							'type' => 'sliderbar',
+							'responsive' => true,
+							'title' => __('Gap', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							)
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul li .menu-icon i:--mfn-megamenu-submenu-subicon-size',
+							'id' => 'css_megamenu-menuliullimenu-iconi_megamenu_submenu_subicon_size',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul li .menu-icon i',
+							'style' => '--mfn-megamenu-submenu-subicon-size',
+							'type' => 'sliderbar',
+							'responsive' => true,
+							'title' => __('Icon size', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							)
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li><li><a href="#active" data-tab="active">Active</a></li></ul><div class="mfn-sft mfn-sft-normal">',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a .menu-sub i:color',
+							'id' => 'css_megamenu-menuliamenu-subi_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a .menu-sub i',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a|hover .menu-sub i:color',
+							'id' => 'css_megamenu-menuliamenu-subi_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li > a:hover .menu-sub i',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-active">',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li.current-menu-item > a .menu-sub i:color',
+							'id' => 'css_megamenu-menulicurrent-menu-itemamenu-subi_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu > li.current-menu-item > a .menu-sub i',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div></div>',
+						),
+
+						array(
+							'type' => 'subheader',
+							'class' => 'mfn-builder-subheader mfn-toggled',
+							'title' => __('Submenu icon', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul li .menu-sub i:--mfn-megamenu-submenu-submenu-icon-size',
+							'id' => 'css_megamenu-menuliullimenu-subi_megamenu_submenu_submenu_icon_size',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul li .menu-sub i',
+							'style' => '--mfn-megamenu-submenu-submenu-icon-size',
+							'type' => 'sliderbar',
+							'responsive' => true,
+							'title' => __('Icon size', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							)
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li><li><a href="#active" data-tab="active">Active</a></li></ul><div class="mfn-sft mfn-sft-normal">',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul > li > a .menu-sub i:color',
+							'id' => 'css_megamenu-menuliulliamenu-subi_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul > li > a .menu-sub i',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul > li > a|hover .menu-sub i:color',
+							'id' => 'css_megamenu-menuliulliamenu-subi_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul > li > a:hover .menu-sub i',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-active">',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul > li.current-menu-item > a .menu-sub i:color',
+							'id' => 'css_megamenu-menuliullicurrent-menu-itemamenu-subi_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li ul > li.current-menu-item > a .menu-sub i',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div></div>',
+						),
+
+						array(
+							'type' => 'header',
+							'type' => 'header',
+							'class' => 'toggled_header',
+							'title' => __('Decoration icon', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li><li><a href="#active" data-tab="active">Active</a></li></ul><div class="mfn-sft mfn-sft-normal">',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li a .decoration-icon i:color',
+							'id' => 'css_megamenu-menuliadecoration-iconi_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li a .decoration-icon i',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li|hover > a > .decoration-icon i:color',
+							'id' => 'css_megamenu-menuliadecoration-iconi_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li:hover > a > .decoration-icon i',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-active">',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li.current-menu-item > a .decoration-icon i:color',
+							'id' => 'css_megamenu-menulicurrent-menu-itemadecoration-iconi_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li.current-menu-item > a .decoration-icon i',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div></div>',
+						),
+
+
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li a .decoration-icon i:font-size',
+							'id' => 'css_megamenu-menuliadecoration-iconi_font_size',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-megamenu-menu li a .decoration-icon i',
+							'style' => 'font-size',
+							'type' => 'sliderbar',
+							'responsive' => true,
+							'title' => __('Icon size', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							)
+						),
+
+
+
+						array(
+							'type' => 'html',
+							'html' => '</div>',
+						),
+
+					),
+   			),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
    			// Map Basic ------------------------------------------------------------
 
@@ -47411,7 +53630,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
    					array(
 							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .offer .slick-arrow .button_icon i:color',
 							'id' => 'css_offerslick-arrowbutton_iconi_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .offer .slick-arrow .button_icon i',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .offer .slick-arrow i',
 							'style' => 'color',
 							'type' => 'color',
 							'title' => __('Arrows color', 'mfn-opts'),
@@ -47434,7 +53653,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 						array(
 							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .offer .slick-arrow|hover .button_icon i:color',
 							'id' => 'css_offerslick-arrowbutton_iconi_color_hover',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .offer .slick-arrow:hover .button_icon i',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .offer .slick-arrow:hover i',
 							'style' => 'color',
 							'type' => 'color',
 							'title' => __('Arrows color', 'mfn-opts'),
@@ -51125,6 +57344,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
    				'mobile_size' => '1/4',
    				'tablet_resized' => '0',
    				'cat' => 'typography',
+   				'tags' => 'html',
    				'attr' => array(
 
    					array(
@@ -51422,6 +57642,19 @@ if( ! class_exists('Mfn_Builder_Fields') )
    						),
 							'std' => 0,
    					),
+
+            array(
+              'id' => 'isotope',
+              'type' => 'switch',
+              'title' => __('jQuery filtering', 'mfn-opts'),
+              'condition' => array( 'id' => 'filters', 'opt' => 'is', 'val' => '1' ),
+              'desc' => __('Disable if pagination is enabled', 'mfn-opts'),
+              'options' => array(
+                'disable' => __('Disabled', 'mfn-opts'),
+                '' => __('Enabled', 'mfn-opts'),
+              ),
+              'std' => '',
+            ),
 
 						// pagination
 
@@ -53340,6 +59573,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
    				'mobile_size' => '1/1',
    				'tablet_resized' => '0',
    				'cat' => 'loops',
+   				'tags' => 'slider scroller swiper slick',
    				'attr' => array(
 
    					array(
@@ -53731,10 +59965,38 @@ if( ! class_exists('Mfn_Builder_Fields') )
    					),
 
    					array(
+   						'id' => 'button_style',
+   						're_render' => true,
+   						'type' => 'switch',
+   						'class' => 'mfn-class-editor-form-row-visible',
+   						'title' => __('Style', 'mfn-opts'),
+   						'options' => array(
+   							'' => __('Highlighted', 'mfn-opts'),
+   							'button_standard' => __('Standard', 'mfn-opts'),
+   							'action_button' => __('Action', 'mfn-opts'),
+   						),
+   						'std' => '',
+   					),
+
+   					array(
    						'id' => 'icon',
+   						'attr_id' => 'icon',
    						're_render' => true,
    						'type' => 'icon',
    						'title' => __('Icon', 'mfn-opts'),
+   					),
+
+   					array(
+   						'id' => 'icon_position',
+   						'type' => 'switch',
+   						'title' => __('Position', 'mfn-opts'),
+   						're_render' => true,
+   						'class' => 'mfn-class-editor-form-row-visible',
+   						'options' => array(
+   							'left' => __('Left', 'mfn-opts'),
+   							'right' => __('Right', 'mfn-opts'),
+   						),
+							'std' => 'left',
    					),
 
    					array(
@@ -53994,12 +60256,27 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'class' => 'mfn-toggled',
 		  			),
 
-
 		  			array(
 							'type' => 'header',
 							'class' => 'toggled_header',
    						'title' => __('Price currency', 'mfn-opts'),
    					),
+
+   					array(
+							'id' => 'css_pricing-boxplan-headerpricesupcurrency_top',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .pricing-box .plan-header .price sup.currency',
+							'style' => 'top',
+							'type' => 'sliderbar',
+							'title' => __('Top offset', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '-100',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							),
+						),
 
 						array(
 							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .pricing-box .plan-header .price sup.currency:color',
@@ -54520,6 +60797,195 @@ if( ! class_exists('Mfn_Builder_Fields') )
    				),
    			),
 
+
+
+
+				// Product rating ----------------------------------------------------
+
+   			'product_rating' => array(
+   				'type' => 'product_rating',
+   				'title' => __('Product rating', 'mfn-opts'),
+   				'size' => '1/1',
+   				'tablet_size' => '1/1',
+   				'mobile_size' => '1/1',
+   				'tablet_resized' => '0',
+   				'cat' => 'loop',
+
+
+
+   				'attr' => array(
+   				//'fields' => array(
+
+						array(
+							'type' => 'html',
+							'html' => '<div class="modalbox-card modalbox-re_render modalbox-card-content">',
+						),
+
+						array(
+							'id' => 'product_star_rating_stats',
+							'attr_id' => 'product_star_rating_stats',
+							're_render' => true,
+							'type' 	=> 'switcher',
+							//'class' => 'mfn-toggled',
+							'title' => __('Rating Average', 'mfn-opts'),
+							'option' => 'visible-rate',
+						),
+
+						array(
+							'id' => 'css_product_star_rating_reviews_link',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .woocommerce-product-rating .woocommerce-review-link',
+							'style' => 'display',
+							'invert' => true,
+							'class' => 'hide_if_ql',
+							'type' 	=> 'switcher',
+							'title' => __('Reviews Summary', 'mfn-opts'),
+							'option' => 'none',
+						),
+
+						array(
+							'id' => 'product_star_rating_link',
+							're_render' => true,
+							'type' 	=> 'switcher',
+							'class' => 'hide_if_ql',
+							'title' => __('Link Rating to Reviews', 'mfn-opts'),
+							'option' => '1',
+						),
+
+	/*					array(
+							'id' => 'info',
+							'class' => 'mfn-alert',
+   						'type' => 'info',
+   						'title' => __('Product rating can only be used within Product content. It won’t work in other content types or locations. This element has no attributes. Please check <b>style</b> tab for more customisation options.', 'mfn-opts'),
+   					),*/
+
+   					array(
+							'type' => 'html',
+							'html' => '</div><div class="modalbox-card modalbox-card-style modalbox-re_render">',
+						),
+
+						array(
+							'title' => __('Rating', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .woocommerce-review-link:color',
+							'id' => 'css_woocommerce-review-link_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .woocommerce-review-link',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .star-rating span:color',
+							'id' => 'css_star-ratingspan_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .star-rating span',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Active stars color', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .star-rating|before:color',
+							'id' => 'css_star-ratingbefore_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .star-rating:before',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Inactive stars color', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .woocommerce-product-rating:text-align',
+							'id' => 'css_woocommerce-product-rating_text_align',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .woocommerce-product-rating',
+							'style' => 'text-align',
+							'class' => 'mfn-toggled',
+							'responsive' => true,
+							'type' => 'switch',
+							'title' => __('Text align', 'mfn-opts'),
+							'options' => [
+								'' => __('Default', 'mfn-opts'),
+								'left' => __('Left', 'mfn-opts'),
+								'center' => __('Center', 'mfn-opts'),
+								'right' => __('Right', 'mfn-opts'),
+							],
+							'std' => '',
+						),
+
+
+
+
+
+						/*array(
+							'id' => 'product_star_rating_stats',
+							'attr_id' => 'product_star_rating_stats',
+							'type' => 'switch',
+							'class' => 'mfn-toggled',
+							'title' => __('Rate stats', 'mfn-opts'),
+							'options' => [
+								'' => __('Hidden', 'mfn-opts'),
+								'visible-rate' => __('Visible', 'mfn-opts'),
+							],
+							'std' => ''
+						),*/
+
+
+						array(
+							'id' => 'css_product_star_rating_stats_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .woocommerce-product-rating .wc-rating-with-text .wc-rating-text',
+							'style' => 'color',
+							'condition' => array('id' => 'product_star_rating_stats', 'opt' => 'is', 'val' => 'visible-rate'),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_product_star_rating_stats_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .woocommerce-product-rating .wc-rating-with-text .wc-rating-text',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'condition' => array('id' => 'product_star_rating_stats', 'opt' => 'is', 'val' => 'visible-rate'),
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+
+
+						/*array(
+							'id' => 'css_product_star_rating_reviews_link',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .woocommerce-product-rating .woocommerce-review-link',
+							'style' => 'display',
+							'type' => 'switch',
+							'class' => 'mfn-toggled',
+							'title' => __('Link to comments', 'mfn-opts'),
+							'options' => [
+								'' => __('Visible', 'mfn-opts'),
+								'none' => __('Hidden', 'mfn-opts'),
+							],
+							'std' => ''
+						),*/
+
+
+						array(
+   						'type' => 'html',
+   						'html' => '</div>',
+   					),
+
+   				),
+   			),
+
+
+
+
+
    			// Progress Bars  -------------------------------------------------
 
    			'progress_bars' => array(
@@ -54869,6 +61335,329 @@ if( ! class_exists('Mfn_Builder_Fields') )
 
    				),
    			),
+
+
+
+
+
+
+
+
+
+
+				
+
+
+
+
+
+				
+
+
+
+
+
+
+
+
+
+
+
+
+
+				
+				'progress_icons' => array(
+					'type' => 'progress_icons',
+					'title' => __('Progress icons', 'mfn-opts'),
+					'size' => '1/1',
+   				'tablet_size' => '1/1',
+   				'mobile_size' => '1/1',
+   				'tablet_resized' => '0',
+   				'cat' => 'boxes',
+					'attr' => array(
+					//'fields' => array(
+
+						array(
+							'type' => 'html',
+							'html' => '<div class="modalbox-card modalbox-re_render modalbox-card-content">',
+						),
+
+						array(
+							'id' => 'icon',
+							'type' => 'icon',
+							'title' => __('Icon', 'mfn-opts'),
+							'std' => 'icon-lamp'
+						),
+
+						array(
+							'id' => 'image',
+							'type' => 'upload',
+							'title' => __('Image url', 'mfn-opts'),
+							'desc' => __('If you dont want to use icon you can enter image URL', 'mfn-opts')
+						),
+
+						array(
+							'id' => 'count',
+							'type' => 'text',
+							'title' => __('Number of icons', 'mfn-opts'),
+							're_render' => true,
+							'std' => 5
+						),
+
+						array(
+							'id' => 'active',
+							'type' => 'text',
+							'title' => __('Number of active icons', 'mfn-opts'),
+							're_render' => true,
+							'std' => 3
+						),
+
+						array(
+							'id' => 'background',
+							'type' => 'color',
+							'title' => __('Color', 'mfn-opts'),
+							'class' => 'mfn-deprecated',
+							'alpha' => true
+						),
+
+						array(
+							'id' => 'transparent',
+							'type' => 'switch',
+							'title' => __('Transparent background', 'mfn-opts'),
+							'alpha' => true,
+							'class' => 'mfn-deprecated',
+							'options' => [
+								'0' => __('Disable', 'mfn-opts'),
+								'1' => __('Enable', 'mfn-opts'),
+							],
+							'std' => '0',
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="modalbox-card modalbox-card-style modalbox-re_render">',
+						),
+
+						array(
+							'type' => 'header',
+							'class' => 'toggled_header',
+   						'title' => __('Icons', 'mfn-opts'),
+   					),
+
+						array(
+							'id' => 'css_icons_gap',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .progress_icons',
+							'style' => 'gap',
+							'type' => 'sliderbar',
+							'title' => __('Gap', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+								'unit' => 'px',
+							),
+						),
+
+						array(
+							'id' => 'css_icon_wrapper_size',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .progress_icons',
+							'style' => '--mfn-progress-icon-wrapper-size',
+							'type' => 'sliderbar',
+							'title' => __('Icon box size', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '200',
+								'step' => '1',
+								'unit' => 'px',
+							),
+						),
+
+						array(
+							'id' => 'css_icon_size',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .progress_icons',
+							'style' => '--mfn-progress-icon-size',
+							'type' => 'sliderbar',
+							'title' => __('Icon size', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'min' => '0',
+								'max' => '150',
+								'step' => '1',
+								'unit' => 'px',
+							),
+						),
+
+
+						array(
+							'id' => 'css_icon_border_style',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .progress_icons .progress_icon',
+							'style' => 'border-style',
+							'attr_id' => 'border_progress_icon',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+							'id' => 'css_icon_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .progress_icons .progress_icon',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_progress_icon', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+						array(
+							'id' => 'css_icon_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .progress_icons .progress_icon',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+						array(
+							'type' => 'html',
+							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Active</a></li></ul><div class="mfn-sft mfn-sft-normal">',
+						),
+
+						array(
+							'id' => 'css_icon_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .progress_icons .progress_icon',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_icon_background_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .progress_icons .progress_icon',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Background', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_icon_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .progress_icons .progress_icon',
+							'style' => 'border-color',
+							'type' => 'color',
+							'condition' => array( 'id' => 'border_progress_icon', 'opt' => 'isnt', 'val' => 'none' ),
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
+						),
+
+						array(
+							'id' => 'css_icon_color_active',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .progress_icons .progress_icon.themebg',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_icon_background_color_active',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .progress_icons .progress_icon.themebg',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Background', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_icon_border_color_active',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .progress_icons .progress_icon.themebg',
+							'style' => 'border-color',
+							'type' => 'color',
+							'condition' => array( 'id' => 'border_progress_icon', 'opt' => 'isnt', 'val' => 'none' ),
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div></div>',
+						),
+
+
+
+
+
+
+
+
+
+						array(
+							'type' => 'html',
+							'html' => '</div>',
+						),
+
+					),
+				),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
    			// Promo Box ------------------------------------------------------
 
@@ -56585,7 +63374,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'title' => __('Options', 'mfn-opts'),
 						),
 
-						array(
+						/*array(
    						'id' => 'columns',
    						'type' => 'switch',
    						're_render' => true,
@@ -56596,6 +63385,24 @@ if( ! class_exists('Mfn_Builder_Fields') )
 								4 => 4,
 							),
    						'std' => '3',
+   					),*/
+
+   					array(
+   						'id' => 'css_columns',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop_categories ul.products',
+   						'style' => 'grid-template-columns',
+   						'type' => 'switch',
+   						'responsive' => true,
+   						'title' => __('Columns', 'mfn-opts'),
+							'options' => array(
+								'1fr' => __('1', 'mfn-opts'),
+								'repeat(2, 1fr)' => __('2', 'mfn-opts'),
+								'repeat(3, 1fr)' => __('3', 'mfn-opts'),
+								'repeat(4, 1fr)' => __('4', 'mfn-opts'), 
+								'repeat(5, 1fr)' => __('5', 'mfn-opts'),
+								'repeat(6, 1fr)' => __('6', 'mfn-opts'),
+							),
+   						'std' => 'repeat(3, 1fr)',
    					),
 
    					array(
@@ -56981,6 +63788,2002 @@ if( ! class_exists('Mfn_Builder_Fields') )
 
 					),
 				),
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+				// Shop Products ----------------------------------------------------
+
+   			'shop_products' => array(
+   				'type' => 'shop_products',
+   				'title' => __('Shop products', 'mfn-opts'),
+   				'desc' => __('List of products from woocommerce', 'mfn-opts'),
+   				'size' => '1/1',
+   				'tablet_size' => '1/1',
+   				'mobile_size' => '1/1',
+   				'tablet_resized' => '0',
+   				'cat' => 'loops',
+   				'attr' => array(
+   				//'fields' => array(
+
+   					array(
+							'type' => 'html',
+							'html' => '<div class="modalbox-card modalbox-re_render modalbox-card-content">',
+						),
+
+						array(
+   						'id' => 'products',
+   						'type' => 'text',
+   						're_render' => true,
+   						'title' => __('Products per page', 'mfn-opts'),
+   						'std' => '12',
+   						'after' => 'products',
+   						'param' => 'number',
+   						'class' => 'narrow',
+							'preview' => 'number',
+   					),
+
+   					array(
+							'id' => 'layout_version',
+							'attr_id' => 'layout_version',
+							'type' => 'switch',
+							're_render' => true,
+							'title' => __('Layout version', 'mfn-opts'),
+							'options' => array(
+								'' => __('Return to the old version', 'mfn-opts'),
+								'new' => __('Use the new version', 'mfn-opts'),
+							),
+							'std' => ''
+						),
+
+   					array(
+   						'id' => 'layout',
+   						'type' => 'select',
+   						're_render' => true,
+   						'condition' => array( 'id' => 'layout_version', 'opt' => 'is', 'val' => '' ),
+   						'title' => __('Columns', 'mfn-opts'),
+							'options' => array(
+								'grid col-2' => __('Grid, 2 columns', 'mfn-opts'),
+								'grid' => __('Grid, 3 columns', 'mfn-opts'),
+								'grid col-4' => __('Grid, 4 columns', 'mfn-opts'),
+								'masonry' => __('Masonry, 3 columns', 'mfn-opts'),
+								'list' => __('List', 'mfn-opts'),
+							),
+   						'std' => 'grid',
+   					),
+
+   					array(
+   						'id' => 'layout_new',
+   						'attr_id' => 'layout_new',
+   						'type' => 'radio_img',
+   						're_render' => true,
+   						'condition' => array( 'id' => 'layout_version', 'opt' => 'is', 'val' => 'new' ),
+   						'title' => __('Layout', 'mfn-opts'),
+   						'alias' => 'shop',
+							'options' => array(
+								'' => __('Grid', 'mfn-opts'),
+								'masonry' => __('Masonry', 'mfn-opts'),
+								'list' => __('List basic', 'mfn-opts'),
+								'list_2' => __('List', 'mfn-opts'),
+							),
+   						'std' => '',
+   					),
+
+   					array(
+   						'id' => 'css_columns_grid',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-layout',
+   						'style' => 'grid-template-columns',
+   						'type' => 'switch',
+   						'responsive' => true,
+   						'class' => 'iframe_resize_trigger',
+   						'condition' => array( 'AND', array('id' => 'layout_version', 'opt' => 'is', 'val' => 'new'), array('id' => 'layout_new', 'opt' => 'is', 'val' => '') ),
+   						'title' => __('Columns', 'mfn-opts'),
+							'options' => array(
+								'1fr' => __('1', 'mfn-opts'),
+								'repeat(2, 1fr)' => __('2', 'mfn-opts'),
+								'repeat(3, 1fr)' => __('3', 'mfn-opts'),
+								'repeat(4, 1fr)' => __('4', 'mfn-opts'),
+								'repeat(5, 1fr)' => __('5', 'mfn-opts'),
+								'repeat(6, 1fr)' => __('6', 'mfn-opts'),
+							),
+   						'std' => 'repeat(3, 1fr)',
+   					),
+
+   					array(
+   						'id' => 'css_columns_masonry',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-masonry-layout .isotope-item',
+   						'style' => 'width',
+   						'type' => 'switch',
+   						'responsive' => true,
+   						're_render' => true,
+   						'required' => true,
+   						'condition' => array( 'AND', array('id' => 'layout_version', 'opt' => 'is', 'val' => 'new'), array('id' => 'layout_new', 'opt' => 'is', 'val' => 'masonry') ),
+   						'title' => __('Columns', 'mfn-opts'),
+							'options' => array(
+								'calc(50% - var(--mfn-layout-masonry-margin-left) - var(--mfn-layout-masonry-margin-right))' => __('2', 'mfn-opts'),
+								'calc(33.333% - var(--mfn-layout-masonry-margin-left) - var(--mfn-layout-masonry-margin-right))' => __('3', 'mfn-opts'),
+								'calc(25% - var(--mfn-layout-masonry-margin-left) - var(--mfn-layout-masonry-margin-right))' => __('4', 'mfn-opts'),
+								'calc(20% - var(--mfn-layout-masonry-margin-left) - var(--mfn-layout-masonry-margin-right))' => __('5', 'mfn-opts'),
+								'calc(16.666% - var(--mfn-layout-masonry-margin-left) - var(--mfn-layout-masonry-margin-right))' => __('6', 'mfn-opts'),
+							),
+   						'std' => 'calc(33.333% - var(--mfn-layout-masonry-margin-left) - var(--mfn-layout-masonry-margin-right))',
+   					),
+
+   					array(
+   						'id' => 'display',
+   						'attr_id' => 'display',
+   						'type' => 'select',
+   						're_render' => true,
+   						'title' => __('Display', 'mfn-opts'),
+							'options' => array(
+								'' => __('All products', 'mfn-opts'),
+								'onsale' => __('On sale products', 'mfn-opts'),
+								'related' => __('Related products', 'mfn-opts'),
+								'upsells' => __('Upsells products', 'mfn-opts')
+							),
+   					),
+
+   					array(
+   						'id' => 'category',
+   						're_render' => true,
+   						// 'type' => 'select',
+   						'condition' => array('AND', array('id' => 'display', 'opt' => 'isnt', 'val' => 'related'), array('id' => 'display', 'opt' => 'isnt', 'val' => 'upsells')),
+   						'type' => 'multiselect',
+   						'title' => __('Category', 'mfn-opts'),
+   						'php_options' => mfn_get_categories('product_cat'),
+   						//'mfn_taxonomies' => 'product_cat',
+   						'tax_cpt' => true,
+							'preview' => 'category',
+   					),
+
+   					array(
+   						'id' => 'ordering',
+   						'type' => 'select',
+   						'title' => __('Order', 'mfn-opts'),
+							'options' => array(
+								'' => __('Default', 'mfn-opts'),
+								'menu_order' => __('Menu order', 'mfn-opts'),
+								'popularity' => __('Best selling', 'mfn-opts'),
+								'rating' => __('Top rated', 'mfn-opts'),
+								'date' => __('Most recent', 'mfn-opts'),
+								'title' => __('Title A→Z', 'mfn-opts'),
+								'price' => __('Lowest price', 'mfn-opts'),
+								'price-desc' => __('Highest price', 'mfn-opts'),
+								'rand' => __('Random', 'mfn-opts'),
+							),
+   						'std' => '',
+   					),
+
+						// options
+
+   					array(
+   						'type' => 'header',
+   						'title' => __('Options', 'mfn-opts'),
+   					),
+
+						array(
+							'id' => 'description',
+							're_render' => true,
+							'required' => true,
+							'type' => 'switch',
+							'title' => __('Description', 'mfn-opts'),
+							'options' => array(
+								'0' => __('Hide', 'mfn-opts'),
+								'1' => __('Show', 'mfn-opts'),
+                'list' => __('List layout only', 'mfn-opts'),
+							),
+							'std' => '0'
+						),
+
+						array(
+							'id' => 'button',
+							're_render' => true,
+							'required' => true,
+							'type' => 'switch',
+							'title' => __('Add to cart button', 'mfn-opts'),
+							'desc' => __('Required for some plugins', 'mfn-opts'),
+							'options' => array(
+								'0' => __('Hide', 'mfn-opts'),
+								'1' => __('Show', 'mfn-opts'),
+                'list' => __('List layout only', 'mfn-opts'),
+							),
+							'std' => '1',
+						),
+
+						array(
+							'id' => 'title_tag',
+							'type' => 'switch',
+							're_render' => true,
+							'title' => __('Title tag', 'mfn-opts'),
+							'options' => [
+								'h1' => 'H1',
+								'h2' => 'H2',
+								'h3' => 'H3',
+								'h4' => 'H4',
+								'h5' => 'H5',
+								'h6' => 'H6',
+								'p' => 'p',
+								'span' => 'span',
+							],
+							'std' => 'h2',
+						),
+
+						array(
+							'id' => 'equal_heights',
+							'attr_id' => 'equal_heights',
+							're_render' => true,
+							'type' => 'switch',
+							'condition' => array('id' => 'layout_version', 'opt' => 'is', 'val' => ''),
+							'title' => __('Products List Standardization', 'mfn-opts'),
+							'options' => [
+								'0' => __('Default', 'mfn-opts'),
+								'1' => __('Equal heights', 'mfn-opts'),
+							],
+							'std' => '',
+						),
+
+						array(
+							'id' => 'equal_heights_last_el_class',
+							'condition' => array( 'AND', array('id' => 'layout_version', 'opt' => 'is', 'val' => ''), array('id' => 'equal_heights', 'opt' => 'is', 'val' => '1') ),
+							'type' => 'select',
+							're_render' => true,
+							'title' => __('Align to the bottom from', 'mfn-opts'),
+							'options' => [
+								'' => __('Default', 'mfn-opts'),
+								'image' => __('Image', 'mfn-opts'),
+								'title' => __('Title', 'mfn-opts'),
+								'price' => __('Price', 'mfn-opts'),
+								'variations' => __('Variations', 'mfn-opts'),
+								'description' => __('Description', 'mfn-opts'),
+								'button' => __('Button', 'mfn-opts'),
+							],
+							'std' => '',
+						),
+
+						array(
+							'id' => 'css_grid_align_to_bottom',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products.mfn-grid-layout li.product dynamicelementhere',
+							'style' => 'margin-top',
+							'dynamic_value' => 'auto',
+							'condition' => array( 'AND', array('id' => 'layout_version', 'opt' => 'is', 'val' => 'new'), array('id' => 'layout_new', 'opt' => 'is', 'val' => '') ),
+							'type' => 'select',
+							'title' => __('Align to the bottom from', 'mfn-opts'),
+							'options' => [
+								'' => __('Default', 'mfn-opts'),
+								'.mfn-li-product-row-image' => __('Image', 'mfn-opts'),
+								'.mfn-li-product-row-title' => __('Title', 'mfn-opts'),
+								'.mfn-li-product-row-price' => __('Price', 'mfn-opts'),
+								'.mfn-li-product-row-description' => __('Description', 'mfn-opts'),
+								'.mfn-li-product-row-button' => __('Button', 'mfn-opts'),
+							],
+							'std' => '',
+						),
+
+						array(
+   						'id' => 'load_more',
+   						'attr_id' => 'load_more',
+   						're_render' => true,
+   						'type' => 'switch',
+   						'title' => __('Infinite Load More', 'mfn-opts'),
+   						'options' => array(
+								'' => __('Default', 'mfn-opts'),
+								'0' => __('Disable', 'mfn-opts'),
+   							'1' => __('Enable', 'mfn-opts'),
+   						),
+							'std' => '',
+   					),
+
+   					array(
+   						'id' => 'paginate',
+   						'attr_id' => 'paginate',
+   						'condition' => array('id' => 'load_more', 'opt' => 'isnt', 'val' => '1'),
+   						're_render' => true,
+   						'type' => 'switch',
+   						'title' => __('Pagination', 'mfn-opts'),
+   						'options' => array(
+   							'hide' => __('Hide', 'mfn-opts'),
+   							'' => __('Show', 'mfn-opts'),
+   						),
+   						'std' => '',
+   					),
+
+
+						array(
+   						'type' => 'header',
+   						'class' => 'shop_products_tmpl_options',
+   						'title' => __('Filters', 'mfn-opts'),
+   					),
+
+						array(
+							'id' => 'shop-list-active-filters',
+							'type' => 'switch',
+							'class' => 'shop-products-filters-switcher shop_products_tmpl_options',
+							'title' => __('Active filters', 'mfn-opts'),
+							'desc' => __('Displays the active filters added in one of the WooCommerce widgets/blocks.', 'mfn-opts'),
+							'options' => array(
+								'0' => __('Hide', 'mfn-opts'),
+								'1' => __('Show', 'mfn-opts'),
+							),
+							'std' => mfn_opts_get('shop-list-active-filters'),
+						),
+
+						array(
+							'id' => 'shop-list-perpage',
+							'type' => 'switch',
+							'class' => 'shop-products-filters-switcher shop_products_tmpl_options',
+							'title' => __('Products per page', 'mfn-opts'),
+							'options' => array(
+								'0' => __('Hide', 'mfn-opts'),
+								'1' => __('Show', 'mfn-opts'),
+							),
+							'std' => mfn_opts_get('shop-list-perpage'),
+						),
+
+						array(
+							'id' => 'shop-list-layout',
+							'class' => 'shop-products-filters-switcher shop_products_tmpl_options',
+							'type' => 'switch',
+							'title' => __('Layout switch', 'mfn-opts'),
+							'options' => array(
+								'0' => __('Hide', 'mfn-opts'),
+								'1' => __('Show', 'mfn-opts'),
+							),
+							'std' => mfn_opts_get('shop-list-layout'),
+						),
+
+						array(
+							'id' => 'shop-list-sorting',
+							'class' => 'shop-products-filters-switcher shop_products_tmpl_options',
+							'type' => 'switch',
+							'title' => __('List sorting', 'mfn-opts'),
+							'options' => array(
+								'0' => __('Hide', 'mfn-opts'),
+								'1' => __('Show', 'mfn-opts'),
+							),
+							'std' => mfn_opts_get('shop-list-sorting'),
+						),
+
+						array(
+							'id' => 'shop-list-results-count',
+							'class' => 'shop-products-filters-switcher shop_products_tmpl_options',
+							'type' => 'switch',
+							'title' => __('Results count', 'mfn-opts'),
+							'options' => array(
+								'0' => __('Hide', 'mfn-opts'),
+								'1' => __('Show', 'mfn-opts'),
+							),
+							'std' => mfn_opts_get('shop-list-results-count'),
+						),
+
+
+						// order
+
+						array(
+							'type' => 'header',
+							'condition' => array( 'OR', array('id' => 'layout_version', 'opt' => 'is', 'val' => ''), array('id' => 'layout_new', 'opt' => 'isnt', 'val' => 'list') ),
+							'title' => __('Order', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'order',
+							'type' => 'order',
+							'condition' => array( 'OR', array('id' => 'layout_version', 'opt' => 'is', 'val' => ''), array('id' => 'layout_new', 'opt' => 'isnt', 'val' => 'list') ),
+							're_render' => true,
+							'title' => __('Order', 'mfn-opts'),
+							'std' => 'image,title,price,description,button',
+						),
+
+						// HTML style
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="modalbox-card modalbox-card-style modalbox-re_render">',
+						),
+
+   					// HTML end: style
+
+   					array(
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Product',
+   						'title' => __('Container', 'mfn-opts'),
+   					),
+
+   					array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product:text-align',
+							'id' => 'css_product_text_align',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products:not(.mfn-layout) li.product, .mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products.mfn-grid-layout li.product, .mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products.mfn-masonry-layout li.product',
+							'condition' => array( 'AND', array('id' => 'layout_new', 'opt' => 'isnt', 'val' => 'list'), array('id' => 'layout_new', 'opt' => 'isnt', 'val' => 'list_2') ),
+							'style' => 'text-align',
+							'type' => 'switch',
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'title' => __('Text align', 'mfn-opts'),
+							'options' => [
+								'' => __('Default', 'mfn-opts'),
+								'left' => __('Left', 'mfn-opts'),
+								'center' => __('Center', 'mfn-opts'),
+								'right' => __('Right', 'mfn-opts'),
+							],
+							'std' => '',
+						),
+
+   					array(
+   						'id' => 'css_product_list_layout_justify_content',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.mfn-list-layout li.mfn-product-li-item .mfn-list-layout-desc',
+   						'style' => 'justify-content',
+							'responsive' => true,
+							'condition' => array( 'AND', array('id' => 'layout_version', 'opt' => 'is', 'val' => 'new'), array('id' => 'layout_new', 'opt' => 'is', 'val' => 'list') ),
+   						'type' => 'switch',
+   						'class' => 'mfn-toggled',
+   						'title' => __('Vertical position', 'mfn-opts'),
+   						'options' => array(
+   							'flex-start' => __('Top', 'mfn-opts'),
+								'center' => __('Center', 'mfn-opts'),
+   							'flex-end' => __('Bottom', 'mfn-opts'),
+   						),
+   						'std' => 'flex-start'
+   					),
+
+   					array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product:background-color',
+							'id' => 'css_product_background_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background', 'mfn-opts'),
+						),
+
+						array(
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product:padding',
+							'id' => 'css_product_padding',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product',
+							'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+		  			array(
+							'id' => 'css_layout_masonry_margin',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-masonry-layout .isotope-item',
+							'condition' => array( 'AND', array('id' => 'layout_version', 'opt' => 'is', 'val' => 'new'), array('id' => 'layout_new', 'opt' => 'is', 'val' => 'masonry') ),
+							'style' => '--mfn-layout-masonry-margin',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Margin', 'mfn-opts'),
+							'responsive' => true,
+							're_render' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+						array(
+							'id' => 'css_layout_grid_gap',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-layout, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-list-layout, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-list_2-layout',
+							'style' => 'gap',
+							'type' => 'sliderbar',
+							'condition' => array( 'AND', array('id' => 'layout_version', 'opt' => 'is', 'val' => 'new'), array('id' => 'layout_new', 'opt' => 'isnt', 'val' => 'masonry') ),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'title' => __('Gap', 'mfn-opts'),
+							'after' => 'px',
+							'param' => array(
+								'min' => '0',
+								'max' => '200',
+								'step' => '1',
+								'unit' => 'px',
+							),
+							'std' => '30px'
+						),
+
+		  			array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product:border-style',
+							'id' => 'css_product_border_style',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product',
+							'style' => 'border-style',
+							'attr_id' => 'border_style_shop_li',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product:border-color',
+							'id' => 'css_product_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_shop_li', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product:border-width',
+							'id' => 'css_product_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_style_shop_li', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product:border-radius',
+							'id' => 'css_product_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Product',
+   						'title' => __('Image', 'mfn-opts'),
+   					),
+
+   					array(
+   						'id' => 'css_product_list_layout_image_align',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.mfn-list-layout li.mfn-product-li-item .mfn-li-product-row-image',
+   						'style' => 'order',
+							'responsive' => true,
+							'condition' => array( 'AND', array('id' => 'layout_version', 'opt' => 'is', 'val' => 'new'), array('id' => 'layout_new', 'opt' => 'is', 'val' => 'list') ),
+   						'type' => 'switch',
+   						'class' => 'mfn-toggled',
+   						'title' => __('Image align', 'mfn-opts'),
+   						'options' => array(
+   							'1' => __('Left', 'mfn-opts'),
+								'3' => __('Right', 'mfn-opts'),
+   						),
+   						'std' => '1'
+   					),
+
+   					array(
+							'id' => 'css_product_image_list_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.mfn-list-layout li.mfn-product-li-item .mfn-li-product-row-image',
+							'style' => 'width',
+							'type' => 'sliderbar',
+							'condition' => array( 'AND', array('id' => 'layout_version', 'opt' => 'is', 'val' => 'new'), array('id' => 'layout_new', 'opt' => 'is', 'val' => 'list'), array('id' => 'layout_new', 'opt' => 'isnt', 'val' => 'list_2') ),
+							'default_unit' => 'px',
+							'responsive' => true,
+							'class' => 'mfn-toggled narrow sliderbar-units mfn-hidden-from-mobile',
+							'title' => __('Width', 'mfn-opts'),
+							'units' => array(
+								'px' 	=> array('min' => 0, 'max' => 1200, 'step' => 1),
+								'%' => array('min' => 0, 'max' => 100, 'step' => 1),
+								'vw' 	=> array('min' => 0, 'max' => 100, 'step' => 1),
+							),
+							'std' => '25%',
+						),
+
+						array(
+							'id' => 'css_product_image_list_2_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.mfn-list_2-layout li.mfn-product-li-item .mfn-li-product-row-image',
+							'style' => 'width',
+							'type' => 'sliderbar',
+							'condition' => array( 'AND', array('id' => 'layout_version', 'opt' => 'is', 'val' => 'new'), array('id' => 'layout_new', 'opt' => 'is', 'val' => 'list_2'), array('id' => 'layout_new', 'opt' => 'isnt', 'val' => 'list') ),
+							'default_unit' => 'px',
+							'responsive' => true,
+							'class' => 'mfn-toggled narrow sliderbar-units mfn-hidden-from-tablet mfn-hidden-from-mobile',
+							'title' => __('Width', 'mfn-opts'),
+							'units' => array(
+								'px' 	=> array('min' => 0, 'max' => 1200, 'step' => 1),
+								'%' => array('min' => 0, 'max' => 100, 'step' => 1),
+								'vw' 	=> array('min' => 0, 'max' => 100, 'step' => 1),
+							),
+							'std' => '25%',
+						),
+
+		  			array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .image_frame:border-style',
+							'id' => 'css_product_image_frame_border_style',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .image_frame',
+							'style' => 'border-style',
+							'attr_id' => 'border_style_shopimg',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .image_frame:border-color',
+							'id' => 'css_product_image_frame_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .image_frame',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_shopimg', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .image_frame:border-width',
+							'id' => 'css_product_image_frame_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .image_frame',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_style_shopimg', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+						array(
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .image_frame:border-radius',
+							'id' => 'css_product_image_frame_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .image_frame',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_product_image_bg',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .image_frame',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Background color', 'mfn-opts'),
+						),
+
+		  			array(
+							'id' => 'css_product_image_margin',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .mfn-li-product-row-image',
+							'style' => 'margin',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Margin', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			// title
+
+						array(
+							'title' => __('Title', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Product',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .title:color',
+							'id' => 'css_product_title_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .title',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .title:margin',
+							'id' => 'css_product_title_margin',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .title',
+							'style' => 'margin',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Margin', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .title:typography',
+							'id' => 'css_product_title_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .title',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+						array(
+							'title' => __('Price', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Product',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .price:color',
+							'id' => 'css_product_price_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .price',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_product_del_price_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .price del',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Strike price color', 'mfn-opts'),
+						),
+
+						array(
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .price:margin',
+							'id' => 'css_product_price_margin',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .price',
+							'style' => 'margin',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Margin', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .price:typography',
+							'id' => 'css_product_price_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .price',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+						array(
+							'title' => __('Desc', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Product',
+						),
+
+						array(
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .excerpt:margin',
+							'id' => 'css_product_excerpt_margin',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .excerpt',
+							'style' => 'margin',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Margin', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .excerpt:typography',
+							'id' => 'css_products_excerpt_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .excerpt',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .excerpt:color',
+							'id' => 'css_product_excerpt_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .excerpt',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Product',
+   						'title' => __('Attributes', 'mfn-opts'),
+   					),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-variations-wrapper-loop .mfn-vr ul.mfn-vr-options li a:border-color',
+							'id' => 'css_variations-wrapper-loop-vrul-vr-optionslia_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-variations-wrapper-loop .mfn-vr ul.mfn-vr-options li a',
+							'style' => 'border-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-variations-wrapper-loop .mfn-vr ul.mfn-vr-options li a|hover:border-color',
+							'id' => 'css_variations-wrapper-loop-vrul-vr-optionsliahover_border_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-variations-wrapper-loop .mfn-vr ul.mfn-vr-options li a:hover',
+							'style' => 'border-color',
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color on Hover', 'mfn-opts'),
+						),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+						array(
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Product',
+							'title' => __('Badge', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_product_onsale_padding',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges span.onsale',
+							'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_product_onsale_border_style',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges span.onsale',
+							'style' => 'border-style',
+							'attr_id' => 'border_style_badge',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+							'id' => 'css_product_onsale_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges span.onsale',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_style_badge', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_product_onsale_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges span.onsale',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+   						'id' => 'css_product_onsale_align',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges',
+   						'style' => 'align-items',
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+   						'type' => 'switch',
+   						'title' => __('Alignment', 'mfn-opts'),
+   						'options' => array(
+   							'' => __('Default', 'mfn-opts'),
+   							'flex-start' => __('Left', 'mfn-opts'),
+								'center' => __('Center', 'mfn-opts'),
+   							'flex-end' => __('Right', 'mfn-opts'),
+   						),
+   						'std' => ''
+   					),
+
+   					array(
+							'id' => 'product_badge_onsale_position',
+							'attr_id' => 'product_badge_onsale_position',
+							'type' => 'switch',
+							'class' => 'mfn-toggled archive_badge_onsale_position',
+							'title' => __('Position X', 'mfn-opts'),
+							'options' => array(
+		  					'' => __('Left', 'mfn-opts'),
+		  					'right' => __('Right', 'mfn-opts'),
+		  				),
+		  				'std' => '',
+						),
+
+						array(
+							'id' => 'css_product_onsale_offset_left',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-product-badges-left li.product .mfn-product-badges',
+							'style' => 'left',
+		  				'type' => 'sliderbar',
+		  				'condition' => array( 'id' => 'product_badge_onsale_position', 'opt' => 'is', 'val' => '' ),
+		  				'title' => __('Offset left', 'mfn-opts'),
+							'responsive' => true,
+							'default_unit' => 'px',
+							'class' => 'narrow mfn-toggled',
+							'param' => array(
+								'unit' => 'px',
+								'min' => '-100',
+								'max' => '300',
+								'step' => '1',
+							),
+		  			),
+
+		  			array(
+							'id' => 'css_product_onsale_offset_right',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-product-badges-right li.product .mfn-product-badges',
+							'style' => 'right',
+		  				'type' => 'sliderbar',
+		  				'condition' => array( 'id' => 'product_badge_onsale_position', 'opt' => 'is', 'val' => 'right' ),
+		  				'title' => __('Offset right', 'mfn-opts'),
+							'responsive' => true,
+							'default_unit' => 'px',
+							'class' => 'narrow mfn-toggled',
+							'param' => array(
+								'unit' => 'px',
+								'min' => '-100',
+								'max' => '300',
+								'step' => '1',
+							),
+		  			),
+
+		  			array(
+							'id' => 'css_product_onsale_offset_top',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges',
+							'style' => 'top',
+		  				'type' => 'sliderbar',
+		  				'title' => __('Offset top', 'mfn-opts'),
+							'responsive' => true,
+							'default_unit' => 'px',
+							'class' => 'narrow mfn-toggled',
+							'param' => array(
+								'unit' => 'px',
+								'min' => '-100',
+								'max' => '300',
+								'step' => '1',
+							),
+		  			),
+
+		  			array(
+							'id' => 'css_product_onsale_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges span.onsale',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+		  			array(
+							'type' => 'subheader',
+							'class' => 'mfn-builder-subheader mfn-toggled mfn-onsale-label',
+							'title' => __('Default label (Sale)', 'mfn-opts'),
+						),
+
+		  			array(
+							'id' => 'css_product_onsale_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges span.onsale',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_product_onsale_background_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges span.onsale',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Background', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_product_onsale_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges span.onsale',
+							'style' => 'border-color',
+							'type' => 'color',
+							'condition' => array( 'id' => 'border_style_badge', 'opt' => 'isnt', 'val' => 'none' ),
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'subheader',
+							'class' => 'mfn-builder-subheader mfn-toggled',
+							'title' => __('Label (New)', 'mfn-opts'),
+						),
+
+		  			array(
+							'id' => 'css_product_onsale_new_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges span.mfn-new-badge.onsale',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_product_onsale_new_background_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges span.mfn-new-badge.onsale',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Background', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_product_onsale_new_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges span.mfn-new-badge.onsale',
+							'style' => 'border-color',
+							'type' => 'color',
+							'condition' => array( 'id' => 'border_style_badge', 'opt' => 'isnt', 'val' => 'none' ),
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'subheader',
+							'class' => 'mfn-builder-subheader mfn-toggled',
+							'title' => __('Extra label', 'mfn-opts'),
+						),
+
+		  			array(
+							'id' => 'css_product_onsale_extra_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges span.onsale.onsale-extra-label',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_product_onsale_extra_background_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges span.onsale.onsale-extra-label',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Background', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_product_onsale_extra_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .products li.product .mfn-product-badges span.onsale.onsale-extra-label',
+							'style' => 'border-color',
+							'type' => 'color',
+							'condition' => array( 'id' => 'border_style_badge', 'opt' => 'isnt', 'val' => 'none' ),
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+
+
+
+						array(
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Product',
+   						'title' => __('Button', 'mfn-opts'),
+   					),
+
+		  			array(
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button:padding',
+							'id' => 'css_product_button_padding',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button',
+							'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+		  			array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button:typography',
+							'id' => 'css_product_button_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button:border-style',
+							'id' => 'css_product_button_border_style',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button',
+							'style' => 'border-style',
+							'attr_id' => 'border_style_bsb',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button:border-width',
+							'id' => 'css_product_button_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_style_bsb', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+						array(
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button:border-radius',
+							'id' => 'css_product_button_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+   					array(
+							'type' => 'html',
+							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li></ul><div class="mfn-sft mfn-sft-normal">',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button:color',
+							'id' => 'css_product_button_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button:border-color',
+							'id' => 'css_product_button_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_bsb', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'background_switcher',
+							'attr_id' => 'background_shop_button',
+							'type' => 'switch',
+							'class' => 'mfn-fields-switcher disable-history mfn-disable-reset-value',
+							'title' => __('Background type', 'mfn-opts'),
+							'options' => array(
+		  					'default' => __('Default', 'mfn-opts'),
+		  					'gradient' 	=> __('Gradient', 'mfn-opts'),
+		  				),
+							'visual_options' => array(
+		  					'default' => '',
+		  					'gradient' 	=> '',
+		  				),
+		  				'std' => 'default',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button:background-color',
+							'id' => 'css_product_button_background_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button',
+							'style' => 'background-color',
+							'condition' => array( 'id' => 'background_shop_button', 'opt' => 'is', 'val' => 'default' ),
+							'type' => 'color',
+							'title' => __('Background color', 'mfn-opts'),
+						),
+
+						array(
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button:gradient',
+							'id' => 'css_product_button_gradient',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button',
+							'style' => 'gradient',
+		  				'condition' => array( 'id' => 'background_shop_button', 'opt' => 'is', 'val' => 'gradient' ),
+		  				'type' => 'gradient',
+		  				'title' => __('Gradient', 'mfn-opts'),
+		  				'class' => 'mfn-toggled',
+		  			),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button|hover:color',
+							'id' => 'css_product_button_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button:hover',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button|hover:border-color',
+							'id' => 'css_product_button_border_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button:hover',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_bsb', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'background_switcher_hover',
+							'attr_id' => 'background_hover_shop_button',
+							'type' => 'switch',
+							'class' => 'mfn-fields-switcher disable-history mfn-disable-reset-value',
+							'title' => __('Background type', 'mfn-opts'),
+							'options' => array(
+		  					'default' => __('Default', 'mfn-opts'),
+		  					'gradient' 	=> __('Gradient', 'mfn-opts'),
+		  				),
+							'visual_options' => array(
+		  					'default' => '',
+		  					'gradient' 	=> '',
+		  				),
+		  				'std' => 'default',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button|hover:background',
+							'id' => 'css_product_button_background_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button:hover, .mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button:before',
+							'style' => 'background',
+							'condition' => array( 'id' => 'background_hover_shop_button', 'opt' => 'is', 'val' => 'default' ),
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Background color', 'mfn-opts'),
+						),
+
+						array(
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button|hover:gradient',
+							'id' => 'css_product_button_gradient_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .button:hover',
+							'style' => 'gradient',
+		  				'condition' => array( 'id' => 'background_hover_shop_button', 'opt' => 'is', 'val' => 'gradient' ),
+		  				'type' => 'gradient',
+		  				'title' => __('Gradient', 'mfn-opts'),
+		  				'class' => 'mfn-toggled',
+		  			),
+
+						array(
+							'type' => 'html',
+							'html' => '</div></div>',
+						),
+
+
+						array(
+							'title' => __('Rating', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Product',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .star-rating:display',
+							'id' => 'css_product_star-rating_display',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .star-rating',
+							'style' => 'display',
+							'attr_id' => 'shop-list-rating',
+							'type' => 'switch',
+							'class' => 'mfn-toggled',
+							'title' => __('Visibility', 'mfn-opts'),
+							'options' => [
+								'' => __('Visible', 'mfn-opts'),
+								'none' => __('Hidden', 'mfn-opts'),
+							],
+							'std' => ''
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .star-rating span:color',
+							'id' => 'css_product_star-ratingspan_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .star-rating span',
+							'style' => 'color',
+							'condition' => array( 'id' => 'shop-list-rating', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'product_star_rating_stats',
+							'attr_id' => 'product_star_rating_stats',
+							're_render' => true,
+							'condition' => array( 'id' => 'shop-list-rating', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' 	=> 'switcher',
+							'title' => __('Rating Average', 'mfn-opts'),
+							'option' => 'visible-rate',
+							'class' => 'mfn-toggled',
+						),
+
+						/*array(
+							'id' => 'product_star_rating_stats',
+							'attr_id' => 'product_star_rating_stats',
+							'type' => 'switch',
+							'class' => 'mfn-toggled',
+							'condition' => array( 'id' => 'shop-list-rating', 'opt' => 'isnt', 'val' => 'none' ),
+							'title' => __('Rate stats', 'mfn-opts'),
+							'options' => [
+								'' => __('Hidden', 'mfn-opts'),
+								'visible-rate' => __('Visible', 'mfn-opts'),
+							],
+							'std' => ''
+						),*/
+
+
+						array(
+							'id' => 'css_product_star_rating_stats_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .wc-rating-with-text .wc-rating-text',
+							'style' => 'color',
+							'condition' => array( 'AND', array('id' => 'shop-list-rating', 'opt' => 'isnt', 'val' => 'none'), array('id' => 'product_star_rating_stats', 'opt' => 'is', 'val' => 'visible-rate')  ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_product_star_rating_stats_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .wc-rating-with-text .wc-rating-text',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'condition' => array( 'AND', array('id' => 'shop-list-rating', 'opt' => 'isnt', 'val' => 'none'), array('id' => 'product_star_rating_stats', 'opt' => 'is', 'val' => 'visible-rate')  ),
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+
+						array(
+							'title' => __('List layout options', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Layout: List',
+						),
+
+
+						array(
+							'type' => 'subheader',
+							'class' => 'mfn-builder-subheader mfn-toggled',
+							'title' => __('Product wrapper', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_shop_products_list_cols_gap',
+		  				'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-list_2-layout, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-list-layout',
+							'style' => '--mfn-list-layout-wrapper-gap',
+							'type' => 'sliderbar',
+							'default_unit' => 'px',
+							'title' => __('Columns gap', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+							'param' => array(
+								'unit' => 'px',
+								'min' => '0',
+								'max' => '100',
+								'step' => '1',
+							),
+							'std' => '30px',
+						),
+
+
+						array(
+							'type' => 'subheader',
+							'class' => 'mfn-builder-subheader mfn-toggled',
+							'title' => __('Desc column', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_shop_products_list_desc_padding',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-list-layout-desc',
+							'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+		  			array(
+							'type' => 'subheader',
+							'class' => 'mfn-builder-subheader mfn-toggled',
+							'title' => __('Additional information column', 'mfn-opts'),
+						),
+
+
+
+		  			array(
+							'id' => 'css_shop_products_list_right_col_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-list_2-layout',
+							'style' => '--mfn-list-layout-inner-right-width',
+							'type' => 'sliderbar',
+							'responsive' => true,
+							'class' => 'mfn-toggled mfn-hidden-from-tablet mfn-hidden-from-mobile',
+							'title' => __('Width', 'mfn-opts'),
+							'units' => array(
+								'px' 	=> array('min' => 1, 		'max' => 1500, 'step' => 1),
+								'%' 	=> array('min' => 1, 		'max' => 100, 'step' => 1),
+								'vw' 	=> array('min' => 1, 		'max' => 100, 'step' => 1),
+							),
+							'std' => '220px'
+						),
+
+
+
+
+						array(
+							'id' => 'css_shop_products_list_right_col_padding',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-list_2-layout li.product .mfn-list-layout-inner-right',
+							'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+						array(
+							'id' => 'css_shop_products_list_right_col_background_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-list_2-layout li.product .mfn-list-layout-inner-right',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Background', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_shop_products_list_right_col_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-list_2-layout li.product .mfn-list-layout-inner-right',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_shop_products_list_right_col_instock_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-list_2-layout li.product.instock .mfn-list-layout-inner-right .stock-label',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('In stock Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_shop_products_list_right_col_outofstock_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-list_2-layout li.product.outofstock .mfn-list-layout-inner-right .stock-label',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Out of stock Color', 'mfn-opts'),
+						),
+
+
+						array(
+							'id' => 'css_shop_products_list_right_col_border_style',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-list_2-layout li.product .mfn-list-layout-inner-right',
+							'style' => 'border-style',
+							'attr_id' => 'border_style_shop_list_right_col',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+							'id' => 'css_shop_products_list_right_col_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-list_2-layout li.product .mfn-list-layout-inner-right',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_style_shop_list_right_col', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+		  			array(
+							'id' => 'css_shop_products_list_right_col_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-list_2-layout li.product .mfn-list-layout-inner-right',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_shop_list_right_col', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_shop_products_list_right_col_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-list_2-layout li.product .mfn-list-layout-inner-right',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+
+						array(
+							'title' => __('Container', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Filtering',
+						),
+
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters:background-color',
+							'id' => 'css_shop-filters_background_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Background', 'mfn-opts'),
+						),
+
+						array(
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters:margin',
+							'id' => 'css_shop-filters_margin',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters',
+							'style' => 'margin',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Margin', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+						array(
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters:padding',
+							'id' => 'css_shop-filters_padding',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters',
+							'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+		  			array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters:border-style',
+							'id' => 'css_shop-filters_border_style',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters',
+							'style' => 'border-style',
+							'attr_id' => 'border_style_shop_filters',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters:border-width',
+							'id' => 'css_shop-filters_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_style_shop_filters', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+		  			array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters:border-color',
+							'id' => 'css_shop-filters_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_shop_filters', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters:border-radius',
+							'id' => 'css_shop-filters_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+						array(
+							'title' => __('Result count', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Filtering',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .woocommerce-result-count:typography',
+							'id' => 'css_woocommerce-result-count_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .woocommerce-result-count',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .woocommerce-result-count:color',
+							'id' => 'css_woocommerce-result-count_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .woocommerce-result-count',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'title' => __('Products per page', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Filtering',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .mfn-woo-list-options form.mfn-before-products-list-form:typography',
+							'id' => 'css_shop-filters-woo-list-optionsform-before-products-list-form_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .mfn-woo-list-options form.mfn-before-products-list-form',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .mfn-woo-list-options form.mfn-before-products-list-form:color',
+							'id' => 'css_shop-filters-woo-list-optionsform-before-products-list-form_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .mfn-woo-list-options form.mfn-before-products-list-form',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'title' => __('Layout', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Filtering',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .mfn-woo-list-options ul li svg:width',
+							'id' => 'css_shop-filters-woo-list-optionsullisvg_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .mfn-woo-list-options ul li svg',
+							'style' => 'width',
+							'type' => 'sliderbar',
+							'default_unit' => 'px',
+							'title' => __('Size', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'narrow mfn-toggled',
+							'param' => array(
+								'unit' => 'px',
+								'min' => '0',
+								'max' => '200',
+								'step' => '1',
+							),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters a.open-filters svg .path, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .mfn-woo-list-options ul li:--mfn-woo-icon-option',
+							'id' => 'css_layout_options_color',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters a.open-filters svg .path, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .mfn-woo-list-options ul li',
+   						'style' => '--mfn-woo-icon-option',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+
+						array(
+							'title' => __('Sorting', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Filtering',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select:typography',
+							'id' => 'css_shop-filterswoocommerce-orderingselect_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select:color',
+							'id' => 'css_shop-filterswoocommerce-orderingselect_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select:background',
+							'id' => 'css_shop-filterswoocommerce-orderingselect_background',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select',
+							'style' => 'background-color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Background', 'mfn-opts'),
+						),
+
+						array(
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select:padding',
+							'id' => 'css_shop-filterswoocommerce-orderingselect_padding',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select',
+							'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+		  			array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select:border-style',
+							'id' => 'css_shop-filterswoocommerce-orderingselect_border_style',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select',
+							'style' => 'border-style',
+							'attr_id' => 'border_style_shop_order',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select:border-width',
+							'id' => 'css_shop-filterswoocommerce-orderingselect_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_style_shop_order', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+		  			array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select:border-color',
+							'id' => 'css_shop-filterswoocommerce-orderingselect_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_shop_order', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select:border-radius',
+							'id' => 'css_shop-filterswoocommerce-orderingselect_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters .woocommerce-ordering select',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+						array(
+							'title' => __('Filters switcher', 'mfn-opts'),
+							'type' => 'header',
+							'class' => 'toggled_header mfn-header-has-pill',
+							'data_pill' => 'Off-canvas switcher',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters a.open-filters:typography',
+							'id' => 'css_shop-filtersaopen-filters_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters a.open-filters',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters a.open-filters:color',
+							'id' => 'css_shop-filtersaopen-filters_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters a.open-filters',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters a.open-filters svg:width',
+							'id' => 'css_shop-filtersaopen-filterssvg_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop-filters a.open-filters svg',
+							'style' => 'width',
+							'type' => 'sliderbar',
+							'default_unit' => 'px',
+							'title' => __('Icon size', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'narrow mfn-toggled',
+							'param' => array(
+								'unit' => 'px',
+								'min' => '0',
+								'max' => '200',
+								'step' => '1',
+							),
+						),
+
+
+
+
+
+						array(
+   						'type' => 'html',
+   						'html' => '</div>',
+   					),
+
+   				),
+   			),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		
+
+
+
 
    			// Shop ----------------------------------------------------
 
@@ -58020,6 +66823,55 @@ if( ! class_exists('Mfn_Builder_Fields') )
 						),
 
 						array(
+							'id' => 'product_star_rating_stats',
+							'attr_id' => 'product_star_rating_stats',
+							're_render' => true,
+							'condition' => array( 'id' => 'shop-list-rating', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' 	=> 'switcher',
+							'class' => 'mfn-toggled',
+							'title' => __('Rating Average', 'mfn-opts'),
+							'option' => 'visible-rate',
+						),
+
+
+						/*array(
+							'id' => 'product_star_rating_stats',
+							'attr_id' => 'product_star_rating_stats',
+							'type' => 'switch',
+							'class' => 'mfn-toggled',
+							'condition' => array( 'id' => 'shop-list-rating', 'opt' => 'isnt', 'val' => 'none' ),
+							'title' => __('Rate stats', 'mfn-opts'),
+							'options' => [
+								'' => __('Hidden', 'mfn-opts'),
+								'visible-rate' => __('Visible', 'mfn-opts'),
+							],
+							'std' => ''
+						),*/
+
+
+						array(
+							'id' => 'css_product_star_rating_stats_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .wc-rating-with-text .wc-rating-text',
+							'style' => 'color',
+							'condition' => array( 'AND', array('id' => 'shop-list-rating', 'opt' => 'isnt', 'val' => 'none'), array('id' => 'product_star_rating_stats', 'opt' => 'is', 'val' => 'visible-rate')  ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_product_star_rating_stats_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement ul.products li.product .wc-rating-with-text .wc-rating-text',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'condition' => array( 'AND', array('id' => 'shop-list-rating', 'opt' => 'isnt', 'val' => 'none'), array('id' => 'product_star_rating_stats', 'opt' => 'is', 'val' => 'visible-rate')  ),
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+						array(
 							'title' => __('Attributes', 'mfn-opts'),
 							'type' => 'header',
 							'class' => 'toggled_header',
@@ -58057,6 +66909,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
    				'mobile_size' => '1/1',
    				'tablet_resized' => '0',
    				'cat' => 'loops',
+   				'tags' => 'slider scroller swiper slick',
    				'attr' => array(
 
    					array(
@@ -58574,7 +67427,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 						array(
 							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop_slider .button,.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop_slider .button .button_icon i:color',
 							'id' => 'css_shop_slider_button_icon_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop_slider .button, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop_slider .button i, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop_slider .button .button_icon i',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop_slider .button, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop_slider .button i, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop_slider .button i',
 							'style' => 'color',
 							'type' => 'color',
 							'class' => 'main-color mfn-toggled',
@@ -58638,7 +67491,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 						array(
 							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop_slider .button|hover .button_icon i:color',
 							'id' => 'css_shop_sliderbutton_iconi_color_hover',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop_slider .button:hover i, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop_slider .button:hover .button_icon i',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop_slider .button:hover i, .mcb-section .mcb-wrap .mcb-item-mfnuidelement .shop_slider .button:hover i',
 							'style' => 'color',
 							'type' => 'color',
 							'class' => 'main-color mfn-toggled',
@@ -59206,8 +68059,8 @@ if( ! class_exists('Mfn_Builder_Fields') )
    						'type' => 'select',
    						'title' => __('Select Sidebar', 'mfn-opts'),
    						'desc' => __('1. Create Sidebar in <a target="_blank" href="admin.php?page=be-options#sidebars">Theme Options > Sidebars</a><br />2. Add Widgets<br />3. Select your sidebar.', 'mfn-opts'),
-   						'php_options' => mfn_opts_get('sidebars'),
-   						'js_options' => 'sidebars',
+   						'php_options' => mfna_sidebars(),
+   						'kl_options' => mfna_sidebars('kl'),
    					),
 
 						// deprecated
@@ -59243,6 +68096,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
    				'mobile_size' => '1/1',
    				'tablet_resized' => '0',
    				'cat' => 'blocks',
+   				'tags' => 'slider scroller swiper slick',
    				'attr' => array(
 
    					array(
@@ -59406,8 +68260,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'class' => 'mfn-toggled',
 		  			),
 
-
-
 						array(
 		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .content_slider.default .content_slider_ul .slick-list,.mcb-section .mcb-wrap .mcb-item-mfnuidelement .content_slider|not(.default) .content_slider_ul li img:border-radius',
 		  				'id' => 'css_image_border_radius',
@@ -59418,8 +68270,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'responsive' => true,
 							'class' => 'mfn-toggled',
 		  			),
-
-
 
 		  			array(
 		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .content_slider.default .content_slider_ul,.mcb-section .mcb-wrap .mcb-item-mfnuidelement .content_slider|not(.default) .content_slider_ul li img:margin',
@@ -59432,7 +68282,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'version' => 'separated-fields',
 							'class' => 'mfn-toggled',
 		  			),
-
 
 		  			array(
 							'type' => 'header',
@@ -59555,8 +68404,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'class' => 'mfn-toggled',
 		  			),
 
-
-
 						array(
 		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .content_slider .content_slider_ul .button:border-radius',
 							'id' => 'css_content_slider_ulbutton_border_radius',
@@ -59567,8 +68414,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'responsive' => true,
 							'class' => 'mfn-toggled',
 		  			),
-
-
 
    					array(
 							'type' => 'html',
@@ -59839,7 +68684,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
    					array(
    						'id' => 'title',
    						'type' => 'text',
-						'dynamic_data' => 'title',
+							'dynamic_data' => 'title',
    						'edit_tag' => '.desc_wrapper | .title',
    						'edit_position' => 'prepend',
    						'title' => __('Title', 'mfn-opts'),
@@ -60867,6 +69712,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-tag-cloud',
 							'style' => 'justify-content',
 							'type' => 'select',
+							'condition' => array( 'id' => 'css_tag-cloudli_width', 'opt' => 'is', 'val' => '' ),
 							'title' => __('Align', 'mfn-opts'),
 							'responsive' => true,
 							'class' => 'mfn-toggled',
@@ -60905,6 +69751,40 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'label_tools' => true,
 							'class' => 'mfn-toggled toggle_fields',
 							'title' => __('Typography', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_tag-cloudli_width',
+							'attr_id' => 'css_tag-cloudli_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-tag-cloud.mfn-tag-cloud-pills li',
+							'style' => 'width',
+		  				'type' => 'switch',
+		  				'condition' => array( 'id' => 'design', 'opt' => 'is', 'val' => 'pills' ),
+		  				'title' => __('Width', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+							'options' => array(
+   							'' => __('Inline', 'mfn-opts'),
+   							'100%' => __('Full width', 'mfn-opts'),
+   						),
+		  			),
+
+
+		  			array(
+							'id' => 'css_tag-cloudli_pill_text_align',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-tag-cloud.mfn-tag-cloud-pills li a',
+							'style' => 'text-align',
+							'condition' => array( 'id' => 'css_tag-cloudli_width', 'opt' => 'is', 'val' => '100%' ),
+							'type' => 'switch',
+							'title' => __('Text align', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+							'responsive' => true,
+							'options' => [
+								'' => __('Default', 'mfn-opts'),
+								'left' => __('Left', 'mfn-opts'),
+								'center' => __('Center', 'mfn-opts'),
+								'right' => __('Right', 'mfn-opts'),
+							],
+							'std' => '',
 						),
 
 						array(
@@ -61191,12 +70071,45 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'class' => 'mfn-toggled',
 		  			),
 
+		  			array(
+		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .testimonials_slider .testimonials_slider_ul li .bq_wrapper:margin',
+							'id' => 'css_testimonials_slidertestimonials_slider_ullibq_wrapper_margin',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .testimonials_slider .testimonials_slider_ul li .bq_wrapper',
+							'style' => 'margin',
+		  				'type' => 'dimensions',
+		  				'title' => __('Margin', 'mfn-opts'),
+							'responsive' => true,
+							'version' => 'separated-fields',
+							'class' => 'mfn-toggled',
+		  			),
+
 
 						array(
 							'type' => 'header',
 							'class' => 'toggled_header',
    						'title' => __('Blockquote', 'mfn-opts'),
    					),
+
+
+						array(
+							'id' => 'css_testimonials_slider_ullibq_wrapperblockquote_text-align',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement  .testimonials_slider .testimonials_slider_ul li .bq_wrapper blockquote',
+							'style' => 'text-align',
+							'type' => 'switch',
+							'title' => __('Text align', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+							'responsive' => true,
+							'options' => [
+								'' => __('Default', 'mfn-opts'),
+								'left' => __('Left', 'mfn-opts'),
+								'center' => __('Center', 'mfn-opts'),
+								'right' => __('Right', 'mfn-opts'),
+							],
+							'std' => '',
+						),
+
+
+
 
 						array(
 							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement  .testimonials_slider .testimonials_slider_ul li .bq_wrapper blockquote:color',
@@ -61245,9 +70158,8 @@ if( ! class_exists('Mfn_Builder_Fields') )
 
 
 		  			array(
-		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .testimonials_slider .testimonials_slider_ul li .bq_wrapper:margin',
-							'id' => 'css_testimonials_slidertestimonials_slider_ullibq_wrapper_margin',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .testimonials_slider .testimonials_slider_ul li .bq_wrapper',
+							'id' => 'css_testimonials_slidertestimonials_slider_ullibq_wrapper_blockquote_margin',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .testimonials_slider .testimonials_slider_ul li .bq_wrapper blockquote',
 							'style' => 'margin',
 		  				'type' => 'dimensions',
 		  				'title' => __('Margin', 'mfn-opts'),
@@ -61317,6 +70229,23 @@ if( ! class_exists('Mfn_Builder_Fields') )
    						'title' => __('Dots', 'mfn-opts'),
    					),
 
+   					array(
+							'id' => 'css_testimonials_slider_ullibq_dots_text-align',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .testimonials_slider .testimonials_slider_ul li .hr_dots',
+							'style' => 'text-align',
+							'type' => 'switch',
+							'title' => __('Align', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+							'responsive' => true,
+							'options' => [
+								'' => __('Default', 'mfn-opts'),
+								'left' => __('Left', 'mfn-opts'),
+								'center' => __('Center', 'mfn-opts'),
+								'right' => __('Right', 'mfn-opts'),
+							],
+							'std' => '',
+						),
+
 						array(
 							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .slider_pagination a:background-color',
 							'id' => 'css_slider_paginationa_background_color',
@@ -61342,6 +70271,24 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'class' => 'toggled_header',
    						'title' => __('Author', 'mfn-opts'),
    					),
+
+
+   					array(
+							'id' => 'css_testimonials_slider_ullibq_author_text-align',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .testimonials_slider .testimonials_slider_ul li .author',
+							'style' => 'text-align',
+							'type' => 'switch',
+							'title' => __('Text align', 'mfn-opts'),
+							'class' => 'mfn-toggled',
+							'responsive' => true,
+							'options' => [
+								'' => __('Default', 'mfn-opts'),
+								'left' => __('Left', 'mfn-opts'),
+								'center' => __('Center', 'mfn-opts'),
+								'right' => __('Right', 'mfn-opts'),
+							],
+							'std' => '',
+						),
 
 						array(
 							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .testimonials_slider .testimonials_slider_ul li .author .title a,.mcb-section .mcb-wrap .mcb-item-mfnuidelement .testimonials_slider .testimonials_slider_ul li .author .title:color',
@@ -62007,6 +70954,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 					'mobile_size' => '1/1',
 					'tablet_resized' => '0',
 					'cat' => 'blocks',
+					'tags' => 'list',
 					'attr' => array(
 					//'fields' => array(
 
@@ -62566,6 +71514,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
    				'mobile_size' => '1/1',
    				'tablet_resized' => '0',
    				'cat' => 'blocks',
+   				'tags' => 'accordion faq',
    				'attr' => array(
 
    					array(
@@ -63299,7 +72248,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 						array(
 							'type' => 'header',
 							'class' => 'toggled_header',
-   						'title' => __('Title icon', 'mfn-opts'),
+   						'title' => __('Title icon/number', 'mfn-opts'),
    					),
 
 						array(
@@ -63412,6 +72361,19 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'type' => 'dimensions',
 							'title' => __('Border radius', 'mfn-opts'),
 							'class' => 'mfn-toggled',
+						),
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .toggle-icon|after:typography',
+							'id' => 'css_toggle-iconafter_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .toggle-icon:after',
+							'style' => 'typography',
+							'responsive' => true,
+							'condition' => array( 'id' => 'toggle-type', 'opt' => 'is', 'val' => 'ordered' ),
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
 						),
 
 						array(
@@ -63582,7 +72544,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'id' => 'css_toggle_mfn_toggle_icon_size',
 							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-toggle',
 							'style' => '--mfn-toggle-icon-size',
-							'condition' => array( 'id' => 'toggle-type', 'opt' => 'isnt', 'val' => 'ordered' ),
+							//'condition' => array( 'id' => 'toggle-type', 'opt' => 'isnt', 'val' => 'ordered' ), M&P request
 							'type' => 'sliderbar',
 							'default_unit' => 'px',
 							'responsive' => true,
@@ -63594,19 +72556,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 								'rem' => array('min' => 0.1, 	'max' => 10, 	'step' => 0.1),
 								'vw' 	=> array('min' => 1, 		'max' => 100, 'step' => 1),
 							)
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .toggle-icon|after:typography',
-							'id' => 'css_toggle-iconafter_typography',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .toggle-icon:after',
-							'style' => 'typography',
-							'responsive' => true,
-							'condition' => array( 'id' => 'toggle-type', 'opt' => 'is', 'val' => 'ordered' ),
-							'type' => 'typography_vb',
-							'label_tools' => true,
-							'class' => 'mfn-toggled toggle_fields',
-							'title' => __('Typography', 'mfn-opts'),
 						),
 
 						array(
@@ -64182,6 +73131,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
    							';c;;m;p' => __('controls muted playsinline', 'mfn-opts'),
    							';c;;' => __('controls', 'mfn-opts'),
    							';c;;;p' => __('controls playsinline', 'mfn-opts'),
+							';;l;m' => __('loop muted (require custom JS to play)', 'mfn-opts'),
    						),
    					),
 
@@ -67000,62 +75950,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 					),
 				),
 
-				'progress_icons' => array(
-					'type' => 'progress_icons',
-					'title' => __('Popup', 'mfn-opts'),
-					'attr' => array(
-					//'fields' => array(
-
-						array(
-							'id' => 'icon',
-							'type' => 'icon',
-							'title' => __('Icon', 'mfn-opts'),
-							'std' => 'icon-lamp'
-						),
-
-						array(
-							'id' => 'image',
-							'type' => 'upload',
-							'title' => __('Image url', 'mfn-opts'),
-							'desc' => __('If you dont want to use icon you can enter image URL', 'mfn-opts')
-						),
-
-						array(
-							'id' => 'count',
-							'type' => 'text',
-							'title' => __('Number of icons', 'mfn-opts'),
-							'std' => 5
-						),
-
-						array(
-							'id' => 'active',
-							'type' => 'text',
-							'title' => __('Number of active icons', 'mfn-opts'),
-							'std' => 3
-						),
-
-						array(
-							'id' => 'background',
-							'type' => 'color',
-							'title' => __('Color', 'mfn-opts'),
-							'alpha' => true
-						),
-
-						array(
-							'id' => 'transparent',
-							'type' => 'switch',
-							'title' => __('Transparent background', 'mfn-opts'),
-							'alpha' => true,
-							'options' => [
-								'0' => __('Disable', 'mfn-opts'),
-								'1' => __('Enable', 'mfn-opts'),
-							],
-							'std' => '0',
-						),
-
-					),
-				),
-
 				'tooltip' => array(
 					'type' => 'tooltip',
 					'title' => __('Tooltip', 'mfn-opts'),
@@ -67179,10 +76073,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 				'fadeInDown' => esc_html__('Fade in down', 'mfn-opts'),
 				'fadeInLeft' => esc_html__('Fade in left', 'mfn-opts'),
 				'fadeInRight' => esc_html__('Fade in right', 'mfn-opts'),
-				'scaleIn' => esc_html__('Scale in', 'mfn-opts'),
-				'rotateIn' => esc_html__('Rotate in', 'mfn-opts'),
-				'slideInLeft' => esc_html__('Slide in left', 'mfn-opts'),
-				'slideInRight' => esc_html__('Slide in right', 'mfn-opts'),
 				'splitText' => esc_html__('Split text', 'mfn-opts'),
 				// Máscara / clip-path (GSAP)
 				'maskRevealLeft' => esc_html__( 'Máscara · desde la izquierda', 'mfn-opts' ),
@@ -68030,7 +76920,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  				'attr_id' => 'scroll_smoother_enable',
 		  				'type' => 'switch',
 		  				'title' => __('Enable Scroll Smoother', 'mfn-opts'),
-		  				'desc' => __('Activate scroll smoother for this element', 'mfn-opts'),
+		  				'desc' => __('Speed/lag effect on this item. Speed 1 and lag 0 follow the page 1:1 (no visible offset). Does not require an entrance animation.', 'mfn-opts'),
 		  				'class' => 'mfn-toggled',
 		  				'options' => array(
 		  					0 => __('Disable', 'mfn-opts'),

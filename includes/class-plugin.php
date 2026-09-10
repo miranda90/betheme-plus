@@ -9,6 +9,7 @@ require_once BETHEME_PLUS_PATH . 'includes/integrations/class-betheme-options.ph
 require_once BETHEME_PLUS_PATH . 'includes/integrations/class-builder-overrides.php';
 require_once BETHEME_PLUS_PATH . 'includes/integrations/class-bebuilder-conditions-fix.php';
 require_once BETHEME_PLUS_PATH . 'includes/integrations/class-bebuilder-field-bundle.php';
+require_once BETHEME_PLUS_PATH . 'includes/integrations/class-github-updater.php';
 require_once BETHEME_PLUS_PATH . 'includes/frontend/class-assets.php';
 require_once BETHEME_PLUS_PATH . 'includes/frontend/class-dynamic-css.php';
 
@@ -17,6 +18,8 @@ final class Plugin
     public static function boot(): void
     {
         add_action('plugins_loaded', [self::class, 'loadTextdomain']);
+        // Updater must run even when Betheme is missing so sites can still upgrade the plugin.
+        (new Integrations\GitHubUpdater())->register();
         // Must be registered as early as possible so BeTheme loads the overridden builder fields file.
         (new Integrations\BuilderOverrides())->register();
         /*
@@ -26,6 +29,7 @@ final class Plugin
         add_action('plugins_loaded', [self::class, 'registerThemeOptionsSections'], 1);
         add_action('after_setup_theme', [self::class, 'registerModules'], 20);
         add_action('admin_notices', [self::class, 'renderDependencyNotice']);
+        add_action('admin_notices', [self::class, 'renderThemeVersionNotice']);
     }
 
     public static function registerModules(): void
@@ -73,6 +77,28 @@ final class Plugin
 
         echo '<div class="notice notice-warning"><p>';
         echo esc_html__('Betheme Plus requires BeTheme to be active. Plugin features are currently disabled.', 'base');
+        echo '</p></div>';
+    }
+
+    public static function renderThemeVersionNotice(): void
+    {
+        if (!is_admin() || !self::isBeThemeAvailable() || !defined('MFN_THEME_VERSION')) {
+            return;
+        }
+
+        if ((string) MFN_THEME_VERSION === BETHEME_PLUS_COMPAT_THEME_VERSION) {
+            return;
+        }
+
+        echo '<div class="notice notice-warning"><p>';
+        echo esc_html(
+            sprintf(
+                /* translators: 1: current Betheme version, 2: version the plugin overrides were rebased onto */
+                __('Betheme Plus builder overrides were rebased onto Betheme %2$s. The active theme is %1$s; re-sync the overrides if BeBuilder fields or markup look wrong.', 'base'),
+                (string) MFN_THEME_VERSION,
+                BETHEME_PLUS_COMPAT_THEME_VERSION
+            )
+        );
         echo '</p></div>';
     }
 }

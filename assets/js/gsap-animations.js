@@ -24,6 +24,15 @@
     hideTextAnimationElements();
   }
 
+  function whenFontsReady(callback) {
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(callback).catch(callback);
+      return;
+    }
+
+    callback();
+  }
+
   function waitForGSAP(callback, maxAttempts = 50, attempt = 0) {
     if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
       callback();
@@ -44,10 +53,294 @@
     }
   }
 
-  function getSplitTargetElement(element) {
-    const semanticTextSelector = 'h1,h2,h3,h4,h5,h6,p,li,blockquote,figcaption,span,strong,em,a';
-    const semanticTextElement = element.querySelector(semanticTextSelector);
-    return semanticTextElement || element;
+  const TEXT_BLOCK_SELECTOR = 'h1,h2,h3,h4,h5,h6,p,li,blockquote,figcaption';
+  const CONTENT_ROOT_SELECTOR = '.column_attr, .desc, .title, .heading, .heading_tag, .the_content_wrapper';
+  const SPLIT_IGNORE_SELECTOR = 'img,svg,iframe,video,canvas,button,.button,.action_button,script,style,noscript';
+
+  function filterOutNested(elements) {
+    return elements.filter(function (el) {
+      return !elements.some(function (other) {
+        return other !== el && other.contains(el);
+      });
+    });
+  }
+
+  function isLayoutShell(el) {
+    if (!el || el.nodeType !== 1) {
+      return true;
+    }
+
+    const cls = el.classList;
+    return cls.contains('mcb-section') ||
+      cls.contains('mcb-wrap') ||
+      cls.contains('mcb-item') ||
+      cls.contains('mcb-section-inner') ||
+      cls.contains('mcb-wrap-inner') ||
+      cls.contains('mcb-column-inner') ||
+      cls.contains('mcb-item-inner') ||
+      cls.contains('section_wrapper');
+  }
+
+  /**
+   * Nodos de texto reales (h1, p, .desc, .column_attr, .title).
+   * Nunca el wrap/item de BeBuilder: vaciar ese innerHTML destruía el tag y la tipografía.
+   */
+  function getSplitTargets(element) {
+    if (!element || element.nodeType !== 1) {
+      return [];
+    }
+
+    if (element.matches(TEXT_BLOCK_SELECTOR) || element.classList.contains('title')) {
+      return [element];
+    }
+
+    const contentRoots = filterOutNested(Array.from(element.querySelectorAll(CONTENT_ROOT_SELECTOR)));
+    const searchIn = contentRoots.length ? contentRoots : [element];
+    const targets = [];
+
+    searchIn.forEach(function (root) {
+      const blocks = filterOutNested(Array.from(root.querySelectorAll(TEXT_BLOCK_SELECTOR)));
+      if (blocks.length) {
+        blocks.forEach(function (block) {
+          targets.push(block);
+        });
+        return;
+      }
+
+      if (!isLayoutShell(root)) {
+        targets.push(root);
+      }
+    });
+
+    if (!targets.length) {
+      const blocks = filterOutNested(Array.from(element.querySelectorAll(TEXT_BLOCK_SELECTOR)));
+      if (blocks.length) {
+        return blocks;
+      }
+
+      const titles = filterOutNested(Array.from(element.querySelectorAll('.title, .heading')));
+      if (titles.length) {
+        return titles;
+      }
+    }
+
+    return filterOutNested(targets);
+  }
+
+  function collectTextNodes(root) {
+    const nodes = [];
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode: function (node) {
+        if (!node.nodeValue || !node.nodeValue.replace(/\s+/g, '')) {
+          return NodeFilter.FILTER_REJECT;
+        }
+
+        const parent = node.parentElement;
+        if (!parent) {
+          return NodeFilter.FILTER_REJECT;
+        }
+
+        if (parent.closest(SPLIT_IGNORE_SELECTOR + ',.split-word,.split-char,.split-line')) {
+          return NodeFilter.FILTER_REJECT;
+        }
+
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+
+    while (walker.nextNode()) {
+      nodes.push(walker.currentNode);
+    }
+
+    return nodes;
+  }
+
+  function wrapTextNodeParts(textNode, mode) {
+    const value = textNode.nodeValue;
+    const parts = mode === 'chars' ? Array.from(value) : value.split(/(\s+)/);
+    const fragment = document.createDocumentFragment();
+    const wrapped = [];
+
+    parts.forEach(function (part) {
+      if (part === '') {
+        return;
+      }
+
+      if (/^\s+$/.test(part)) {
+        fragment.appendChild(document.createTextNode(part));
+        return;
+      }
+
+      const span = document.createElement('span');
+      span.className = mode === 'chars' ? 'split-char' : 'split-word';
+      span.textContent = part;
+      fragment.appendChild(span);
+      wrapped.push(span);
+    });
+
+    if (textNode.parentNode) {
+      textNode.parentNode.replaceChild(fragment, textNode);
+    }
+
+    return wrapped;
+  }
+
+  function wrapWordsInPlace(root) {
+    const pieces = [];
+    collectTextNodes(root).forEach(function (node) {
+      wrapTextNodeParts(node, 'words').forEach(function (el) {
+        pieces.push(el);
+      });
+    });
+    return pieces;
+  }
+
+  function wrapCharsInPlace(root) {
+    const pieces = [];
+    collectTextNodes(root).forEach(function (node) {
+      wrapTextNodeParts(node, 'chars').forEach(function (el) {
+        pieces.push(el);
+      });
+    });
+    return pieces;
+  }
+
+  function groupWordsIntoLines(wordSpans) {
+    if (!wordSpans.length) {
+      return [];
+    }
+
+    const lines = [];
+    let current = [];
+    let currentTop = null;
+
+    wordSpans.forEach(function (span) {
+      const top = span.offsetTop;
+      if (currentTop === null) {
+        currentTop = top;
+      }
+
+      if (Math.abs(top - currentTop) > 1) {
+        lines.push(current);
+        current = [];
+        currentTop = top;
+      }
+
+      current.push(span);
+    });
+
+    if (current.length) {
+      lines.push(current);
+    }
+
+    return lines.map(function (words) {
+      const line = document.createElement('span');
+      line.className = 'split-line';
+      const first = words[0];
+      const parent = first.parentNode;
+
+      if (!parent) {
+        return first;
+      }
+
+      parent.insertBefore(line, first);
+
+      words.forEach(function (word, index) {
+        if (index > 0) {
+          let cursor = word.previousSibling;
+          while (cursor && cursor !== line && cursor.nodeType === 3) {
+            const space = cursor;
+            cursor = cursor.previousSibling;
+            line.appendChild(space);
+          }
+        }
+        line.appendChild(word);
+      });
+
+      return line;
+    });
+  }
+
+  function splitTargetFallback(target, splitType) {
+    if (splitType === 'chars') {
+      return wrapCharsInPlace(target);
+    }
+
+    const words = wrapWordsInPlace(target);
+    if (splitType === 'lines') {
+      return groupWordsIntoLines(words);
+    }
+
+    return words;
+  }
+
+  function buildSplitConfig(splitType, splitAnimation, target) {
+    const config = {
+      tag: 'span',
+      aria: 'auto',
+      smartWrap: true,
+      wordsClass: 'split-word',
+      charsClass: 'split-char',
+      linesClass: 'split-line'
+    };
+
+    if (target) {
+      config.ignore = target.querySelectorAll(SPLIT_IGNORE_SELECTOR);
+    }
+
+    if (splitType === 'lines') {
+      config.type = 'lines';
+    } else if (splitType === 'chars') {
+      config.type = 'chars,words';
+    } else {
+      config.type = 'words';
+    }
+
+    if (splitAnimation === 'hiddenFromBottom') {
+      config.mask = splitType === 'chars' ? 'chars' : (splitType === 'words' ? 'words' : 'lines');
+    }
+
+    return config;
+  }
+
+  function collectSplitPieces(split, splitType) {
+    if (!split) {
+      return [];
+    }
+
+    if (splitType === 'lines' && split.lines && split.lines.length) {
+      return split.lines;
+    }
+
+    if (splitType === 'chars' && split.chars && split.chars.length) {
+      return split.chars;
+    }
+
+    if (split.words && split.words.length) {
+      return split.words;
+    }
+
+    return split.chars || split.lines || [];
+  }
+
+  function splitTargetsInPlace(targets, splitType, splitAnimation) {
+    const pieces = [];
+
+    targets.forEach(function (target) {
+      if (typeof SplitText !== 'undefined') {
+        const split = new SplitText(target, buildSplitConfig(splitType, splitAnimation, target));
+        collectSplitPieces(split, splitType).forEach(function (el) {
+          pieces.push(el);
+        });
+        return;
+      }
+
+      splitTargetFallback(target, splitType).forEach(function (el) {
+        pieces.push(el);
+      });
+    });
+
+    return pieces;
   }
 
   function parseTimeToSeconds(value, fallback) {
@@ -102,66 +395,6 @@
     }
 
     return 0.05;
-  }
-
-  function splitByRenderedLines(targetElement) {
-    const originalText = targetElement.textContent || '';
-    const words = originalText.trim().split(/\s+/).filter(Boolean);
-
-    if (!words.length) {
-      return [];
-    }
-
-    const measureSpans = [];
-    targetElement.innerHTML = '';
-
-    words.forEach(function (word, index) {
-      const span = document.createElement('span');
-      span.textContent = word;
-      span.style.display = 'inline-block';
-      targetElement.appendChild(span);
-      measureSpans.push(span);
-
-      if (index < words.length - 1) {
-        targetElement.appendChild(document.createTextNode(' '));
-      }
-    });
-
-    const lines = [];
-    let currentLine = [];
-    let currentTop = null;
-
-    measureSpans.forEach(function (span) {
-      const top = span.offsetTop;
-      if (currentTop === null) {
-        currentTop = top;
-      }
-
-      if (top !== currentTop) {
-        lines.push(currentLine);
-        currentLine = [];
-        currentTop = top;
-      }
-
-      currentLine.push(span.textContent || '');
-    });
-
-    if (currentLine.length) {
-      lines.push(currentLine);
-    }
-
-    targetElement.innerHTML = '';
-
-    const lineElements = [];
-    lines.forEach(function (lineWords) {
-      const lineDiv = document.createElement('div');
-      lineDiv.style.display = 'block';
-      lineDiv.textContent = lineWords.join(' ');
-      targetElement.appendChild(lineDiv);
-      lineElements.push(lineDiv);
-    });
-
-    return lineElements;
   }
 
   waitForGSAP(function () {
@@ -254,11 +487,19 @@
         return bundle;
       },
 
-      initScrollSmoother: function () {
-        const scrollSmootherEnabled = (typeof gsapAnimationsConfig !== 'undefined' &&
-          (gsapAnimationsConfig.scrollSmoother === '1' || gsapAnimationsConfig.scrollSmoother === 1));
+      isGlobalScrollSmootherEnabled: function () {
+        return typeof gsapAnimationsConfig !== 'undefined' &&
+          (gsapAnimationsConfig.scrollSmoother === '1' || gsapAnimationsConfig.scrollSmoother === 1);
+      },
 
-        if (!scrollSmootherEnabled || typeof ScrollSmoother === 'undefined') {
+      hasScrollSmootherEffects: function () {
+        return !!document.querySelector('.gsap-smoother-fx');
+      },
+
+      initScrollSmoother: function () {
+        const shouldCreate = this.isGlobalScrollSmootherEnabled() || this.hasScrollSmootherEffects();
+
+        if (!shouldCreate || typeof ScrollSmoother === 'undefined') {
           return;
         }
 
@@ -274,8 +515,8 @@
           this.smoother = ScrollSmoother.create({
             wrapper: wrapperEl || '#Wrapper',
             content: smootherContent,
-            smooth: 1,
-            effects: true,
+            smooth: 1.5,
+            effects: '.gsap-smoother-fx',
             smoothTouch: 0.2
           });
 
@@ -291,30 +532,18 @@
         }
 
         setTimeout(function () {
-          const smootherElements = document.querySelectorAll('[data-speed][data-lag]');
+          const smootherElements = document.querySelectorAll('.gsap-smoother-fx');
           smootherElements.forEach(function (element) {
-            const speed = parseFloat(element.getAttribute('data-speed')) || 1;
-            const lag = parseFloat(element.getAttribute('data-lag')) || 0;
+            const speedAttr = parseFloat(element.getAttribute('data-speed'));
+            const lagAttr = parseFloat(element.getAttribute('data-lag'));
+            const speed = Number.isNaN(speedAttr) ? 1 : speedAttr;
+            const lag = Number.isNaN(lagAttr) ? 0 : lagAttr;
 
             element.style.transition = 'none';
             element.style.setProperty('transition', 'none', 'important');
             gsap.set(element, { willChange: 'transform' });
 
             AnimationManager.smoother.effects(element, { speed: speed, lag: lag });
-          });
-
-          const parallaxImages = document.querySelectorAll('img[data-speed][data-lag]');
-          parallaxImages.forEach(function (img) {
-            const speed = parseFloat(img.getAttribute('data-speed')) || 1;
-            const lag = parseFloat(img.getAttribute('data-lag')) || 0;
-
-            img.style.transition = 'none';
-            img.style.setProperty('transition', 'none', 'important');
-            gsap.set(img, { willChange: 'transform' });
-
-            gsap.set(img, { scale: 1.06 });
-
-            AnimationManager.smoother.effects(img, { speed: speed, lag: lag });
           });
 
           if (AnimationManager.smoother) {
@@ -342,7 +571,10 @@
 
       createScrollTriggeredAnimation: function (element, index) {
         const animationType = element.dataset.animationType || element.dataset.animType || 'fadeInUp';
-        const duration = parseTimeToSeconds(element.dataset.duration, config.defaultDuration);
+        const fallbackDuration = (typeof gsapAnimationsConfig !== 'undefined' && gsapAnimationsConfig.globalAnimationSpeed)
+          ? gsapAnimationsConfig.globalAnimationSpeed
+          : config.defaultDuration;
+        const duration = parseTimeToSeconds(element.dataset.duration, parseTimeToSeconds(fallbackDuration, config.defaultDuration));
         const delay = parseTimeToSeconds(element.dataset.delay, 0);
         const offset = parseInt(element.dataset.offset) || config.offset;
         const ease = element.dataset.ease || config.defaultEase;
@@ -515,51 +747,6 @@
         });
       },
 
-      scaleIn: function (timeline, element, options) {
-        gsap.set(element, { opacity: 0, scale: 0.8 });
-        timeline.to(element, {
-          opacity: 1,
-          scale: 1,
-          duration: options.duration,
-          delay: options.delay,
-          ease: options.ease
-        });
-      },
-
-      rotateIn: function (timeline, element, options) {
-        gsap.set(element, { opacity: 0, rotation: -180, scale: 0.5 });
-        timeline.to(element, {
-          opacity: 1,
-          rotation: 0,
-          scale: 1,
-          duration: options.duration,
-          delay: options.delay,
-          ease: options.ease
-        });
-      },
-
-      slideInLeft: function (timeline, element, options) {
-        gsap.set(element, { opacity: 0, x: '-100%' });
-        timeline.to(element, {
-          opacity: 1,
-          x: 0,
-          duration: options.duration,
-          delay: options.delay,
-          ease: options.ease
-        });
-      },
-
-      slideInRight: function (timeline, element, options) {
-        gsap.set(element, { opacity: 0, x: '100%' });
-        timeline.to(element, {
-          opacity: 1,
-          x: 0,
-          duration: options.duration,
-          delay: options.delay,
-          ease: options.ease
-        });
-      },
-
       /**
        * clip-path inset(...) como strings casi no se interpola entre navegadores: la animación salta al final.
        * Aquí tween de números (%) + onUpdate aplicando inset explícito.
@@ -659,122 +846,40 @@
       },
 
       splitText: function (timeline, element, options) {
+        options = options || {};
         element.dataset.gsapProcessed = 'true';
-        const splitTarget = getSplitTargetElement(element);
 
-        const splitType = splitTarget.dataset.splitType || element.dataset.splitType || 'words';
-        const splitAnimation = splitTarget.dataset.splitAnimation || element.dataset.splitAnimation || 'fadeInUp';
+        const targets = getSplitTargets(element);
+        const splitType = (options && options.forcedSplitType) || element.dataset.splitType || 'words';
+        const splitAnimation = element.dataset.splitAnimation || 'fadeInUp';
+        const elementsToAnimate = splitTargetsInPlace(targets, splitType, splitAnimation);
 
-        if (typeof SplitText !== 'undefined') {
-          let splitConfig = {};
-          let elementsToAnimate = [];
-
-          if (splitType === 'lines') {
-            splitConfig = {
-              type: 'lines',
-              linesClass: 'split-line'
-            };
-          } else if (splitType === 'chars') {
-            splitConfig = {
-              type: 'chars',
-              charsClass: 'split-char'
-            };
-          } else {
-            splitConfig = {
-              type: 'words',
-              wordsClass: 'split-word'
-            };
-          }
-
-          const split = new SplitText(splitTarget, splitConfig);
-
-          if (splitType === 'lines' && split.lines) {
-            elementsToAnimate = split.lines;
-          } else if (splitType === 'chars' && split.chars) {
-            elementsToAnimate = split.chars;
-          } else if (split.words) {
-            elementsToAnimate = split.words;
-          }
-
-          gsap.set(element, { visibility: 'visible' });
-          gsap.set(splitTarget, { visibility: 'visible' });
-
-          AnimationTypes.applySplitAnimation(timeline, elementsToAnimate, splitAnimation, options, splitTarget);
-        } else {
-          const text = splitTarget.textContent;
-          const html = splitTarget.innerHTML;
-          let elementsToAnimate = [];
-
-          if (splitType === 'lines') {
-            let lines = html.split(/<br\s*\/?>/i).map(function (line) {
-              return line.replace(/&nbsp;/g, ' ').trim();
-            });
-
-            if (lines.length <= 1) {
-              lines = text.split(/\n/).map(function (line) {
-                return line.trim();
-              });
-            }
-
-            lines = lines.filter(function (line) {
-              return line !== '';
-            });
-
-            if (lines.length > 1) {
-              splitTarget.innerHTML = '';
-              lines.forEach(function (line, index) {
-                if (line.trim() === '' && index === lines.length - 1) {
-                  return;
-                }
-                const lineDiv = document.createElement('div');
-                lineDiv.innerHTML = line;
-                lineDiv.style.display = 'block';
-                splitTarget.appendChild(lineDiv);
-                elementsToAnimate.push(lineDiv);
-              });
-            } else {
-              elementsToAnimate = splitByRenderedLines(splitTarget);
-            }
-          } else if (splitType === 'chars') {
-            const chars = text.split('');
-            splitTarget.innerHTML = '';
-            chars.forEach(function (char) {
-              if (char === ' ') {
-                splitTarget.appendChild(document.createTextNode(' '));
-              } else {
-                const span = document.createElement('span');
-                span.textContent = char;
-                span.style.display = 'inline-block';
-                splitTarget.appendChild(span);
-                elementsToAnimate.push(span);
-              }
-            });
-          } else {
-            const words = text.split(/(\s+)/);
-            splitTarget.innerHTML = '';
-            words.forEach(function (word) {
-              if (word.trim() === '') {
-                splitTarget.appendChild(document.createTextNode(word));
-              } else {
-                const span = document.createElement('span');
-                span.textContent = word;
-                span.style.display = 'inline-block';
-                splitTarget.appendChild(span);
-                elementsToAnimate.push(span);
-              }
-            });
-          }
-
-          gsap.set(element, { visibility: 'visible' });
-          gsap.set(splitTarget, { visibility: 'visible' });
-
-          AnimationTypes.applySplitAnimation(timeline, elementsToAnimate, splitAnimation, options, splitTarget);
+        gsap.set(element, { visibility: 'visible' });
+        if (targets.length) {
+          gsap.set(targets, { visibility: 'visible' });
         }
+
+        if (splitAnimation === 'perspectiveDown' && targets.length) {
+          gsap.set(targets, { perspective: 1000, transformStyle: 'preserve-3d' });
+        }
+
+        AnimationTypes.applySplitAnimation(
+          timeline,
+          elementsToAnimate,
+          splitAnimation,
+          options,
+          element
+        );
       },
 
       applySplitAnimation: function (timeline, elements, animationType, options, originalElement) {
+        options = options || {};
         if (!elements || !elements.length) {
-          elements = [originalElement];
+          elements = originalElement ? [originalElement] : [];
+        }
+
+        if (!elements.length) {
+          return;
         }
 
         const stagger = resolveStaggerValue(originalElement);
@@ -782,181 +887,111 @@
         const delay = options.delay || 0;
         const ease = options.ease || 'power2.out';
         const blur = options.blur || 20;
+        const tween = { duration: duration, delay: delay, stagger: stagger, ease: ease };
 
-        AnimationTypes.setSplitInitialState(elements, animationType);
+        AnimationTypes.setSplitInitialState(elements, animationType, blur);
 
         switch (animationType) {
           case 'fadeIn':
-            gsap.set(elements, { opacity: 0 });
-            timeline.to(elements, {
-              opacity: 1,
-              duration: duration,
-              delay: delay,
-              stagger: stagger,
-              ease: ease
-            });
+            timeline.to(elements, Object.assign({ opacity: 1 }, tween));
             break;
 
           case 'fadeInUp':
-            gsap.set(elements, { opacity: 0, y: 50 });
-            timeline.to(elements, {
-              opacity: 1,
-              y: 0,
-              duration: duration,
-              delay: delay,
-              stagger: stagger,
-              ease: ease
-            });
+            timeline.to(elements, Object.assign({ opacity: 1, y: 0 }, tween));
             break;
 
           case 'fadeInLeft':
-            gsap.set(elements, { opacity: 0, x: -50 });
-            timeline.to(elements, {
-              opacity: 1,
-              x: 0,
-              duration: duration,
-              delay: delay,
-              stagger: stagger,
-              ease: ease
-            });
+            timeline.to(elements, Object.assign({ opacity: 1, x: 0 }, tween));
             break;
 
           case 'fadeInRight':
-            gsap.set(elements, { opacity: 0, x: 50 });
-            timeline.to(elements, {
-              opacity: 1,
-              x: 0,
-              duration: duration,
-              delay: delay,
-              stagger: stagger,
-              ease: ease
-            });
+            timeline.to(elements, Object.assign({ opacity: 1, x: 0 }, tween));
             break;
 
           case 'perspectiveDown':
-            gsap.set(elements, { opacity: 0, y: 50, z: -100, rotationX: -90, force3D: true });
-            timeline.to(elements, {
+            timeline.to(elements, Object.assign({
               opacity: 1,
               y: 0,
               z: 0,
               rotationX: 0,
-              force3D: true,
-              duration: duration,
-              delay: delay,
-              stagger: stagger,
-              ease: ease
+              force3D: true
+            }, tween));
+            break;
+
+          case 'hiddenFromBottom':
+            elements.forEach(function (el) {
+              const parent = el.parentElement;
+              if (!parent) {
+                return;
+              }
+
+              const alreadyMasked = parent.className.indexOf('-mask') !== -1 || parent.classList.contains('split-line');
+              if (alreadyMasked) {
+                gsap.set(parent, { overflow: 'clip' });
+                return;
+              }
+
+              const mask = document.createElement('span');
+              mask.className = (el.className || 'split-word') + '-mask';
+              parent.insertBefore(mask, el);
+              mask.appendChild(el);
+              gsap.set(mask, {
+                overflow: 'clip',
+                display: el.classList.contains('split-line') ? 'block' : 'inline-block'
+              });
             });
+            timeline.to(elements, Object.assign({ yPercent: 0 }, tween));
             break;
 
           case 'blurText':
-            timeline.fromTo(
-              elements,
-              { opacity: 0, filter: `blur(${blur}px)`, y: 20 },
-              {
-                opacity: 1,
-                filter: 'blur(0px)',
-                y: 0,
-                duration: duration,
-                delay: delay,
-                stagger: stagger,
-                ease: ease
-              }
-            );
+          case 'blurFromBottom':
+            timeline.to(elements, Object.assign({
+              opacity: 1,
+              filter: 'blur(0px)',
+              y: 0
+            }, tween));
             break;
 
           case 'blurScaleFromBig':
-            timeline.fromTo(
-              elements,
-              { opacity: 0, filter: `blur(${blur}px)`, scale: 1.25, transformOrigin: '50% 50%' },
-              {
-                opacity: 1,
-                filter: 'blur(0px)',
-                scale: 1,
-                duration: duration,
-                delay: delay,
-                stagger: stagger,
-                ease: ease
-              }
-            );
-            break;
-
           case 'blurScaleFromSmall':
-            timeline.fromTo(
-              elements,
-              { opacity: 0, filter: `blur(${blur}px)`, scale: 0.75, transformOrigin: '50% 50%' },
-              {
-                opacity: 1,
-                filter: 'blur(0px)',
-                scale: 1,
-                duration: duration,
-                delay: delay,
-                stagger: stagger,
-                ease: ease
-              }
-            );
-            break;
-
-          case 'blurFromBottom':
-            timeline.fromTo(
-              elements,
-              { opacity: 0, filter: `blur(${blur}px)`, y: 40 },
-              {
-                opacity: 1,
-                filter: 'blur(0px)',
-                y: 0,
-                duration: duration,
-                delay: delay,
-                stagger: stagger,
-                ease: ease
-              }
-            );
+            timeline.to(elements, Object.assign({
+              opacity: 1,
+              filter: 'blur(0px)',
+              scale: 1
+            }, tween));
             break;
 
           case 'blurFromTop':
-            timeline.fromTo(
-              elements,
-              { opacity: 0, filter: `blur(${blur}px)`, y: -40 },
-              {
-                opacity: 1,
-                filter: 'blur(0px)',
-                y: 0,
-                duration: duration,
-                delay: delay,
-                stagger: stagger,
-                ease: ease
-              }
-            );
+            timeline.to(elements, Object.assign({
+              opacity: 1,
+              filter: 'blur(0px)',
+              y: 0
+            }, tween));
             break;
 
           default:
-            gsap.set(elements, { opacity: 0, y: 50 });
-            timeline.to(elements, {
-              opacity: 1,
-              y: 0,
-              duration: duration,
-              delay: delay,
-              stagger: stagger,
-              ease: ease
-            });
+            timeline.to(elements, Object.assign({ opacity: 1, y: 0 }, tween));
         }
       },
 
-      setSplitInitialState: function (elements, animationType) {
+      setSplitInitialState: function (elements, animationType, blur) {
+        const blurPx = blur || 20;
+
         switch (animationType) {
           case 'blurText':
-            gsap.set(elements, { opacity: 0, filter: `blur(${blur}px)`, y: 20 });
+            gsap.set(elements, { opacity: 0, filter: 'blur(' + blurPx + 'px)', y: 20 });
             break;
           case 'blurScaleFromBig':
-            gsap.set(elements, { opacity: 0, filter: `blur(${blur}px)`, scale: 1.25, transformOrigin: '50% 50%' });
+            gsap.set(elements, { opacity: 0, filter: 'blur(' + blurPx + 'px)', scale: 1.25, transformOrigin: '50% 50%' });
             break;
           case 'blurScaleFromSmall':
-            gsap.set(elements, { opacity: 0, filter: `blur(${blur}px)`, scale: 0.75, transformOrigin: '50% 50%' });
+            gsap.set(elements, { opacity: 0, filter: 'blur(' + blurPx + 'px)', scale: 0.75, transformOrigin: '50% 50%' });
             break;
           case 'blurFromBottom':
-            gsap.set(elements, { opacity: 0, filter: `blur(${blur}px)`, y: 40 });
+            gsap.set(elements, { opacity: 0, filter: 'blur(' + blurPx + 'px)', y: 40 });
             break;
           case 'blurFromTop':
-            gsap.set(elements, { opacity: 0, filter: `blur(${blur}px)`, y: -40 });
+            gsap.set(elements, { opacity: 0, filter: 'blur(' + blurPx + 'px)', y: -40 });
             break;
           case 'fadeIn':
             gsap.set(elements, { opacity: 0 });
@@ -969,6 +1004,9 @@
             break;
           case 'perspectiveDown':
             gsap.set(elements, { opacity: 0, y: 50, z: -100, rotationX: -90, force3D: true });
+            break;
+          case 'hiddenFromBottom':
+            gsap.set(elements, { yPercent: 110, opacity: 1 });
             break;
           case 'fadeInUp':
           default:
@@ -978,145 +1016,18 @@
       },
 
       animateLetters: function (timeline, element, options) {
-        element.dataset.gsapProcessed = 'true';
-        const splitTarget = getSplitTargetElement(element);
-
-        const text = splitTarget.textContent;
-        splitTarget.innerHTML = '';
-
-        const chars = text.split('');
-        chars.forEach(function (char) {
-          if (char === ' ') {
-            splitTarget.appendChild(document.createTextNode(' '));
-          } else {
-            const span = document.createElement('span');
-            span.textContent = char;
-            span.style.display = 'inline-block';
-            splitTarget.appendChild(span);
-          }
-        });
-
-        const charSpans = splitTarget.querySelectorAll('span');
-        gsap.set(element, { visibility: 'visible' });
-        gsap.set(splitTarget, { visibility: 'visible' });
-        gsap.set(charSpans, { opacity: 0, y: 50 });
-        timeline.to(charSpans, {
-          opacity: 1,
-          y: 0,
-          duration: options.duration || 0.6,
-          delay: options.delay || 0,
-          stagger: parseFloat(element.dataset.stagger) || 0.03,
-          ease: options.ease
-        });
+        AnimationTypes.splitText(timeline, element, Object.assign({}, options, { forcedSplitType: 'chars' }));
       },
 
       animateWords: function (timeline, element, options) {
-        element.dataset.gsapProcessed = 'true';
-        const splitTarget = getSplitTargetElement(element);
-
-        const text = splitTarget.textContent;
-        const words = text.split(/(\s+)/);
-        splitTarget.innerHTML = '';
-
-        words.forEach(function (word) {
-          if (word.trim() === '') {
-            splitTarget.appendChild(document.createTextNode(word));
-          } else {
-            const span = document.createElement('span');
-            span.textContent = word;
-            span.style.display = 'inline-block';
-            splitTarget.appendChild(span);
-          }
-        });
-
-        const wordSpans = splitTarget.querySelectorAll('span');
-        gsap.set(element, { visibility: 'visible' });
-        gsap.set(splitTarget, { visibility: 'visible' });
-        gsap.set(wordSpans, { opacity: 0, y: 50 });
-        timeline.to(wordSpans, {
-          opacity: 1,
-          y: 0,
-          duration: options.duration || 0.8,
-          delay: options.delay || 0,
-          stagger: parseFloat(element.dataset.stagger) || 0.1,
-          ease: options.ease
-        });
+        AnimationTypes.splitText(timeline, element, Object.assign({}, options, { forcedSplitType: 'words' }));
       },
 
       animateLines: function (timeline, element, options) {
-        element.dataset.gsapProcessed = 'true';
-        const splitTarget = getSplitTargetElement(element);
-
-        const html = splitTarget.innerHTML;
-
-        const blockElements = splitTarget.querySelectorAll('div, p, h1, h2, h3, h4, h5, h6, li');
-
-        if (blockElements.length > 0) {
-          gsap.set(element, { visibility: 'visible' });
-          gsap.set(splitTarget, { visibility: 'visible' });
-          gsap.set(blockElements, { opacity: 0, y: 50 });
-          timeline.to(blockElements, {
-            opacity: 1,
-            y: 0,
-            duration: options.duration || 0.8,
-            delay: options.delay || 0,
-            stagger: parseFloat(element.dataset.stagger) || 0.15,
-            ease: options.ease
-          });
-        } else {
-          const lines = html.split(/<br\s*\/?>/i);
-
-          if (lines.length === 1) {
-            const text = splitTarget.textContent;
-            const textLines = text.split(/\n/);
-
-            if (textLines.length > 1) {
-              splitTarget.innerHTML = '';
-              textLines.forEach(function (line) {
-                if (line.trim()) {
-                  const lineDiv = document.createElement('div');
-                  lineDiv.textContent = line.trim();
-                  lineDiv.style.display = 'block';
-                  splitTarget.appendChild(lineDiv);
-                }
-              });
-            } else {
-              const textSingle = splitTarget.textContent.trim();
-              splitTarget.innerHTML = '';
-              if (textSingle) {
-                const lineDiv = document.createElement('div');
-                lineDiv.textContent = textSingle;
-                lineDiv.style.display = 'block';
-                splitTarget.appendChild(lineDiv);
-              }
-            }
-          } else {
-            splitTarget.innerHTML = '';
-            lines.forEach(function (line) {
-              if (line.trim()) {
-                const lineDiv = document.createElement('div');
-                lineDiv.innerHTML = line.trim();
-                lineDiv.style.display = 'block';
-                splitTarget.appendChild(lineDiv);
-              }
-            });
-          }
-
-          const lineDivs = splitTarget.querySelectorAll('div');
-          gsap.set(element, { visibility: 'visible' });
-          gsap.set(splitTarget, { visibility: 'visible' });
-          gsap.set(lineDivs, { opacity: 0, y: 50 });
-          timeline.to(lineDivs, {
-            opacity: 1,
-            y: 0,
-            duration: options.duration || 0.8,
-            delay: options.delay || 0,
-            stagger: parseFloat(element.dataset.stagger) || 0.15,
-            ease: options.ease
-          });
-        }
+        AnimationTypes.splitText(timeline, element, Object.assign({}, options, { forcedSplitType: 'lines' }));
       }
     };
+
 
     const ScrollLinkedTypes = {
       progress: function (timeline, element) {
@@ -1177,12 +1088,23 @@
     };
 
     function init() {
-      const scrollSmootherEnabled = (typeof gsapAnimationsConfig !== 'undefined' &&
-        (gsapAnimationsConfig.scrollSmoother === '1' || gsapAnimationsConfig.scrollSmoother === 1));
-
       const initFunction = function () {
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', function () {
+            whenFontsReady(function () {
+              setTimeout(function () {
+                AnimationManager.init();
+                setTimeout(function () {
+                  ScrollTrigger.refresh();
+                  if (AnimationManager.smoother) {
+                    AnimationManager.smoother.refresh();
+                  }
+                }, 100);
+              }, 50);
+            });
+          });
+        } else {
+          whenFontsReady(function () {
             setTimeout(function () {
               AnimationManager.init();
               setTimeout(function () {
@@ -1191,22 +1113,12 @@
                   AnimationManager.smoother.refresh();
                 }
               }, 100);
-            }, 100);
+            }, 50);
           });
-        } else {
-          setTimeout(function () {
-            AnimationManager.init();
-            setTimeout(function () {
-              ScrollTrigger.refresh();
-              if (AnimationManager.smoother) {
-                AnimationManager.smoother.refresh();
-              }
-            }, 100);
-          }, 100);
         }
       };
 
-      if (scrollSmootherEnabled && typeof ScrollSmoother === 'undefined') {
+      if (typeof ScrollSmoother === 'undefined') {
         waitForScrollSmoother(initFunction);
       } else {
         initFunction();

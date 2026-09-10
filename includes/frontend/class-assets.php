@@ -24,11 +24,12 @@ final class Assets
         wp_enqueue_script('betheme-plus-gsap', 'https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/gsap.min.js', [], '3.14.1', true);
         wp_enqueue_script('betheme-plus-scrolltrigger', 'https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/ScrollTrigger.min.js', ['betheme-plus-gsap'], '3.14.1', true);
         wp_enqueue_script('betheme-plus-scrollsmoother', 'https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/ScrollSmoother.min.js', ['betheme-plus-gsap', 'betheme-plus-scrolltrigger'], '3.14.1', true);
+        wp_enqueue_script('betheme-plus-splittext', 'https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/SplitText.min.js', ['betheme-plus-gsap'], '3.14.1', true);
 
         wp_enqueue_script(
             'betheme-plus-animations',
             BETHEME_PLUS_URL . 'assets/js/gsap-animations.js',
-            ['betheme-plus-gsap', 'betheme-plus-scrolltrigger', 'betheme-plus-scrollsmoother'],
+            ['betheme-plus-gsap', 'betheme-plus-scrolltrigger', 'betheme-plus-scrollsmoother', 'betheme-plus-splittext'],
             BETHEME_PLUS_VERSION,
             true
         );
@@ -36,6 +37,7 @@ final class Assets
         wp_script_add_data('betheme-plus-gsap', 'defer', false);
         wp_script_add_data('betheme-plus-scrolltrigger', 'defer', false);
         wp_script_add_data('betheme-plus-scrollsmoother', 'defer', false);
+        wp_script_add_data('betheme-plus-splittext', 'defer', false);
 
         $globalAnimationSpeed = (int) mfn_opts_get('gsap-animation-speed', 300);
         $scrollSmoother = (int) mfn_opts_get('scroll-smoother', 0);

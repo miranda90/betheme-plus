@@ -4,14 +4,15 @@ declare(strict_types=1);
 /**
  * Plugin Name: Betheme Plus
  * Description: BeTheme options extensions and GSAP animation runtime extracted from child theme.
- * Version: 1.1.8
+ * Version: 1.2.3
  * Author: Base
  * Text Domain: base
  */
 
 defined('ABSPATH') || exit;
 
-define('BETHEME_PLUS_VERSION', '1.1.8');
+define('BETHEME_PLUS_VERSION', '1.2.3');
+define('BETHEME_PLUS_COMPAT_THEME_VERSION', '28.4.3');
 define('BETHEME_PLUS_FILE', __FILE__);
 define('BETHEME_PLUS_PATH', plugin_dir_path(__FILE__));
 define('BETHEME_PLUS_URL', plugin_dir_url(__FILE__));

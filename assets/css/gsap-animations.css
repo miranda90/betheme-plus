@@ -45,19 +45,11 @@
 .gsap-animate[data-animation-type="fadeInDown"],
 .gsap-animate[data-animation-type="fadeInLeft"],
 .gsap-animate[data-animation-type="fadeInRight"],
-.gsap-animate[data-animation-type="scaleIn"],
-.gsap-animate[data-animation-type="rotateIn"],
-.gsap-animate[data-animation-type="slideInLeft"],
-.gsap-animate[data-animation-type="slideInRight"],
 .gsap-animate[data-anim-type="fadeIn"],
 .gsap-animate[data-anim-type="fadeInUp"],
 .gsap-animate[data-anim-type="fadeInDown"],
 .gsap-animate[data-anim-type="fadeInLeft"],
-.gsap-animate[data-anim-type="fadeInRight"],
-.gsap-animate[data-anim-type="scaleIn"],
-.gsap-animate[data-anim-type="rotateIn"],
-.gsap-animate[data-anim-type="slideInLeft"],
-.gsap-animate[data-anim-type="slideInRight"] {
+.gsap-animate[data-anim-type="fadeInRight"] {
     opacity: 0;
 }
 
@@ -115,4 +107,39 @@
 .gsap-animate[data-anim-type]:not([data-anim-type="splitText"]):not([data-anim-type="animateLetters"]):not([data-anim-type="animateWords"]):not([data-anim-type="animateLines"]) {
     visibility: visible;
     animation: none !important;
+}
+
+/*
+ * Fragmentos SplitText: el tag original (h1, p, .desc, .column_attr) se conserva.
+ * tag:span no aplica display solo; sin inline-block el navegador ignora transforms.
+ */
+.gsap-animate .split-word,
+.gsap-animate .split-char {
+    display: inline-block;
+    position: relative;
+    vertical-align: baseline;
+}
+
+.gsap-animate .split-word {
+    white-space: nowrap;
+}
+
+.gsap-animate .split-line {
+    display: block;
+    position: relative;
+}
+
+.gsap-animate .split-line-mask,
+.gsap-animate .split-word-mask,
+.gsap-animate .split-char-mask {
+    overflow: clip;
+}
+
+.gsap-animate .split-line-mask {
+    display: block;
+}
+
+.gsap-animate .split-word-mask,
+.gsap-animate .split-char-mask {
+    display: inline-block;
 }
