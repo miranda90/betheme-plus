@@ -12,7 +12,7 @@ Este documento describe todo lo implementado por **Betheme Plus**: dependencias,
 |-----------|---------|
 | WordPress | Instalación estándar. |
 | Tema activo | Plantilla padre **Betheme** (`wp_get_theme()->get_template() === 'betheme'`). Los child themes sobre Betheme cuentan. |
-| Versión de Betheme | Overrides rebasados sobre **28.4.3** (`BETHEME_PLUS_COMPAT_THEME_VERSION`). Un aviso en admin aparece si `MFN_THEME_VERSION` no coincide. |
+| Versión de Betheme | Overrides rebasados sobre **28.5.9.1** (`BETHEME_PLUS_COMPAT_THEME_VERSION`). Un aviso en admin aparece si `MFN_THEME_VERSION` no coincide. |
 | Funciones del tema | Si no existe `mfn_opts_get()`, la mayor parte del plugin no se registra (solo overrides de archivos y aviso en admin). |
 
 ---
@@ -48,8 +48,8 @@ Este documento describe todo lo implementado por **Betheme Plus**: dependencias,
 | `assets/js/gsap-animations.js` | Motor de animaciones GSAP en el front. |
 | `assets/css/gsap-animations.css` | Anti-FOUC y reglas de máscaras / texto. |
 | `assets/js/bebuilder-conditions-fix.js` | Override de `mfnoptsinputs.showhidefields`. |
-| `includes/overrides/functions/builder/class-mfn-builder-fields.php` | Definición de campos del builder (copia de Betheme 28.4.3 + parche GSAP). |
-| `includes/overrides/functions/builder/class-mfn-builder-front.php` | Salida HTML/front del builder (attrs `data-*`, clases GSAP, helper PHP). Copia de Betheme 28.4.3 + parche GSAP. |
+| `includes/overrides/functions/builder/class-mfn-builder-fields.php` | Definición de campos del builder (copia de Betheme 28.5.9.1 + parche GSAP). |
+| `includes/overrides/functions/builder/class-mfn-builder-front.php` | Salida HTML/front del builder (attrs `data-*`, clases GSAP, helper PHP). Copia de Betheme 28.5.9.1 + parche GSAP. |
 
 ---
 
@@ -183,7 +183,7 @@ También añade clases/atributos para **GSAP** (p. ej. `gsap-animate`, animació
 
 ## Override `class-mfn-builder-fields.php`
 
-Contiene la definición de campos del BeBuilder/Muffin Builder **sustituyendo** la del tema (base **Betheme 28.4.3** + parche GSAP). Incluye controles extra (animaciones GSAP, split text unificado, scroll smoother por elemento, parallax de imagen, etc.). Tras **cualquier cambio sustancial** en estos campos, hay que **regenerar el bundle JS** (siguiente sección).
+Contiene la definición de campos del BeBuilder/Muffin Builder **sustituyendo** la del tema (base **Betheme 28.5.9.1** + parche GSAP). Incluye controles extra (animaciones GSAP, split text unificado, scroll smoother por elemento, parallax de imagen, etc.). Tras **cualquier cambio sustancial** en estos campos, hay que **regenerar el bundle JS** (siguiente sección).
 
 ---
 
@@ -218,7 +218,7 @@ Tras regenerar, se recomienda **recarga fuerte** del Visual Builder.
 ## Avisos y text domain
 
 - Si BeTheme **no** está activo/se cargan opciones antes de `functions.php`: aviso **`admin_notices`** indicando dependencia del tema (mensaje texto `base`).
-- Si `MFN_THEME_VERSION` no coincide con `BETHEME_PLUS_COMPAT_THEME_VERSION` (28.4.3): aviso de que los overrides pueden estar desfasados.
+- Si `MFN_THEME_VERSION` no coincide con `BETHEME_PLUS_COMPAT_THEME_VERSION` (28.5.9.1): aviso de que los overrides pueden estar desfasados.
 - **`load_plugin_textdomain`:** dominio **`base`**, carpeta `languages/` del plugin.
 
 ---
@@ -291,4 +291,4 @@ Al actualizar Betheme:
 
 ---
 
-*Última revisión: plugin 1.2.3, updater GitHub Releases (PUC v5.7), overrides rebasados sobre Betheme 28.4.3.*
+*Última revisión: plugin 1.2.3, updater GitHub Releases (PUC v5.7), overrides rebasados sobre Betheme 28.5.9.1.*
