@@ -6,7 +6,7 @@
  * @author Muffin group
  * @link https://muffingroup.com
  *
- * Based on Betheme 28.4.3 + GSAP Plus patch.
+ * Based on Betheme 28.5.9.1 + GSAP Plus patch.
  */
 
 if( ! defined( 'ABSPATH' ) ){
@@ -477,7 +477,6 @@ if( ! class_exists('Mfn_Builder_Front') )
   			$this->the_content();
   		}
 
-
   		$this->post_id = false;
 			self::$post_id2 = false;
 
@@ -719,6 +718,8 @@ if( ! class_exists('Mfn_Builder_Front') )
   					$section_class[] = 'mfn-section-tabber';
 
   					$section_class[] = !empty( $section['attr']['tabber_nav_open_opt'] ) ? 'mfn-tabber-open-on-'.$section['attr']['tabber_nav_open_opt'] : 'mfn-tabber-open-on-click';
+
+  					if( !empty( $section['attr']['tabber_animation']) ) $section_class[] = 'mfn-tabber-animation-'.$section['attr']['tabber_animation'];
 
   					if( isset( $section['attr']['tabber_nav_position']['desktop'] ) ){
 				 			$section_class[] = 'mfn-tabber-nav-'. esc_attr( $section['attr']['tabber_nav_position']['desktop'] );
@@ -1227,6 +1228,7 @@ if( ! class_exists('Mfn_Builder_Front') )
 			  						$s_wrapper_params .= ' data-mousewheel="'.(!empty($section['attr']['query_slider_mousewheel']) ? $section['attr']['query_slider_mousewheel'] : '0').'"';
 			  						$s_wrapper_params .= ' data-centered="'.(!empty($section['attr']['query_slider_centered']) ? $section['attr']['query_slider_centered'] : '0').'"';
 			  						$s_wrapper_params .= ' data-infinity="'.(!empty($section['attr']['query_slider_infinity']) ? $section['attr']['query_slider_infinity'] : '0').'"';
+			  						$s_wrapper_params .= ' data-autoheight="'.(!empty($section['attr']['query_slider_autoheight']) ? $section['attr']['query_slider_autoheight'] : '0').'"';
 			  						$s_wrapper_params .= ' data-pausehover="'.(!empty($section['attr']['query_slider_pause_hover']) ? $section['attr']['query_slider_pause_hover'] : '0').'"';
 			  						$s_wrapper_params .= ' data-arrownext="'.(!empty($section['attr']['query_display_slider_arrow_next']) ? $section['attr']['query_display_slider_arrow_next'] : 'icon-right-open-big').'"';
 			  						$s_wrapper_params .= ' data-arrowprev="'.(!empty($section['attr']['query_display_slider_arrow_prev']) ? $section['attr']['query_display_slider_arrow_prev'] : 'icon-left-open-big').'"';
@@ -2224,6 +2226,22 @@ if( ! class_exists('Mfn_Builder_Front') )
 					$bg_vals = $wrap['attr']['css_advanced_background_image']['val'] ?? array();
 					$bg_vals_hover = $wrap['attr']['css_advanced_background_image_hover']['val'] ?? array();
 
+					if ( is_string( $bg_vals ) ) {
+						$bg_vals = array(
+							'desktop' => $bg_vals,
+						);
+					} elseif ( ! is_array( $bg_vals ) ) {
+						$bg_vals = array();
+					}
+
+					if ( is_string( $bg_vals_hover ) ) {
+						$bg_vals_hover = array(
+							'desktop' => $bg_vals_hover,
+						);
+					} elseif ( ! is_array( $bg_vals_hover ) ) {
+						$bg_vals_hover = array();
+					}
+
 					if ( ! empty(array_filter($bg_vals)) ) {
 						$style_prop = $wrap['attr']['css_advanced_background_image']['style'] ?? 'background-image';
 						$selector  = '.mfn-queryloop-item-wrapper[data-post="' . self::$item_id . '"] .mcb-wrap-'.$wrap['uid'].' > .mcb-wrap-inner';
@@ -2555,6 +2573,7 @@ if( ! class_exists('Mfn_Builder_Front') )
 									$w_wrapper_params .= ' data-mousewheel="'.(!empty($wrap['attr']['query_slider_mousewheel']) ? $wrap['attr']['query_slider_mousewheel'] : '0').'"';
 									$w_wrapper_params .= ' data-centered="'.(!empty($wrap['attr']['query_slider_centered']) ? $wrap['attr']['query_slider_centered'] : '0').'"';
 									$w_wrapper_params .= ' data-infinity="'.(!empty($wrap['attr']['query_slider_infinity']) ? $wrap['attr']['query_slider_infinity'] : '0').'"';
+									$w_wrapper_params .= ' data-autoheight="'.(!empty($wrap['attr']['query_slider_autoheight']) ? $wrap['attr']['query_slider_autoheight'] : '0').'"';
 									$w_wrapper_params .= ' data-pausehover="'.(!empty($wrap['attr']['query_slider_pause_hover']) ? $wrap['attr']['query_slider_pause_hover'] : '0').'"';
 									$w_wrapper_params .= ' data-arrownext="'.(!empty($wrap['attr']['query_display_slider_arrow_next']) ? $wrap['attr']['query_display_slider_arrow_next'] : 'icon-right-open-big').'"';
 			  					$w_wrapper_params .= ' data-arrowprev="'.(!empty($wrap['attr']['query_display_slider_arrow_prev']) ? $wrap['attr']['query_display_slider_arrow_prev'] : 'icon-left-open-big').'"';
@@ -2888,6 +2907,22 @@ if( ! class_exists('Mfn_Builder_Front') )
 		              		}*/
 
 		              		$q_args['post_status'] = 'publish';
+
+		              		$url_filters = mfn_get_filters_from_url();
+
+											if ( ! empty( $url_filters['tax_query'] ) ) {
+												$q_args['tax_query'] = array_merge(
+													$url_filters['tax_query'],
+													$q_args['tax_query'] ?? []
+												);
+											}
+
+											if ( ! empty( $url_filters['meta_query'] ) ) {
+												$q_args['meta_query'] = array_merge(
+													$url_filters['meta_query'],
+													$q_args['meta_query'] ?? []
+												);
+											}
 
 	              			$wrap_posts_query = new WP_Query( $q_args );
 

@@ -6,7 +6,7 @@
  * @author Muffin group
  * @link https://muffingroup.com
  *
- * Based on Betheme 28.4.3 + GSAP Plus patch.
+ * Based on Betheme 28.5.9.1 + GSAP Plus patch.
  */
 
 if( ! defined( 'ABSPATH' ) ){
@@ -1284,6 +1284,49 @@ if( ! class_exists('Mfn_Builder_Fields') )
 				),
 
 
+
+
+
+
+  			array(
+					'id' => 'tabber_animation',
+					'attr_id' => 'tabber_animation',
+					'type' => 'select',
+					'class' => 'mfn-toggled',
+					'title' => __('Tab animation', 'mfn-opts'),
+					'options' => [
+						'' => __('None', 'mfn-opts'),
+						'fade-in' => __('Fade In', 'mfn-opts'),
+						'fade-in-left' => __('Fade In Left', 'mfn-opts'),
+						'fade-in-right' => __('Fade In Right', 'mfn-opts'),
+						'fade-in-up' => __('Fade In Up', 'mfn-opts'),
+						'fade-in-down' => __('Fade In Down', 'mfn-opts'),
+						'zoom-in' => __('Zoom In', 'mfn-opts'),
+					],
+				),
+
+
+				array(
+					'id' => 'css_tabber_animation_duration',
+					'selector' => '.mcb-section-mfnuidelement .mfn-tabber-content',
+					'style' => 'animation-duration',
+					'type' => 'sliderbar',
+					'title' => __('Animation duration', 'mfn-opts'),
+					'condition' => array( 'id' => 'tabber_animation', 'opt' => 'isnt', 'val' => '' ),
+					'param' => array(
+						'min' => '0',
+						'max' => '3',
+						'step' => '0.1',
+						'unit' => 's',
+					),
+					'std' => '0.6s'
+				),
+
+
+
+
+
+
   			array(
 					'type' => 'header',
 					'class' => 'toggled_header',
@@ -2076,6 +2119,19 @@ if( ! class_exists('Mfn_Builder_Fields') )
   			),
 
   			array(
+  				'id' => 'query_slider_autoheight',
+  				'condition' => array( 'id' => 'query_display', 'opt' => 'is', 'val' => 'slider' ),
+  				'class' => 'mfn-toggled',
+  				'type' => 'switch',
+  				'title' => __('Auto height', 'mfn-opts'),
+  				'options' => array(
+  					'' => __('Disabled', 'mfn-opts'),
+  					'1' => __('Enabled', 'mfn-opts'),
+  				),
+  				'std' => ''
+  			),
+
+  			array(
   				'id' => 'query_display_style',
   				'condition' => array( 'id' => 'query_display', 'opt' => 'isnt', 'val' => 'slider' ),
   				'class' => 'mfn-toggled',
@@ -2288,6 +2344,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
   					'default' => '',
   					'gradient' 	=> '',
   				),
+  				'required' => true,
   				'std' => 'default',
 				),
 
@@ -3493,6 +3550,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
   					'video' 	=> '',
   					'gradient' 	=> '',
   				),
+  				'required' => true,
   				'std' => 'default',
 				),
 
@@ -3722,6 +3780,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
   					'default' => '',
   					'gradient' 	=> '',
   				),
+  				'required' => true,
   				'std' => 'default',
 				),
 
@@ -4053,6 +4112,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 						'default' => '',
 						'gradient' 	=> '',
 					),
+					'required' => true,
 					'std' => 'default',
 				),
 
@@ -5270,6 +5330,19 @@ if( ! class_exists('Mfn_Builder_Fields') )
   			),
 
   			array(
+  				'id' => 'query_slider_autoheight',
+  				'condition' => array( 'id' => 'query_display', 'opt' => 'is', 'val' => 'slider' ),
+  				'class' => 'mfn-toggled',
+  				'type' => 'switch',
+  				'title' => __('Auto height', 'mfn-opts'),
+  				'options' => array(
+  					'' => __('Disabled', 'mfn-opts'),
+  					'1' => __('Enabled', 'mfn-opts'),
+  				),
+  				'std' => ''
+  			),
+
+  			array(
   				'id' => 'query_display_style',
   				'condition' => array( 'id' => 'query_display', 'opt' => 'isnt', 'val' => 'slider' ),
   				'class' => 'mfn-toggled',
@@ -5495,6 +5568,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
   					'default' => '',
   					'gradient' 	=> '',
   				),
+  				'required' => true,
   				'std' => 'default',
 				),
 
@@ -6595,6 +6669,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
   					'default' => '',
   					'gradient' 	=> '',
   				),
+  				'required' => true,
   				'std' => 'default',
 				),
 
@@ -6832,6 +6907,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
   					'default' => '',
   					'gradient' 	=> '',
   				),
+  				'required' => true,
   				'std' => 'default',
 				),
 
@@ -7098,6 +7174,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
   					'default' => '',
   					'gradient' 	=> '',
   				),
+  				'required' => true,
   				'std' => 'default',
 				),
 
@@ -7269,20 +7346,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 				),
 
 				array(
-  				'id' => 'custom-responsive',
-  				'attr_id' => 'custom-responsive',
-  				'type' => 'switch',
-  				'class' => 'mfn-toggled',
-  				'title' => __('Custom visibility', 'mfn-opts'),
-  				'options' => array(
-  					'hide' => __('Hide under', 'mfn-opts'),
-  					'show' => __('Show under', 'mfn-opts'),
-  				),
-  				'std' => 'hide'
-  			),
-
-				array(
-  				'condition' => array( 'id' => 'custom-responsive', 'opt' => 'is', 'val' => 'hide' ),
   				'old_id' => 'style:.mcb-section .mcb-wrap-mfnuidelement:hide_under_custom',
 					'id' => 'css_advanced_hide_under',
 					'selector' => '.mcb-section .mcb-wrap-mfnuidelement',
@@ -7299,7 +7362,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
   			),
 
   			array(
-  				'condition' => array( 'id' => 'custom-responsive', 'opt' => 'is', 'val' => 'show' ),
   				'old_id' => 'style:.mcb-section .mcb-wrap-mfnuidelement:show_under_custom',
 					'id' => 'css_advanced_show_under',
 					'selector' => '.mcb-section .mcb-wrap-mfnuidelement',
@@ -7944,7 +8006,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'data_pill' => 'Box',
 						),
 
-						
+
 						array(
 							'id' => 'css_grid_item_gap',
 							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item',
@@ -8227,7 +8289,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 						),
 
 
-		  			
+
 		  			array(
 							'title' => __('Price', 'mfn-opts'),
 							'type' => 'header',
@@ -8287,7 +8349,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 						),
 
 
-						
+
 
 
 
@@ -8446,6 +8508,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -8507,6 +8570,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -10354,6 +10418,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -10415,6 +10480,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -11372,6 +11438,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -11433,6 +11500,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -11511,6 +11579,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -11951,6 +12020,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -12783,6 +12853,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -12844,6 +12915,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -13333,7 +13405,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
    				'title' => __('Excerpt', 'mfn-opts'),
    				'cat' => 'custom_query_loop',
    			),
-			
+
 
    			// ALIAS: Blog Heading ----------------------------------------------------
 
@@ -15272,12 +15344,42 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'html' => '</div><div class="modalbox-card modalbox-card-style modalbox-re_render">',
 						),
 
-						array(
-							'id' => 'info',
-							'type' => 'info',
-							'class' => 'mfn-alert',
-							'title' => __('This element has no attributes. Please check <b>advanced</b> tab for more customisation options.', 'mfn-opts'),
+            array(
+              'type' => 'header',
+              'class' => 'toggled_header',
+              'title' => __('Image', 'mfn-opts'),
+            ),
+
+            array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .logo-wrapper:width',
+							'id' => 'css_logo_width',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .logo-wrapper',
+   						'style' => 'width',
+							'type' => 'text',
+							'default_unit' => 'px',
+							'responsive' => true,
+							'class' => 'mfn-toggled mfn-slider-input',
+							'title' => __('Width', 'mfn-opts'),
+							'desc' => __('Use px, %, vw, vh or auto to set content width', 'mfn-opts'),
 						),
+
+   					array(
+   						'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mcb-column-inner:text-align',
+   						'id' => 'css_logo_text_align',
+   						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mcb-column-inner',
+   						'style' => 'justify-content',
+							'responsive' => true,
+   						'type' => 'switch',
+   						'class' => 'mfn-toggled',
+   						'title' => __('Align', 'mfn-opts'),
+   						'options' => array(
+   							'' => __('Default', 'mfn-opts'),
+   							'flex-start' => __('Left', 'mfn-opts'),
+								'center' => __('Center', 'mfn-opts'),
+   							'flex-end' => __('Right', 'mfn-opts'),
+   						),
+							'preview' => 'justify-content',
+   					),
 
 						array(
 							'type' => 'html',
@@ -17543,6 +17645,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -19761,7 +19864,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 
 
 
-				
+
 
    			// Shop Title ----------------------------------------------------
 
@@ -21235,6 +21338,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -21299,6 +21403,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -22751,6 +22856,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -22815,6 +22921,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -25027,6 +25134,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -25091,6 +25199,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -26125,6 +26234,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -26189,6 +26299,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -28227,6 +28338,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'edit_tag' => '.banner-wrapper | .cta-text.banner-item',
    						'edit_position' => 'append',
    						'std' => __('Read more', 'mfn-opts'),
+   						'dynamic_data' => 'title',
    						'condition' => array( 'id' => 'cta', 'opt' => 'is', 'val' => '' ),
 							'title' => __('Call to action', 'mfn-opts'),
 						),
@@ -28287,7 +28399,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
    					array(
 							'id' => 'link_title_2',
 							'type' => 'text',
-   						'std' => __('Link title', 'mfn-opts'),
+							'dynamic_data' => 'title',
    						'condition' => array( 'id' => 'cta', 'opt' => 'is', 'val' => '' ),
 							'title' => __('Link title', 'mfn-opts'),
 						),
@@ -28421,8 +28533,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'class' => 'mfn-toggled',
 		  			),
 
-
-
 		  			array(
 							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-banner-box:--mfn-banner-box-animation-duration',
 							'id' => 'css_box_animation_duration',
@@ -28438,20 +28548,10 @@ if( ! class_exists('Mfn_Builder_Fields') )
 								'unit' => 's',
 							)
 						),
-		  			
+
 		  			array(
 							'type' => 'html',
 							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li></ul><div class="mfn-sft mfn-sft-normal">',
-						),
-
-						array(
-							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-banner-box:background-color',
-							'id' => 'css_banner-box_background_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-banner-box',
-							'style' => 'background-color',
-							'type' => 'color',
-							'class' => 'main-color mfn-toggled',
-							'title' => __('Background', 'mfn-opts'),
 						),
 
 						array(
@@ -28465,6 +28565,23 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'title' => __('Border color', 'mfn-opts'),
 						),
 
+
+						array(
+							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-banner-box:background-color',
+							'id' => 'css_banner-box_background_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-banner-box',
+							'style' => 'background-color',
+							'type' => 'color',
+							'responsive' => true,
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Background', 'mfn-opts'),
+						),
+
+
+
+
+
+
 						array(
 							'type' => 'html',
 							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
@@ -28476,6 +28593,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-banner-box:hover',
 							'style' => 'background-color',
 							'type' => 'color',
+							'responsive' => true,
 							'class' => 'main-color mfn-toggled',
 							'title' => __('Background', 'mfn-opts'),
 						),
@@ -28564,13 +28682,13 @@ if( ! class_exists('Mfn_Builder_Fields') )
 	  						'top center' => __('Top Center', 'mfn-opts'),
 	  						'top right' => __('Top Right', 'mfn-opts'),
 	  						'center left' => __('Center Left', 'mfn-opts'),
-	  						'' => __('Center', 'mfn-opts'),
+	  						'center center' => __('Center', 'mfn-opts'),
 	  						'center right' => __('Center Right', 'mfn-opts'),
 	  						'bottom left' => __('Bottom Left', 'mfn-opts'),
 	  						'bottom center' => __('Bottom Center', 'mfn-opts'),
 	  						'bottom right' => __('Bottom Right', 'mfn-opts'),
 	  					),
-	  					'std' => ''
+	  					'std' => 'center center'
 						),
 
 
@@ -28808,16 +28926,50 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'title' => __('Border color', 'mfn-opts'),
 						),
 
+
+						array(
+							'id' => 'bb_background_switcher',
+							'attr_id' => 'bb_background_switcher',
+							'type' => 'switch',
+							'class' => 'mfn-fields-switcher disable-history mfn-disable-reset-value',
+							'title' => __('Background type', 'mfn-opts'),
+							'options' => array(
+		  					'' => __('Default', 'mfn-opts'),
+		  					'gradient' 	=> __('Gradient', 'mfn-opts'),
+		  				),
+							'visual_options' => array(
+		  					'' => '',
+		  					'gradient' 	=> '',
+		  				),
+		  				'std' => ''
+						),
+
+						array(
+							'id' => 'css_banner-box-wrapper_gradient',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-banner-box.mfn-banner-box-boxed .banner-wrapper',
+							'style' => 'gradient',
+		  				'condition' => array('AND', array( 'id' => 'bb_background_switcher', 'opt' => 'is', 'val' => 'gradient' ), array( 'id' => 'style', 'opt' => 'is', 'val' => 'boxed' )),
+		  				'type' => 'gradient',
+		  				'title' => __('Gradient', 'mfn-opts'),
+		  				'class' => 'mfn-toggled',
+		  			),
+
+
 						array(
 							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-banner-box.mfn-banner-box-boxed .banner-wrapper:background-color',
 							'id' => 'css_banner-box-wrapper_background_color',
 							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-banner-box.mfn-banner-box-boxed .banner-wrapper',
 							'style' => 'background-color',
 							'type' => 'color',
-							'condition' => array( 'id' => 'style', 'opt' => 'is', 'val' => 'boxed' ),
+							'responsive' => true,
+							'condition' => array('AND', array( 'id' => 'bb_background_switcher', 'opt' => 'is', 'val' => '' ), array( 'id' => 'style', 'opt' => 'is', 'val' => 'boxed' )),
 							'class' => 'main-color mfn-toggled',
 							'title' => __('Background', 'mfn-opts'),
+							'std' => '#E9ECEF'
 						),
+
+
+
 
 						array(
 							'type' => 'html',
@@ -28835,16 +28987,52 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'title' => __('Border color', 'mfn-opts'),
 						),
 
+
+
+
+
+
+						array(
+							'id' => 'bb_background_switcher_hover',
+							'attr_id' => 'bb_background_switcher_hover',
+							'type' => 'switch',
+							'class' => 'mfn-fields-switcher disable-history mfn-disable-reset-value',
+							'title' => __('Background type', 'mfn-opts'),
+							'options' => array(
+		  					'' => __('Default', 'mfn-opts'),
+		  					'gradient' 	=> __('Gradient', 'mfn-opts'),
+		  				),
+							'visual_options' => array(
+		  					'default' => '',
+		  					'gradient' 	=> '',
+		  				),
+		  				'std' => ''
+						),
+
+						array(
+							'id' => 'css_banner-box-wrapper_gradient_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-banner-box.mfn-banner-box-boxed:hover .banner-wrapper',
+							'style' => 'gradient',
+		  				'condition' => array('AND', array( 'id' => 'bb_background_switcher_hover', 'opt' => 'is', 'val' => 'gradient' ), array( 'id' => 'style', 'opt' => 'is', 'val' => 'boxed' )),
+		  				'type' => 'gradient',
+		  				'title' => __('Gradient', 'mfn-opts'),
+		  				'class' => 'mfn-toggled',
+		  			),
+
+
 						array(
 							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-banner-box.mfn-banner-box-boxed.mfn-banner-box-boxed|hover .banner-wrapper:background-color',
 							'id' => 'css_banner-box-boxedhoverbanner-wrapper_background_color_hover',
 							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-banner-box.mfn-banner-box-boxed.mfn-banner-box-boxed:hover .banner-wrapper',
 							'style' => 'background-color',
 							'type' => 'color',
-							'condition' => array( 'id' => 'style', 'opt' => 'is', 'val' => 'boxed' ),
+							'responsive' => true,
+							'condition' => array('AND', array( 'id' => 'bb_background_switcher_hover', 'opt' => 'is', 'val' => '' ), array( 'id' => 'style', 'opt' => 'is', 'val' => 'boxed' )),
 							'class' => 'main-color mfn-toggled',
 							'title' => __('Background', 'mfn-opts'),
 						),
+
+
 
 						array(
 							'type' => 'html',
@@ -29812,7 +30000,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'id' => 'css_banner-box-badge_border_style',
 							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-banner-box .banner-badge',
 							'style' => 'border-style',
-							'attr_id' => 'border_style_bannerimagecta',
+							'attr_id' => 'border_style_bannerimagebadge',
 							'type' => 'select',
 							'class' => 'mfn-toggled',
 							'title' => __('Border style', 'mfn-opts'),
@@ -29832,7 +30020,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'id' => 'css_banner-box-badge_border_width',
 							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-banner-box .banner-badge',
 							'style' => 'border-width',
-		  				'condition' => array( 'id' => 'border_style_bannerimagecta', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'condition' => array( 'id' => 'border_style_bannerimagebadge', 'opt' => 'isnt', 'val' => 'none' ),
 		  				'type' => 'dimensions',
 		  				'title' => __('Border width', 'mfn-opts'),
 							'responsive' => true,
@@ -29907,7 +30095,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'id' => 'css_banner-box-badge_border_color',
 							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-banner-box .banner-badge',
 							'style' => 'border-color',
-							'condition' => array( 'id' => 'border_style_bannerimagecta', 'opt' => 'isnt', 'val' => 'none' ),
+							'condition' => array( 'id' => 'border_style_bannerimagebadge', 'opt' => 'isnt', 'val' => 'none' ),
 							'type' => 'color',
 							'class' => 'mfn-toggled',
 							'title' => __('Border color', 'mfn-opts'),
@@ -29943,7 +30131,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'id' => 'css_banner-box-badge_border_color_hover',
 							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-banner-box:hover .banner-badge',
 							'style' => 'border-color',
-							'condition' => array( 'id' => 'border_style_bannerimagecta', 'opt' => 'isnt', 'val' => 'none' ),
+							'condition' => array( 'id' => 'border_style_bannerimagebadge', 'opt' => 'isnt', 'val' => 'none' ),
 							'type' => 'color',
 							'class' => 'mfn-toggled',
 							'title' => __('Border color', 'mfn-opts'),
@@ -30684,6 +30872,16 @@ if( ! class_exists('Mfn_Builder_Fields') )
    						'std' => ''
    					),
 
+   					array(
+   						'id' => 'offset',
+   						're_render' => true,
+   						'type' => 'text',
+   						'title' => __('Offset', 'mfn-opts'),
+							'after' => 'posts',
+							'param' => 'number',
+							'class' => 'narrow',
+							'preview' => 'number',
+   					),
 
 						// advanced
 
@@ -32454,7 +32652,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'responsive' => true,
 							'class' => 'mfn-toggled',
 		  			),
-		  			
+
 						array(
 		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .Latest_news li .photo:border-radius',
 							'id' => 'css_latest_newsliphoto_border_radius',
@@ -33285,6 +33483,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -33349,6 +33548,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -33519,6 +33719,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -33583,6 +33784,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -35022,6 +35224,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -35112,6 +35315,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -35609,6 +35813,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -35673,6 +35878,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -37201,6 +37407,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -37265,6 +37472,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -46270,6 +46478,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
             array(
 							'id' => 'link_title',
 							'type' => 'text',
+							'dynamic_data' => 'title',
 							'title' => __('Link title', 'mfn-opts'),
 						),
 
@@ -46521,7 +46730,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'class' => 'mfn-toggled narrow mfn-class-editor-form-row-visible',
 							'title' => __('Image width', 'mfn-opts'),
 						),
-						
+
 						array(
 							'type' => 'html',
 							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li></ul><div class="mfn-sft mfn-sft-normal">',
@@ -47849,13 +48058,13 @@ if( ! class_exists('Mfn_Builder_Fields') )
 	  						'top center' => __('Top Center', 'mfn-opts'),
 	  						'top right' => __('Top Right', 'mfn-opts'),
 	  						'center left' => __('Center Left', 'mfn-opts'),
-	  						'' => __('Center', 'mfn-opts'),
+	  						'center center' => __('Center', 'mfn-opts'),
 	  						'center right' => __('Center Right', 'mfn-opts'),
 	  						'bottom left' => __('Bottom Left', 'mfn-opts'),
 	  						'bottom center' => __('Bottom Center', 'mfn-opts'),
 	  						'bottom right' => __('Bottom Right', 'mfn-opts'),
 	  					),
-	  					'std' => ''
+	  					'std' => 'center center'
 						),
 
 
@@ -48806,7 +49015,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 
 
 
-				
+
 
 
 
@@ -48882,7 +49091,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 									__('Content', 'mfn-opts'),
 									'',
 								],
-						
+
 							],
 							'preview' => 'tabs',
 							'primary' => 'image',
@@ -49207,14 +49416,14 @@ if( ! class_exists('Mfn_Builder_Fields') )
 
 
 
-   					
+
 
    					array(
 							'type' => 'html',
 							'html' => '</div><div class="modalbox-card modalbox-card-style modalbox-re_render">',
 						),
 
-   					
+
 
 
 
@@ -49236,7 +49445,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'data_pill' => 'Box',
 						),
 
-						
+
 						array(
 							'id' => 'css_grid_item_gap',
 							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-grid-item',
@@ -49429,13 +49638,13 @@ if( ! class_exists('Mfn_Builder_Fields') )
 	  						'top center' => __('Top Center', 'mfn-opts'),
 	  						'top right' => __('Top Right', 'mfn-opts'),
 	  						'center left' => __('Center Left', 'mfn-opts'),
-	  						'' => __('Center', 'mfn-opts'),
+	  						'center center' => __('Center', 'mfn-opts'),
 	  						'center right' => __('Center Right', 'mfn-opts'),
 	  						'bottom left' => __('Bottom Left', 'mfn-opts'),
 	  						'bottom center' => __('Bottom Center', 'mfn-opts'),
 	  						'bottom right' => __('Bottom Right', 'mfn-opts'),
 	  					),
-	  					'std' => ''
+	  					'std' => 'center center'
 						),
 
 
@@ -50833,6 +51042,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -53779,6 +53989,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -53843,6 +54054,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -54265,6 +54477,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -54329,6 +54542,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -57411,11 +57625,30 @@ if( ! class_exists('Mfn_Builder_Fields') )
    					array(
 							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .desc,.mcb-section .mcb-wrap .mcb-item-mfnuidelement .desc a:color',
 							'id' => 'css_descdesca_color',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .desc,.mcb-section .mcb-wrap .mcb-item-mfnuidelement .desc a',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .desc',
 							'style' => 'color',
 							'type' => 'color',
 							'desc' => __('May be overwritten by individual tags or inline CSS', 'mfn-opts'),
 							'title' => __('Color', 'mfn-opts'),
+						),
+
+
+						array(
+							'id' => 'css_desc_links_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .desc a',
+							'style' => 'color',
+							'type' => 'color',
+							'desc' => __('May be overwritten by individual tags or inline CSS', 'mfn-opts'),
+							'title' => __('Link color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_desc_links_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .desc a:hover',
+							'style' => 'color',
+							'type' => 'color',
+							'desc' => __('May be overwritten by individual tags or inline CSS', 'mfn-opts'),
+							'title' => __('Link hover color', 'mfn-opts'),
 						),
 
 						array(
@@ -58235,6 +58468,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -58299,6 +58533,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -59711,6 +59946,28 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'html' => '</div><div class="modalbox-card modalbox-card-style modalbox-re_render">',
 						),
 
+            array(
+							'type' => 'header',
+							'class' => 'toggled_header',
+   						'title' => __('Slides', 'mfn-opts'),
+   					),
+
+            array(
+              'id' => 'css_icons_gap',
+              'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .portfolio_slider',
+              'style' => '--mfn-portfolio-slider-gap',
+              'type' => 'sliderbar',
+              'title' => __('Gap', 'mfn-opts'),
+              'responsive' => true,
+              'class' => 'mfn-toggled',
+              'param' => array(
+                'min' => '0',
+                'max' => '100',
+                'step' => '1',
+                'unit' => 'px',
+              ),
+            ),
+
 						array(
 							'type' => 'header',
 							'class' => 'toggled_header',
@@ -60695,6 +60952,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -60759,6 +61017,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -61345,13 +61604,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 
 
 
-				
-
-
-
-
-
-				
 
 
 
@@ -61365,7 +61617,14 @@ if( ! class_exists('Mfn_Builder_Fields') )
 
 
 
-				
+
+
+
+
+
+
+
+
 				'progress_icons' => array(
 					'type' => 'progress_icons',
 					'title' => __('Progress icons', 'mfn-opts'),
@@ -62107,6 +62366,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -62171,6 +62431,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -63398,7 +63659,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 								'1fr' => __('1', 'mfn-opts'),
 								'repeat(2, 1fr)' => __('2', 'mfn-opts'),
 								'repeat(3, 1fr)' => __('3', 'mfn-opts'),
-								'repeat(4, 1fr)' => __('4', 'mfn-opts'), 
+								'repeat(4, 1fr)' => __('4', 'mfn-opts'),
 								'repeat(5, 1fr)' => __('5', 'mfn-opts'),
 								'repeat(6, 1fr)' => __('6', 'mfn-opts'),
 							),
@@ -63789,7 +64050,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 					),
 				),
 
-	
+
 
 
 
@@ -65043,6 +65304,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -65107,6 +65369,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -65780,7 +66043,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 
 
 
-		
+
 
 
 
@@ -66697,6 +66960,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -66761,6 +67025,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -67459,6 +67724,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -67523,6 +67789,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -67934,6 +68201,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -67998,6 +68266,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -68455,6 +68724,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -68519,6 +68789,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -70445,6 +70716,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -70509,6 +70781,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -73522,7 +73795,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  			array(
 							'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-language-switcher ul li a:typography',
 							'id' => 'css_language-switcherullia_typography',
-							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-language-switcher ul li a',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-language-switcher > div > ul > li > a',
 							'style' => 'typography',
 							'responsive' => true,
 							'type' => 'typography_vb',
@@ -73688,6 +73961,15 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'class' => 'mfn-toggled',
 		  			),
 
+		  			array(
+							'id' => 'css_language_switcher_dropdown_arrow_icon_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-language-switcher-dropdown ul li a .mfn-arrow-icon',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
 
 
 		  			array(
@@ -73787,6 +74069,185 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'responsive' => true,
 							'class' => 'mfn-toggled',
 		  			),
+
+
+
+
+
+
+
+		  			array(
+							'class' => 'toggled_header',
+							'type' => 'header',
+   						'title' => __('Submenu items', 'mfn-opts'),
+   					),
+
+   					array(
+							'id' => 'css_language_switcher_submenu_items_gap',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-language-switcher-dropdown ul li ul',
+							'style' => 'gap',
+							'type' => 'sliderbar',
+							'class' => 'mfn-toggled',
+							'responsive' => true,
+							'title' => __('Gap', 'mfn-opts'),
+							'param' => array(
+								'min' => '0',
+								'max' => '50',
+								'step' => '1',
+								'unit' => 'px',
+							),
+						),
+
+						array(
+							'id' => 'css_language_switcher_submenu_link_padding',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-language-switcher-dropdown ul li ul li a',
+							'style' => 'padding',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Padding', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+		  			array(
+							'id' => 'css_language_switcher_submenu_link_border_style',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-language-switcher-dropdown ul li ul li a',
+							'style' => 'border-style',
+							'attr_id' => 'border_style_wcml_swi',
+							'type' => 'select',
+							'class' => 'mfn-toggled',
+							'title' => __('Border style', 'mfn-opts'),
+							'options' => [
+								'none' => __('None', 'mfn-opts'),
+								'solid' => __('Solid', 'mfn-opts'),
+								'dashed' => __('Dashed', 'mfn-opts'),
+								'dotted' => __('Dotted', 'mfn-opts'),
+								'double' => __('Double', 'mfn-opts'),
+							],
+						),
+
+						array(
+							'id' => 'css_language_switcher_submenu_link_border_width',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-language-switcher-dropdown ul li ul li a',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_style_wcml_swi', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+						array(
+							'id' => 'css_language_switcher_submenu_link_border_width_last_child',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-language-switcher-dropdown ul li ul li:last-child a',
+							'style' => 'border-width',
+		  				'condition' => array( 'id' => 'border_style_wcml_swi', 'opt' => 'isnt', 'val' => 'none' ),
+		  				'type' => 'dimensions',
+		  				'title' => __('Border width last item', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+		  			array(
+							'id' => 'css_language_switcher_submenu_link_border_radius',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-language-switcher-dropdown ul li ul li a',
+							'style' => 'border-radius',
+		  				'type' => 'dimensions',
+		  				'title' => __('Border radius', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
+
+
+
+
+		  			array(
+							'id' => 'css_language_switcher_submenu_link_typography',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-language-switcher-dropdown ul li ul li a',
+							'style' => 'typography',
+							'responsive' => true,
+							'type' => 'typography_vb',
+							'label_tools' => true,
+							'class' => 'mfn-toggled toggle_fields',
+							'title' => __('Typography', 'mfn-opts'),
+						),
+
+
+   					array(
+							'type' => 'html',
+							'html' => '<div class="mfn-form-row mfn-sidebar-fields-tabs mfn-toggled mfn-vb-formrow mfn-vb-mfnuidhere"><ul class="mfn-sft-nav"><li><a href="#normal" data-tab="normal">Normal</a></li><li><a href="#hover" data-tab="hover">Hover</a></li></ul><div class="mfn-sft mfn-sft-normal">',
+						),
+
+						array(
+							'id' => 'css_language_switcher_submenu_link_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-language-switcher-dropdown ul li ul li a',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_language_switcher_submenu_link_border_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-language-switcher-dropdown ul li ul li a',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_wcml_swi', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+
+						array(
+							'id' => 'css_language_switcher_submenu_link_background_color',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-language-switcher-dropdown ul li ul li a',
+							'style' => 'background-color',
+							'type' => 'color',
+							'title' => __('Background color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div><div class="mfn-sft mfn-sft-hover">',
+						),
+
+						array(
+							'id' => 'css_language_switcher_submenu_link_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-language-switcher-dropdown ul li ul li a:hover',
+							'style' => 'color',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_language_switcher_submenu_link_border_color_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-language-switcher-dropdown ul li ul li a:hover',
+							'style' => 'border-color',
+							'condition' => array( 'id' => 'border_style_wcml_swi', 'opt' => 'isnt', 'val' => 'none' ),
+							'type' => 'color',
+							'class' => 'mfn-toggled',
+							'title' => __('Border color', 'mfn-opts'),
+						),
+
+						array(
+							'id' => 'css_language_switcher_submenu_link_background_hover',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-language-switcher-dropdown ul li ul li a:hover',
+							'style' => 'background',
+							'type' => 'color',
+							'class' => 'main-color mfn-toggled',
+							'title' => __('Background color', 'mfn-opts'),
+						),
+
+						array(
+							'type' => 'html',
+							'html' => '</div>',
+						),
+
+
+
 
 
 
@@ -74094,6 +74555,16 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'std' => '20px',
 						),
 
+   					array(
+							'id' => 'css_currency-switcherulliaimg_margin',
+							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-currency-switcher-wrapper ul li a img',
+							'style' => 'margin',
+		  				'type' => 'dimensions',
+		  				'version' => 'separated-fields',
+		  				'title' => __('Margin', 'mfn-opts'),
+							'responsive' => true,
+							'class' => 'mfn-toggled',
+		  			),
 
 		  			array(
 							'class' => 'toggled_header',
@@ -74155,6 +74626,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'style' => 'margin-top',
 							'type' => 'sliderbar',
 							'responsive' => true,
+							'class' => 'mfn-toggled',
 							'title' => __('Offset', 'mfn-opts'),
 							'param' => array(
 								'min' => '0',
@@ -74280,6 +74752,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement .mfn-currency-switcher-wrapper ul li ul',
 							'style' => 'gap',
 							'type' => 'sliderbar',
+							'class' => 'mfn-toggled',
 							'responsive' => true,
 							'title' => __('Gap', 'mfn-opts'),
 							'param' => array(
@@ -74645,6 +75118,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -76354,7 +76828,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 							'id' => 'background_switcher',
 							'attr_id' => 'background_switcher_adv',
 							'type' => 'switch',
-							'required' => true,
 							'class' => 'mfn-fields-switcher disable-history mfn-disable-reset-value',
 							'title' => __('Background type', 'mfn-opts'),
 							'options' => array(
@@ -76365,6 +76838,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 		  					'default' => '',
 		  					'gradient' 	=> '',
 		  				),
+		  				'required' => true,
 		  				'std' => 'default',
 						),
 
@@ -76752,21 +77226,7 @@ if( ! class_exists('Mfn_Builder_Fields') )
 						),
 
 						array(
-		  				'id' => 'custom-responsive',
-		  				'attr_id' => 'custom-responsive',
-		  				'type' => 'switch',
-		  				'class' => 'mfn-toggled',
-		  				'title' => __('Custom visibility', 'mfn-opts'),
-		  				'options' => array(
-		  					'hide' => __('Hide under', 'mfn-opts'),
-		  					'show' => __('Show under', 'mfn-opts'),
-		  				),
-		  				'std' => 'hide'
-		  			),
-
-						array(
 		  				'form' => 'advanced',
-		  				'condition' => array( 'id' => 'custom-responsive', 'opt' => 'is', 'val' => 'hide' ),
 		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement:hide_under_custom',
 		  				'id' => 'css_advanced_hide_under_custom',
    						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement',
@@ -76784,7 +77244,6 @@ if( ! class_exists('Mfn_Builder_Fields') )
 
 		  			array(
 		  				'form' => 'advanced',
-		  				'condition' => array( 'id' => 'custom-responsive', 'opt' => 'is', 'val' => 'show' ),
 		  				'old_id' => 'style:.mcb-section .mcb-wrap .mcb-item-mfnuidelement:show_under_custom',
 		  				'id' => 'css_advanced_show_under_custom',
    						'selector' => '.mcb-section .mcb-wrap .mcb-item-mfnuidelement',
