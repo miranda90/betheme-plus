@@ -291,4 +291,4 @@ Al actualizar Betheme:
 
 ---
 
-*Última revisión: plugin 1.2.3, updater GitHub Releases (PUC v5.7), overrides rebasados sobre Betheme 28.5.9.1.*
+*Última revisión: plugin 1.2.4, updater GitHub Releases (PUC v5.7), overrides rebasados sobre Betheme 28.5.9.1.*
